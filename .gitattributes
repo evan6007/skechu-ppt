@@ -1,0 +1,8 @@
+* text=auto
+*.html text eol=lf
+*.py text eol=lf
+*.ps1 text eol=crlf
+*.svg text eol=lf
+*.png binary
+*.gif binary
+*.woff2 binary

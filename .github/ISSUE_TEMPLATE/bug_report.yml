@@ -1,0 +1,29 @@
+name: Bug report
+description: Report a reproducible Sketchou-PPT problem
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Include the expected and actual behavior.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Environment
+      description: Windows, browser, Python, and PowerPoint versions.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Minimal reproduction
+      description: Exact steps and a non-confidential project/sample when possible.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials, private research figures, and confidential data.
+          required: true

@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.idea/
+.vscode/
+*.sketchou.json
+*.pptx
+*.mp4
+docs/media/video-contact-sheet.jpg
+Thumbs.db
+Desktop.ini

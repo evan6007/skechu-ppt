@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">Sketchou-PPT</title><desc id="desc">Local-first vector tracing for editable PowerPoint graphics.</desc>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#161128"/><stop offset=".55" stop-color="#28204a"/><stop offset="1" stop-color="#123b30"/></linearGradient><linearGradient id="path" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a78bfa"/><stop offset="1" stop-color="#4ade80"/></linearGradient></defs>
+  <rect width="1280" height="640" rx="32" fill="url(#bg)"/>
+  <g opacity=".18" stroke="#fff"><path d="M0 110H1280M0 220H1280M0 330H1280M0 440H1280M0 550H1280"/><path d="M160 0V640M320 0V640M480 0V640M640 0V640M800 0V640M960 0V640M1120 0V640"/></g>
+  <path d="M110 410C205 160 390 165 468 295C540 417 700 430 765 263C824 111 1044 141 1137 307" fill="none" stroke="url(#path)" stroke-width="24" stroke-linecap="round"/>
+  <g fill="#fff" stroke="#7c3aed" stroke-width="7"><circle cx="110" cy="410" r="15"/><circle cx="468" cy="295" r="15"/><circle cx="765" cy="263" r="15"/><circle cx="1137" cy="307" r="15"/></g>
+  <text x="84" y="118" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="76" font-weight="850" fill="#fff">Sketchou-PPT</text>
+  <text x="88" y="174" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" fill="#ddd6fe">Trace it. Shape it. Present it.</text>
+  <rect x="88" y="510" width="418" height="58" rx="29" fill="#fff" opacity=".1"/><text x="121" y="549" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="23" fill="#fff">LOCAL-FIRST · SVG · POWERPOINT</text>
+</svg>
