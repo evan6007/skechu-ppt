@@ -5,4 +5,5 @@
 *.svg text eol=lf
 *.png binary
 *.gif binary
+*.ico binary
 *.woff2 binary

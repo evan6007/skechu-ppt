@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([int]$Port = 8765)
+param([int]$Port = 8766)
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot

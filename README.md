@@ -33,7 +33,15 @@ cd sketchou-ppt
 powershell -ExecutionPolicy Bypass -File .\scripts\launch.ps1
 ```
 
-The launcher installs `pywin32` when needed, starts a loopback-only server at `127.0.0.1:8765`, and opens the editor. No cloud account is required.
+The launcher installs `pywin32` when needed, starts a loopback-only server at `127.0.0.1:8766`, and opens the editor. No cloud account is required.
+
+### Install the desktop app icon
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install-shortcut.ps1
+```
+
+This creates a **Sketchou-PPT** icon on the current Windows desktop. Double-clicking it starts the local bridge silently and opens the editor.
 
 ## Core workflow
 

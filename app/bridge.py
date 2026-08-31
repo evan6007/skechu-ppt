@@ -707,7 +707,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 def main():
     parser = argparse.ArgumentParser(description="Sketchou-PPT local PowerPoint bridge")
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--port", type=int, default=8766)
     args = parser.parse_args()
     # Static editor/font requests must stay responsive while the serialized
     # PowerPoint COM worker is preparing a large native group.

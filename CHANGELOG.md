@@ -7,6 +7,11 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 ### Changed
 
 - The canonical project file extension is now `.sktc`; legacy `.sketchou`, `.sketchou.json`, and `.json` files remain importable.
+- The default local port is now `8766` to avoid conflicts with earlier private builds.
+
+### Added
+
+- Branded Windows app icon and a one-command desktop shortcut installer.
 
 ## [0.1.0] - 2026-08-31
 
