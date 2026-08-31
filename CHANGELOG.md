@@ -2,6 +2,12 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- The canonical project file extension is now `.sktc`; legacy `.sketchou`, `.sketchou.json`, and `.json` files remain importable.
+
 ## [0.1.0] - 2026-08-31
 
 ### Added

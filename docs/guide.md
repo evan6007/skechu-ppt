@@ -35,4 +35,4 @@ Click the segment between two anchors to select that segment. The add-anchor com
 
 ## Project files
 
-The editor autosaves locally in IndexedDB. Use **Download project** for a portable `.sketchou.json` backup and **Load project** to restore it. Imported reference images are embedded in that project data but excluded from SVG and PowerPoint output.
+The editor autosaves locally in IndexedDB. Use **Download project** for a portable `.sktc` project file and **Load project** to restore it. Imported reference images are embedded in that project data but excluded from SVG and PowerPoint output. Legacy `.sketchou`, `.sketchou.json`, and `.json` project files remain supported.

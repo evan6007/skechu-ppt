@@ -22,4 +22,8 @@ for (const required of ['Sketchou-PPT', 'magnetic-trace', 'merge-selected', 'cop
   if (!html.includes(required)) throw new Error(`Missing core feature marker: ${required}`);
 }
 
+for (const extension of ['.sktc', '.sketchou.json']) {
+  if (!html.includes(extension)) throw new Error(`Missing project compatibility marker: ${extension}`);
+}
+
 console.log(`Sketchou-PPT app syntax OK (${html.length} characters).`);
