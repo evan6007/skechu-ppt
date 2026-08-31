@@ -11,8 +11,6 @@
   <img alt="Local first" src="https://img.shields.io/badge/privacy-local--first-172033.svg">
 </p>
 
-<p align="center"><img src="docs/media/demo.gif" width="920" alt="Sketchou-PPT tracing demo"></p>
-
 ## Why Sketchou-PPT?
 
 Scientific diagrams, teaching figures, and presentation artwork often begin as screenshots or raster references. Conventional tracing tools can produce vectors, but getting those paths into PowerPoint as separately editable shapes is still awkward. Sketchou-PPT closes that gap with a focused, local workflow.
