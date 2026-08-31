@@ -1,77 +1,132 @@
-"""Generate Sketchou-PPT PNG and multi-resolution Windows ICO assets."""
+"""Generate the Sketchou-PPT application icon and GitHub social preview."""
+
+from __future__ import annotations
 
 from pathlib import Path
-import math
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 
 
 ROOT = Path(__file__).parents[1]
 BRAND = ROOT / "assets" / "brand"
-SIZE = 1024
+FONT_BOLD = Path(r"C:\Windows\Fonts\segoeuib.ttf")
+FONT_REGULAR = Path(r"C:\Windows\Fonts\segoeui.ttf")
+
+INK = (8, 13, 28)
+VIOLET = (99, 91, 255)
+WHITE = (247, 249, 255)
+MUTED = (166, 177, 204)
 
 
-def cubic(p0, p1, p2, p3, steps=180):
-    points = []
-    for index in range(steps + 1):
-        t = index / steps
-        u = 1 - t
-        points.append((
-            u**3 * p0[0] + 3 * u*u*t * p1[0] + 3 * u*t*t * p2[0] + t**3 * p3[0],
-            u**3 * p0[1] + 3 * u*u*t * p1[1] + 3 * u*t*t * p2[1] + t**3 * p3[1],
-        ))
-    return points
+def rounded_mask(size: tuple[int, int], radius: int) -> Image.Image:
+    mask = Image.new("L", size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, size[0] - 1, size[1] - 1), radius=radius, fill=255)
+    return mask
 
 
-def build_icon():
-    BRAND.mkdir(parents=True, exist_ok=True)
-    image = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+def icon_tile(size: int = 1024) -> Image.Image:
+    """Render a quiet enterprise tile with a proprietary S monogram."""
+    image = Image.new("RGBA", (size, size), INK + (255,))
+    pixels = image.load()
 
-    shadow = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    sd = ImageDraw.Draw(shadow)
-    sd.rounded_rectangle((92, 116, 932, 956), radius=226, fill=(25, 14, 55, 150))
-    image.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(34)))
+    # Restrained two-axis gradient: navy at the top, proprietary violet at the edge.
+    for y in range(size):
+        for x in range(size):
+            violet_weight = max(0.0, (x + y - size * 0.72) / (size * 1.28))
+            top_light = max(0.0, 1.0 - y / (size * 0.82)) * 0.08
+            pixels[x, y] = (
+                int(INK[0] * (1 - violet_weight) + VIOLET[0] * violet_weight + 13 * top_light),
+                int(INK[1] * (1 - violet_weight) + VIOLET[1] * violet_weight + 22 * top_light),
+                int(INK[2] * (1 - violet_weight) + VIOLET[2] * violet_weight + 34 * top_light),
+                255,
+            )
 
-    tile = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    pixels = tile.load()
-    for y in range(88, 928):
-        for x in range(88, 928):
-            if x < 88 or y < 88:
-                continue
-            mix = ((x - 88) + (y - 88)) / 1680
-            r = int(104 + 21 * mix)
-            g = int(54 + 20 * mix)
-            b = int(218 + 29 * mix)
-            pixels[x, y] = (r, g, b, 255)
-    mask = Image.new("L", image.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle((88, 88, 928, 928), radius=226, fill=255)
-    tile.putalpha(mask)
-    image.alpha_composite(tile)
+    background = image.copy()
 
-    glow = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    gd = ImageDraw.Draw(glow)
-    route = cubic((238, 642), (310, 270), (602, 254), (682, 454), 95)
-    route += cubic((682, 454), (760, 648), (616, 782), (390, 706), 85)[1:]
-    gd.line(route, fill=(255, 255, 255, 115), width=116)
-    for x, y in route[::3]:
-        gd.ellipse((x-58, y-58, x+58, y+58), fill=(255, 255, 255, 115))
-    image.alpha_composite(glow.filter(ImageFilter.GaussianBlur(22)))
+    # A single large S is intentionally used: recognisable at 16 px, serious at 1024 px.
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.truetype(str(FONT_BOLD), int(size * 0.70))
+    glyph = "S"
+    box = draw.textbbox((0, 0), glyph, font=font)
+    glyph_width = box[2] - box[0]
+    glyph_height = box[3] - box[1]
+    x = (size - glyph_width) / 2 - box[0]
+    y = (size - glyph_height) / 2 - box[1] - size * 0.012
+    draw.text((x, y), glyph, font=font, fill=WHITE)
+
+    # The precision cut makes the monogram ownable and hints at a vector-path edit.
+    cut_y = int(size * 0.495)
+    cut_left = int(size * 0.495)
+    cut_right = int(size * 0.585)
+    cut = [
+        (cut_left, cut_y + int(size * 0.006)),
+        (cut_right, cut_y - int(size * 0.027)),
+        (cut_right, cut_y - int(size * 0.010)),
+        (cut_left, cut_y + int(size * 0.023)),
+    ]
+    cut_mask = Image.new("L", image.size, 0)
+    ImageDraw.Draw(cut_mask).polygon(cut, fill=255)
+    image.paste(background, (0, 0), cut_mask)
+
+    image.putalpha(rounded_mask((size, size), int(size * 0.225)))
+    return image
+
+
+def social_preview() -> Image.Image:
+    scale = 2
+    width, height = 1280 * scale, 640 * scale
+    image = Image.new("RGB", (width, height), INK)
+    pixels = image.load()
+
+    for y in range(height):
+        for x in range(width):
+            weight = max(0.0, (x / width + y / height - 0.84) / 1.16)
+            pixels[x, y] = tuple(
+                int(INK[channel] * (1 - weight * 0.48) + VIOLET[channel] * weight * 0.48)
+                for channel in range(3)
+            )
 
     draw = ImageDraw.Draw(image)
-    draw.line(route, fill=(255, 255, 255, 255), width=72)
-    for x, y in route[::2]:
-        draw.ellipse((x-36, y-36, x+36, y+36), fill=(255, 255, 255, 255))
+    tile_size = 280 * scale
+    tile = icon_tile(tile_size)
+    image.paste(tile, (100 * scale, 180 * scale), tile)
 
-    for x, y, fill in ((238, 642, "#4ade80"), (682, 454, "#fbbf24"), (390, 706, "#4ade80")):
-        draw.ellipse((x-42, y-42, x+42, y+42), fill=fill, outline="#ffffff", width=18)
+    wordmark = ImageFont.truetype(str(FONT_BOLD), 92 * scale)
+    label = ImageFont.truetype(str(FONT_BOLD), 22 * scale)
+    subtitle = ImageFont.truetype(str(FONT_REGULAR), 32 * scale)
+    eyebrow = ImageFont.truetype(str(FONT_BOLD), 18 * scale)
 
-    png_path = BRAND / "sketchou-ppt-icon.png"
-    ico_path = BRAND / "sketchou-ppt.ico"
-    image.save(png_path, optimize=True)
-    image.save(ico_path, format="ICO", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
-    print(png_path)
-    print(ico_path)
+    text_x = 450 * scale
+    draw.text((text_x, 184 * scale), "S K E T C H O U", font=eyebrow, fill=(137, 145, 255))
+    draw.text((text_x, 220 * scale), "Sketchou", font=wordmark, fill=WHITE)
+    wordmark_width = draw.textbbox((0, 0), "Sketchou", font=wordmark)[2]
+    ppt_x = text_x + wordmark_width + 24 * scale
+    draw.rounded_rectangle((ppt_x, 246 * scale, ppt_x + 132 * scale, 316 * scale), radius=18 * scale, fill=VIOLET)
+    draw.text((ppt_x + 26 * scale, 255 * scale), "PPT", font=label, fill=WHITE)
+    draw.text((text_x, 345 * scale), "Vector tracing, built for editable slides.", font=subtitle, fill=MUTED)
+    draw.line((text_x, 416 * scale, 1128 * scale, 416 * scale), fill=(48, 57, 82), width=2 * scale)
+    draw.text((text_x, 448 * scale), "LOCAL-FIRST   /   OPEN SOURCE   /   POWERPOINT-NATIVE", font=eyebrow, fill=(205, 211, 229))
+
+    return image.resize((1280, 640), Image.Resampling.LANCZOS)
+
+
+def main() -> None:
+    BRAND.mkdir(parents=True, exist_ok=True)
+    icon = icon_tile()
+    icon_png = BRAND / "sketchou-ppt-icon.png"
+    icon_ico = BRAND / "sketchou-ppt-brand.ico"
+    legacy_ico = BRAND / "sketchou-ppt.ico"
+    icon.save(icon_png, optimize=True)
+    icon.save(icon_ico, format="ICO", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+    icon.save(legacy_ico, format="ICO", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+
+    preview = social_preview()
+    preview_path = BRAND / "social-preview.png"
+    preview.save(preview_path, optimize=True)
+
+    for path in (icon_png, icon_ico, legacy_ico, preview_path):
+        print(path)
 
 
 if __name__ == "__main__":
-    build_icon()
+    main()
