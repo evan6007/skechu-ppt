@@ -7,13 +7,14 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Skechu-PPT — Trace. Shape. Present.</title>
+<link rel="icon" type="image/svg+xml" href="skechu-mark.svg?v=1">
 <link rel="stylesheet" href="vendor/katex/katex.min.css?v=01611-local">
 <script src="vendor/katex/katex.min.js?v=01611-local"></script>
 <style>
   :root{--bg:#eef1f4;--panel:#fff;--ink:#24313a;--muted:#6d7b85;--line:#d7dde2;--accent:#7c3aed;--teal:#478e89;--orange:#df8b35;--pink:#ad497d;--shadow:0 8px 30px rgba(20,35,50,.10)}
   *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 Arial,"Microsoft JhengHei",sans-serif;overflow:hidden}
   button,input,select,textarea{font:inherit} button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:8px 10px;cursor:pointer} button:hover{background:#f4f7f9} button.primary{background:var(--accent);color:#fff;border-color:var(--accent)} button.active{background:#5b21b6;color:#fff;border-color:#163f68;box-shadow:0 0 0 3px rgba(25,118,210,.16)} button.danger{color:#a62626}
-  .brand-mark{display:inline-grid;place-items:center;width:28px;height:28px;margin-right:7px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#22c55e);color:#fff;font-weight:900;box-shadow:0 6px 14px rgba(124,58,237,.25)} button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(124,58,237,.28);outline-offset:2px}
+  .brand-mark{display:inline-block;width:30px;height:30px;margin-right:8px;vertical-align:middle;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.18))} button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(124,58,237,.28);outline-offset:2px}
   .app{display:grid;grid-template-rows:54px 46px 1fr;height:100vh}.topbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(20,35,50,.05);z-index:5;overflow-x:auto;white-space:nowrap}.topbar>*{flex:none}.topbar button{white-space:nowrap}.brand{font-weight:700;margin-right:8px;white-space:nowrap}.topbar .spacer{flex:1 0 12px}.status{color:var(--muted);font-size:12px;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ppt-progress{width:150px;height:11px;accent-color:var(--accent);vertical-align:middle}.ppt-progress[hidden]{display:none}
   .projectbar{display:flex;align-items:center;gap:7px;padding:6px 12px;background:#f8fafb;border-bottom:1px solid var(--line);min-width:0;overflow-x:auto;white-space:nowrap}.projectbar select,.projectbar input{height:32px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:5px 8px}.projectbar select{max-width:180px}.projectbar input{width:150px}.projectbar .divider{width:1px;height:25px;background:var(--line);flex:none}.page-tabs{display:flex;gap:5px;align-items:center}.page-tab{padding:6px 11px;border-radius:16px;background:#fff}.page-tab.active{background:#e4f0ff;border-color:#78aee3;color:#145b99;font-weight:700}.projectbar .compact{padding:6px 9px}.autosave{font-size:12px;color:var(--muted);margin-left:auto}
   .workspace{display:grid;grid-template-columns:220px minmax(0,1fr) 260px;min-height:0}.sidebar,.inspector{background:var(--panel);overflow:auto;padding:12px}.sidebar{border-right:1px solid var(--line)}.inspector{border-left:1px solid var(--line)}
@@ -39,7 +40,7 @@
 <body>
 <div class="app">
   <header class="topbar">
-    <div class="brand"><span class="brand-mark">S</span> Skechu-PPT</div>
+    <div class="brand"><img class="brand-mark" src="skechu-mark.svg?v=1" alt="" aria-hidden="true"> Skechu-PPT</div>
     <button class="mobile-only" id="show-assets">素材</button><button class="mobile-only" id="show-inspector">屬性</button>
     <button id="trace-pen" title="點一下放錨點；移動預覽；Enter／雙擊完成；Esc 取消目前這一筆">✎ 描圖筆</button>
     <button id="magnetic-trace" class="active" title="讓描圖筆與轉折點吸附參考底圖筆畫的正中心，不吸左右邊緣">🧲 中心線磁吸：開</button>

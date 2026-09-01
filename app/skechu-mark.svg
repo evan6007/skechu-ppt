@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Skechu pen-nib mark">
+  <rect width="1024" height="1024" rx="104" fill="#000"/>
+  <path fill="#fff" d="M390 228 C405 315 405 395 360 470 C410 590 470 760 512 890 C554 760 614 590 664 470 C619 395 619 315 634 228Z"/>
+  <rect x="348" y="160" width="328" height="69" rx="10" fill="#fff"/>
+  <path d="M512 486V890" stroke="#000" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="512" cy="611" r="30" fill="#000"/>
+</svg>
