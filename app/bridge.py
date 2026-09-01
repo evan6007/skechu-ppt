@@ -3,8 +3,10 @@ import hashlib
 import json
 import os
 import re
+import sys
 import threading
 import time
+import webbrowser
 from concurrent.futures import ThreadPoolExecutor
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
@@ -708,12 +710,26 @@ class Handler(SimpleHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description="Skechu-PPT local PowerPoint bridge")
     parser.add_argument("--port", type=int, default=8766)
+    browser = parser.add_mutually_exclusive_group()
+    browser.add_argument("--open-browser", dest="open_browser", action="store_true")
+    browser.add_argument("--no-open-browser", dest="open_browser", action="store_false")
+    parser.set_defaults(open_browser=None)
     args = parser.parse_args()
+    studio_url = f"http://127.0.0.1:{args.port}/"
+    should_open = getattr(sys, "frozen", False) if args.open_browser is None else args.open_browser
     # Static editor/font requests must stay responsive while the serialized
     # PowerPoint COM worker is preparing a large native group.
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    try:
+        server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    except OSError:
+        if should_open:
+            webbrowser.open(studio_url)
+            return
+        raise
     server.daemon_threads = True
-    print(f"Skechu-PPT is ready at http://127.0.0.1:{args.port}/")
+    print(f"Skechu-PPT is ready at {studio_url}")
+    if should_open:
+        threading.Timer(0.35, webbrowser.open, args=(studio_url,)).start()
     server.serve_forever()
 
 

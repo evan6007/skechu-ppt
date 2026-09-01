@@ -4,6 +4,10 @@ __pycache__/
 .idea/
 .vscode/
 .codex-tmp/
+build/
+dist/
+dist-installer/
+*.spec
 *.skc
 *.sketchou.json
 *.pptx

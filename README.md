@@ -2,71 +2,78 @@
   <img src="assets/brand/logo-banner-skechu-v4.svg" width="620" alt="Skechu-PPT">
 </p>
 
-<p align="center"><strong>Turn raster references into clean, editable vector graphics — then paste them as native PowerPoint layers.</strong></p>
+<p align="center"><strong>Trace an image into clean, editable vectors—without learning a complicated design tool.</strong></p>
+
+<p align="center">
+  <a href="https://evan6007.github.io/skechu-ppt/"><img alt="Open Skechu-PPT Online" src="https://img.shields.io/badge/Open_Skechu_Online-000000?style=for-the-badge&logo=googlechrome&logoColor=white"></a>
+  <a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe"><img alt="Download for Windows" src="https://img.shields.io/badge/Download_for_Windows-7c3aed?style=for-the-badge&logo=windows11&logoColor=white"></a>
+</p>
+
+<p align="center">No terminal. No account. Works on Windows, macOS, Linux, Chromebook, iPhone, iPad, and Android.</p>
 
 <p align="center">
   <a href="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-22c55e.svg"></a>
-  <img alt="Windows" src="https://img.shields.io/badge/PowerPoint-Windows-7c3aed.svg">
   <img alt="Local first" src="https://img.shields.io/badge/privacy-local--first-172033.svg">
 </p>
 
-## Why Skechu-PPT?
+## Start here
 
-Scientific diagrams, teaching figures, and presentation artwork often begin as screenshots or raster references. Conventional tracing tools can produce vectors, but getting those paths into PowerPoint as separately editable shapes is still awkward. Skechu-PPT closes that gap with a focused, local workflow.
+| Your device | What to click | Best for |
+| --- | --- | --- |
+| Windows, macOS, Linux, Chromebook, phone, or tablet | **[Open the web app](https://evan6007.github.io/skechu-ppt/)** | Tracing, editing, `.skc` projects, and SVG export |
+| Windows 10/11 with desktop PowerPoint | **[Download the Windows installer](https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe)** | Everything above, plus native editable PowerPoint layers |
 
-- **Centerline magnetic tracing** follows the middle of thick raster strokes.
-- **Click-to-place anchors** show a quiet live preview instead of flooding the canvas with points.
-- **Smooth or sharp per anchor** keeps most of a path rounded while preserving intentional corners.
-- **Segment-aware anchor insertion** places a new anchor exactly on the selected segment.
-- **Endpoint and T-junction snapping** joins branches to endpoints or the middle of another path.
-- **Drag-to-fill palette** drops a reusable color swatch into a closed vector region and fills it immediately.
-- **Native PowerPoint export** copies paths, shapes, text, and groups as editable Office objects.
-- **Local-first persistence** stores projects in IndexedDB; reference images stay on your machine.
+Want it to feel like a normal app? The web edition can be added to your desktop, Dock, application launcher, or phone home screen. See the **[click-by-click installation guide](docs/install.md)**—no command line is required.
 
-## Quick start
+## Make your first trace
 
-Requirements: Windows 10/11, Python 3.8+, and desktop Microsoft PowerPoint for native PPT export. The editor and SVG export work in a modern browser without PowerPoint.
+1. Open Skechu-PPT and choose **Import image to start tracing**.
+2. Turn on the tracing pen, click to place anchors, and let magnetic tracing follow the center of the source line.
+3. Download the result as an editable **SVG**, or save the whole workspace as a portable **`.skc` project**.
 
-```powershell
-git clone https://github.com/evan6007/skechu-ppt.git
-cd skechu-ppt
-powershell -ExecutionPolicy Bypass -File .\scripts\launch.ps1
-```
+On the Windows edition, select your vectors and choose **Copy to PPT** to paste them into PowerPoint as separately editable native shapes.
 
-The launcher installs `pywin32` when needed, starts a loopback-only server at `127.0.0.1:8766`, and opens the editor. No cloud account is required.
+## Why it feels different
 
-### Install the desktop app icon
+- **Magnetic centerline tracing** follows the middle of thick raster strokes instead of either fuzzy edge.
+- **Click-to-place anchors** keep the canvas quiet while a live preview follows the source line.
+- **Smooth or sharp per anchor** lets one path mix soft curves with deliberate corners.
+- **Precise joining** snaps endpoints to endpoints or to the middle of another path for branches and T-junctions.
+- **Segment-aware editing** inserts a new anchor exactly on the segment you selected.
+- **Drag-to-fill colors** fills closed vector regions from a reusable local palette.
+- **Portable projects** use the short `.skc` extension and can move between devices.
+- **Editable output** exports standard SVG everywhere and native PowerPoint layers on Windows.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install-shortcut.ps1
-```
+## Which edition should I use?
 
-This creates a **Skechu-PPT** icon on the current Windows desktop. Double-clicking it starts the local bridge silently and opens the editor.
+| Feature | Web edition | Windows edition |
+| --- | :---: | :---: |
+| Magnetic tracing and anchor editing | ✓ | ✓ |
+| Local autosave | ✓ | ✓ |
+| Download and load `.skc` projects | ✓ | ✓ |
+| Export editable SVG | ✓ | ✓ |
+| Install as an app | ✓ | ✓ |
+| Copy native editable layers to PowerPoint | — | ✓ |
 
-## Core workflow
+The native PowerPoint bridge uses Windows COM automation, so **Copy to PPT is Windows-only**. macOS, Linux, and mobile users still get the complete browser editor and SVG workflow.
 
-1. Click **Import tracing reference** and choose a PNG, JPEG, WebP, GIF, or SVG.
-2. Enable the tracing pen, click the first anchor, move along the reference, then click to place the next anchor.
-3. Select an anchor to switch it between smooth and sharp.
-4. Hold `Ctrl` while dragging an endpoint to snap it to another endpoint or path midpoint.
-5. `Shift`-select two joined paths, right-click, and merge them as a chain or persistent T-junction.
-6. Drag a swatch from the left palette into a closed path, rectangle, ellipse, or polygon to fill it.
-7. Use `Ctrl+Shift+C` or **Copy to PPT** for native PowerPoint layers; use **Export SVG** for a standards-based vector file.
+## Your work stays yours
 
-Keyboard shortcuts and design notes are documented in [docs/guide.md](docs/guide.md). The PowerPoint bridge architecture is explained in [docs/architecture.md](docs/architecture.md).
-
-## Privacy and safety
-
-Skechu-PPT binds only to `127.0.0.1`; it does not upload projects or reference images. The PowerPoint bridge serializes COM work on one permanent worker thread and cancels failed exports instead of leaving a partial error layout.
+Skechu-PPT is local-first. The editor stores its autosave in the browser on your device; it does not upload reference images or projects to a Skechu server. Use **Download project** whenever you want a portable backup or need to continue on another device.
 
 ## Project status
 
-`v0.1.0` is the first public preview. The core tracing, snapping, project persistence, SVG export, and Windows PowerPoint path are usable. See the [roadmap](ROADMAP.md) and [changelog](CHANGELOG.md) for current boundaries.
+Skechu-PPT is an open-source public preview. Detailed keyboard controls are in the [user guide](docs/guide.md); implementation details are in the [architecture notes](docs/architecture.md); current work is tracked in the [roadmap](ROADMAP.md) and [changelog](CHANGELOG.md).
 
-## Contributing
+<details>
+<summary><strong>Developers and contributors</strong></summary>
 
-Bug reports, reproducible sample files, documentation fixes, and focused pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) before opening an issue.
+The hosted editor is a static, dependency-vendored web app. The optional Windows bridge is Python plus `pywin32`. Source-based setup, tests, and architecture notes are intentionally kept out of the beginner quick start.
+
+Bug reports, small documentation improvements, and focused pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) first.
+
+</details>
 
 ## License
 

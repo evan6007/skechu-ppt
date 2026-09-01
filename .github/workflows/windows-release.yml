@@ -1,0 +1,74 @@
+name: Build Windows installer
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install build dependencies
+        run: python -m pip install -r requirements.txt pyinstaller
+      - name: Build portable application
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --windowed --name Skechu-PPT `
+            --icon assets/brand/skechu-ppt-mark.ico `
+            --add-data "app/index.html;." `
+            --add-data "app/manifest.webmanifest;." `
+            --add-data "app/service-worker.js;." `
+            --add-data "app/skechu-mark.svg;." `
+            --add-data "app/skechu-icon.png;." `
+            --add-data "app/vendor;vendor" `
+            app/bridge.py
+      - name: Smoke-test packaged application
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath dist/Skechu-PPT/Skechu-PPT.exe -ArgumentList '--no-open-browser','--port','8877' -PassThru
+          try {
+            $ready = $false
+            foreach ($attempt in 1..40) {
+              Start-Sleep -Milliseconds 250
+              try {
+                $response = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8877/ -TimeoutSec 2
+                if ($response.StatusCode -eq 200 -and $response.Content -match 'Skechu-PPT') { $ready = $true; break }
+              } catch {}
+            }
+            if (-not $ready) { throw 'Packaged Skechu-PPT did not start.' }
+          } finally {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '0.2.0-dev' }
+          $env:SKECHU_VERSION = $version
+          & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' packaging/windows/skechu.iss
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Skechu-PPT-Windows-Setup
+          path: dist-installer/Skechu-PPT-Windows-Setup.exe
+      - name: Publish GitHub release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create '${{ github.ref_name }}' dist-installer/Skechu-PPT-Windows-Setup.exe `
+            --repo '${{ github.repository }}' `
+            --title "Skechu-PPT ${{ github.ref_name }}" `
+            --generate-notes

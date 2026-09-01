@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "Skechu-PPT",
+  "short_name": "Skechu",
+  "description": "Magnetic vector tracing with editable SVG and native PowerPoint export on Windows.",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef1f4",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "skechu-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "skechu-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
