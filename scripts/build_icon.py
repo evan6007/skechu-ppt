@@ -1,4 +1,9 @@
-"""Build Sketchou-PPT app and GitHub assets from the approved AI mark."""
+"""Build Sketchou-PPT app icons from the approved AI mark.
+
+The GitHub social preview is authored separately in the editable PowerPoint at
+assets/brand/Sketchou-PPT-social-preview-editable.pptx so this script never
+overwrites the designer-approved layout.
+"""
 
 from __future__ import annotations
 
@@ -91,23 +96,7 @@ def main() -> None:
     icon.save(brand_ico, format="ICO", sizes=ICON_SIZES)
     icon.save(legacy_ico, format="ICO", sizes=ICON_SIZES)
 
-    preview_path = BRAND / "social-preview.png"
-    preview_v2_path = BRAND / "social-preview-v2.png"
-    preview_v3_path = BRAND / "social-preview-v3.png"
-    preview_v4_path = BRAND / "social-preview-v4.png"
-    preview_v5_path = BRAND / "social-preview-v5.png"
-    preview_v6_path = BRAND / "social-preview-v6.png"
-    preview_v7_path = BRAND / "social-preview-v7.png"
-    preview = social_preview()
-    preview.save(preview_path, optimize=True)
-    preview.save(preview_v2_path, optimize=True)
-    preview.save(preview_v3_path, optimize=True)
-    preview.save(preview_v4_path, optimize=True)
-    preview.save(preview_v5_path, optimize=True)
-    preview.save(preview_v6_path, optimize=True)
-    preview.save(preview_v7_path, optimize=True)
-
-    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path, preview_v3_path, preview_v4_path, preview_v5_path, preview_v6_path, preview_v7_path):
+    for path in (icon_png, icon_ico, brand_ico, legacy_ico):
         print(path)
 
 
