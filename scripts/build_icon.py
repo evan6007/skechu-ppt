@@ -33,7 +33,7 @@ def social_preview() -> Image.Image:
     image.paste(tile, (84 * scale, 160 * scale), tile)
 
     title = ImageFont.truetype(str(FONT_BOLD), 88 * scale)
-    label = ImageFont.truetype(str(FONT_BOLD), 28 * scale)
+    label = ImageFont.truetype(str(FONT_BOLD), 36 * scale)
     subtitle = ImageFont.truetype(str(FONT_REGULAR), 31 * scale)
     eyebrow = ImageFont.truetype(str(FONT_BOLD), 18 * scale)
 
@@ -44,10 +44,9 @@ def social_preview() -> Image.Image:
     title_box = draw.textbbox(title_position, "Sketchou", font=title)
     title_width = title_box[2] - title_box[0]
     ppt_x = text_x + title_width + 26 * scale
-    pill_height = 60 * scale
-    title_center_y = (title_box[1] + title_box[3]) / 2
-    pill_top = title_center_y - pill_height / 2
-    pill = (ppt_x, pill_top, ppt_x + 120 * scale, pill_top + pill_height)
+    pill_top = title_box[1]
+    pill_bottom = title_box[3]
+    pill = (ppt_x, pill_top, ppt_x + 132 * scale, pill_bottom)
     draw.rounded_rectangle(
         pill,
         radius=14 * scale,
@@ -83,9 +82,12 @@ def main() -> None:
     icon.save(legacy_ico, format="ICO", sizes=ICON_SIZES)
 
     preview_path = BRAND / "social-preview.png"
-    social_preview().save(preview_path, optimize=True)
+    preview_v2_path = BRAND / "social-preview-v2.png"
+    preview = social_preview()
+    preview.save(preview_path, optimize=True)
+    preview.save(preview_v2_path, optimize=True)
 
-    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path):
+    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path):
         print(path)
 
 
