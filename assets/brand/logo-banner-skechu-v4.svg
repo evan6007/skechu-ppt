@@ -10,9 +10,9 @@
     <circle cx="512" cy="611" r="30" fill="#000"/>
   </g>
   <text x="210" y="41" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="4" fill="#000">SKECHU</text>
-  <text x="210" y="104" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3" fill="#000">Skechu</text>
+  <text x="207" y="104" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3" fill="#000">Skechu</text>
   <rect x="460" y="66" width="96" height="39" rx="10" fill="#000"/>
-  <text x="508" y="85.5" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="28" font-weight="700" fill="#fff">PPT</text>
-  <text x="210" y="133" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="17" fill="#000">Powered by Hsiao, Chao-Hsiang</text>
-  <text x="210" y="159" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#000" opacity=".62">MAGNETIC TRACE   /   EDITABLE VECTOR   /   POWERPOINT</text>
+  <text x="507.15" y="88.5" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="28" font-weight="700" fill="#fff">PPT</text>
+  <text x="209" y="133" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="17" fill="#000">Powered by Hsiao, Chao-Hsiang</text>
+  <text x="209.3" y="159" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#000" opacity=".62">MAGNETIC TRACE   /   EDITABLE VECTOR   /   POWERPOINT</text>
 </svg>

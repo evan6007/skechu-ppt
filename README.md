@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/brand/logo-banner-skechu-v3.svg" width="620" alt="Skechu-PPT">
+  <img src="assets/brand/logo-banner-skechu-v4.svg" width="620" alt="Skechu-PPT">
 </p>
 
 <p align="center"><strong>Turn raster references into clean, editable vector graphics — then paste them as native PowerPoint layers.</strong></p>
@@ -22,6 +22,7 @@ Scientific diagrams, teaching figures, and presentation artwork often begin as s
 - **Smooth or sharp per anchor** keeps most of a path rounded while preserving intentional corners.
 - **Segment-aware anchor insertion** places a new anchor exactly on the selected segment.
 - **Endpoint and T-junction snapping** joins branches to endpoints or the middle of another path.
+- **Drag-to-fill palette** drops a reusable color swatch into a closed vector region and fills it immediately.
 - **Native PowerPoint export** copies paths, shapes, text, and groups as editable Office objects.
 - **Local-first persistence** stores projects in IndexedDB; reference images stay on your machine.
 
@@ -52,7 +53,8 @@ This creates a **Skechu-PPT** icon on the current Windows desktop. Double-clicki
 3. Select an anchor to switch it between smooth and sharp.
 4. Hold `Ctrl` while dragging an endpoint to snap it to another endpoint or path midpoint.
 5. `Shift`-select two joined paths, right-click, and merge them as a chain or persistent T-junction.
-6. Use `Ctrl+Shift+C` or **Copy to PPT** for native PowerPoint layers; use **Export SVG** for a standards-based vector file.
+6. Drag a swatch from the left palette into a closed path, rectangle, ellipse, or polygon to fill it.
+7. Use `Ctrl+Shift+C` or **Copy to PPT** for native PowerPoint layers; use **Export SVG** for a standards-based vector file.
 
 Keyboard shortcuts and design notes are documented in [docs/guide.md](docs/guide.md). The PowerPoint bridge architecture is explained in [docs/architecture.md](docs/architecture.md).
 
