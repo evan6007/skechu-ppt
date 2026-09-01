@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/brand/logo-banner.svg" width="620" alt="Sketchou-PPT">
+  <img src="assets/brand/logo-banner-v2.svg" width="620" alt="Sketchou-PPT">
 </p>
 
 <p align="center"><strong>Turn raster references into clean, editable vector graphics — then paste them as native PowerPoint layers.</strong></p>

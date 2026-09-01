@@ -11,8 +11,8 @@
   <g transform="translate(84 160) scale(2)" fill="#000"><rect x="78" y="98" width="4" height="51" rx="2"/><circle cx="80" cy="117" r="7"/></g>
   <text x="470" y="221" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="5" fill="#000">SKETCHOU</text>
   <text x="470" y="316" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="88" font-weight="700" letter-spacing="-4" fill="#000">Sketchou</text>
-  <rect x="870" y="249" width="132" height="68" rx="15" fill="#000"/>
-  <text x="936" y="284" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="36" font-weight="700" fill="#fff">PPT</text>
+  <rect x="870" y="271" width="132" height="45" rx="11" fill="#000"/>
+  <text x="936" y="294" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="36" font-weight="700" fill="#fff">PPT</text>
   <text x="470" y="382" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="31" fill="#000">Trace precisely. Edit natively.</text>
   <text x="470" y="458" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="2" fill="#000">MAGNETIC TRACE  /  EDITABLE VECTOR  /  POWERPOINT</text>
 </svg>

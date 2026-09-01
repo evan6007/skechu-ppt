@@ -50,10 +50,12 @@ def social_preview() -> Image.Image:
     title_position = (text_x, 220 * scale)
     draw.text(title_position, "Sketchou", font=title, fill=(0, 0, 0))
     title_box = draw.textbbox(title_position, "Sketchou", font=title)
+    u_box = draw.textbbox(title_position, "u", font=title)
     title_width = title_box[2] - title_box[0]
     ppt_x = text_x + title_width + 26 * scale
-    pill_top = title_box[1]
-    pill_bottom = title_box[3]
+    # Match the pill to the lowercase u's x-height, not the capital S.
+    pill_top = u_box[1]
+    pill_bottom = u_box[3]
     pill = (ppt_x, pill_top, ppt_x + 132 * scale, pill_bottom)
     draw.rounded_rectangle(
         pill,
@@ -92,12 +94,14 @@ def main() -> None:
     preview_path = BRAND / "social-preview.png"
     preview_v2_path = BRAND / "social-preview-v2.png"
     preview_v3_path = BRAND / "social-preview-v3.png"
+    preview_v4_path = BRAND / "social-preview-v4.png"
     preview = social_preview()
     preview.save(preview_path, optimize=True)
     preview.save(preview_v2_path, optimize=True)
     preview.save(preview_v3_path, optimize=True)
+    preview.save(preview_v4_path, optimize=True)
 
-    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path, preview_v3_path):
+    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path, preview_v3_path, preview_v4_path):
         print(path)
 
 

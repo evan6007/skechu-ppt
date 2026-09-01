@@ -8,7 +8,7 @@
   </g>
   <g fill="#000"><rect x="93" y="113" width="4" height="51" rx="2"/><circle cx="95" cy="132" r="7"/></g>
   <text x="210" y="111" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3" fill="#000">Sketchou</text>
-  <rect x="557" y="55" width="108" height="66" rx="15" fill="#000"/>
-  <text x="611" y="89" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="36" font-weight="700" fill="#fff">PPT</text>
+  <rect x="557" y="70" width="108" height="42" rx="11" fill="#000"/>
+  <text x="611" y="91" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="30" font-weight="700" fill="#fff">PPT</text>
   <text x="214" y="150" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="600" letter-spacing="3" fill="#000" opacity=".58">MAGNETIC VECTOR TRACING</text>
 </svg>
