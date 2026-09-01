@@ -4,8 +4,6 @@
 
 <p align="center"><strong>Turn raster references into clean, editable vector graphics — then paste them as native PowerPoint layers.</strong></p>
 
-<p align="center"><a href="assets/brand/Skechu-PPT-social-preview-editable.pptx">Edit the GitHub social preview in PowerPoint</a></p>
-
 <p align="center">
   <a href="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-22c55e.svg"></a>
