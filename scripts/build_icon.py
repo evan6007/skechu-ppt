@@ -68,7 +68,7 @@ def social_preview() -> Image.Image:
     label_x = pill[0] + (pill[2] - pill[0] - label_width) / 2 - label_box[0]
     label_y = pill[1] + (pill[3] - pill[1] - label_height) / 2 - label_box[1]
     draw.text((label_x, label_y), "PPT", font=label, fill=(255, 255, 255))
-    draw.text((text_x, 350 * scale), "Trace precisely. Edit natively.", font=subtitle, fill=(0, 0, 0))
+    draw.text((text_x, 350 * scale), "power by Hsiao,Chao-Hsiang", font=subtitle, fill=(0, 0, 0))
     draw.text(
         (text_x, 430 * scale),
         "MAGNETIC TRACE   /   EDITABLE VECTOR   /   POWERPOINT",
@@ -96,14 +96,16 @@ def main() -> None:
     preview_v3_path = BRAND / "social-preview-v3.png"
     preview_v4_path = BRAND / "social-preview-v4.png"
     preview_v5_path = BRAND / "social-preview-v5.png"
+    preview_v6_path = BRAND / "social-preview-v6.png"
     preview = social_preview()
     preview.save(preview_path, optimize=True)
     preview.save(preview_v2_path, optimize=True)
     preview.save(preview_v3_path, optimize=True)
     preview.save(preview_v4_path, optimize=True)
     preview.save(preview_v5_path, optimize=True)
+    preview.save(preview_v6_path, optimize=True)
 
-    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path, preview_v3_path, preview_v4_path, preview_v5_path):
+    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path, preview_v3_path, preview_v4_path, preview_v5_path, preview_v6_path):
         print(path)
 
 

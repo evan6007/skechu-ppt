@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
   <title id="title">Sketchou-PPT</title>
-  <desc id="desc">Trace precisely. Edit natively.</desc>
+  <desc id="desc">power by Hsiao,Chao-Hsiang</desc>
   <rect width="1280" height="640" fill="#000"/>
   <rect x="40" y="70" width="1200" height="500" rx="38" fill="#fff"/>
   <rect x="84" y="160" width="320" height="320" rx="55" fill="#000"/>
@@ -13,6 +13,6 @@
   <text x="470" y="316" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="88" font-weight="700" letter-spacing="-4" fill="#000">Sketchou</text>
   <rect x="866" y="271" width="112" height="45" rx="11" fill="#000"/>
   <text x="922" y="294" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="34" font-weight="700" fill="#fff">PPT</text>
-  <text x="470" y="382" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="31" fill="#000">Trace precisely. Edit natively.</text>
+  <text x="470" y="382" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="31" fill="#000">power by Hsiao,Chao-Hsiang</text>
   <text x="470" y="458" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="2" fill="#000">MAGNETIC TRACE  /  EDITABLE VECTOR  /  POWERPOINT</text>
 </svg>
