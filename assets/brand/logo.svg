@@ -1,19 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 190" role="img" aria-labelledby="title desc">
   <title id="title">Sketchou-PPT</title>
-  <desc id="desc">Sketchou-PPT enterprise wordmark with a precise S monogram.</desc>
-  <defs>
-    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#080d1c"/>
-      <stop offset=".58" stop-color="#111735"/>
-      <stop offset="1" stop-color="#5049d0"/>
-    </linearGradient>
-    <clipPath id="round"><rect x="15" y="15" width="160" height="160" rx="36"/></clipPath>
-  </defs>
-  <rect x="15" y="15" width="160" height="160" rx="36" fill="url(#tile)"/>
-  <text x="95" y="139" text-anchor="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="122" font-weight="700" fill="#f7f9ff" clip-path="url(#round)">S</text>
-  <path d="M94 96l17-6v3L94 99z" fill="#252053"/>
-  <text x="210" y="111" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3" fill="#080d1c">Sketchou</text>
-  <rect x="553" y="55" width="130" height="66" rx="18" fill="#635bff"/>
-  <text x="618" y="99" text-anchor="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="32" font-weight="700" letter-spacing="1" fill="#fff">PPT</text>
-  <text x="214" y="150" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="600" letter-spacing="4" fill="#69738d">VECTOR TRACING FOR POWERPOINT</text>
+  <desc id="desc">A presentation canvas flowing into a vector pen nib.</desc>
+  <rect x="15" y="15" width="160" height="160" rx="30" fill="#000"/>
+  <g fill="#fff">
+    <rect x="53" y="47" width="84" height="15" rx="2"/>
+    <path d="M61 59h68v38c0 7-5 10-11 15-10 9-13 20-14 33l-9 19-9-19c-1-13-4-24-14-33-6-5-11-8-11-15z"/>
+  </g>
+  <g fill="#000"><rect x="93" y="113" width="4" height="51" rx="2"/><circle cx="95" cy="132" r="7"/></g>
+  <text x="210" y="111" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3" fill="#000">Sketchou</text>
+  <rect x="557" y="57" width="108" height="61" rx="15" fill="#000"/>
+  <text x="611" y="88" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="32" font-weight="700" fill="#fff">PPT</text>
+  <text x="214" y="150" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="600" letter-spacing="3" fill="#000" opacity=".58">MAGNETIC VECTOR TRACING</text>
 </svg>

@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $launcher = Join-Path $PSScriptRoot 'launch.ps1'
-$icon = Join-Path $repoRoot 'assets\brand\sketchou-ppt-brand.ico'
+$icon = Join-Path $repoRoot 'assets\brand\sketchou-ppt-mark.ico'
 $desktop = [Environment]::GetFolderPath('Desktop')
 $shortcutPath = Join-Path $desktop ($ShortcutName + '.lnk')
 $powerShell = (Get-Command powershell.exe -ErrorAction Stop).Source

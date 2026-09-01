@@ -1,19 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
   <title id="title">Sketchou-PPT</title>
-  <desc id="desc">Vector tracing, built for editable slides.</desc>
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080d1c"/><stop offset=".65" stop-color="#0d1530"/><stop offset="1" stop-color="#332e82"/></linearGradient>
-    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080d1c"/><stop offset=".58" stop-color="#111735"/><stop offset="1" stop-color="#5049d0"/></linearGradient>
-  </defs>
-  <rect width="1280" height="640" fill="url(#bg)"/>
-  <rect x="100" y="180" width="280" height="280" rx="63" fill="url(#tile)"/>
-  <text x="240" y="398" text-anchor="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="214" font-weight="700" fill="#f7f9ff">S</text>
-  <path d="M238 320l28-10v6l-28 10z" fill="#252053"/>
-  <text x="450" y="214" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="6" fill="#898fff">SKETCHOU</text>
-  <text x="450" y="316" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="92" font-weight="700" letter-spacing="-4" fill="#f7f9ff">Sketchou</text>
-  <rect x="858" y="246" width="132" height="70" rx="18" fill="#635bff"/>
-  <text x="924" y="292" text-anchor="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="22" font-weight="700" fill="#fff">PPT</text>
-  <text x="450" y="382" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="32" fill="#a6b1cc">Vector tracing, built for editable slides.</text>
-  <path d="M450 416h678" stroke="#303952" stroke-width="2"/>
-  <text x="450" y="473" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="2" fill="#cdd3e5">LOCAL-FIRST  /  OPEN SOURCE  /  POWERPOINT-NATIVE</text>
+  <desc id="desc">Trace precisely. Edit natively.</desc>
+  <rect width="1280" height="640" fill="#000"/>
+  <rect x="84" y="160" width="320" height="320" rx="55" fill="#000"/>
+  <g transform="translate(84 160) scale(2)" fill="#fff">
+    <rect x="38" y="32" width="84" height="15" rx="2"/>
+    <path d="M46 44h68v38c0 7-5 10-11 15-10 9-13 20-14 33l-9 19-9-19c-1-13-4-24-14-33-6-5-11-8-11-15z"/>
+  </g>
+  <g transform="translate(84 160) scale(2)" fill="#000"><rect x="78" y="98" width="4" height="51" rx="2"/><circle cx="80" cy="117" r="7"/></g>
+  <text x="470" y="221" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="5" fill="#fff">SKETCHOU</text>
+  <text x="470" y="316" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="88" font-weight="700" letter-spacing="-4" fill="#fff">Sketchou</text>
+  <rect x="870" y="250" width="120" height="60" rx="14" fill="#fff"/>
+  <text x="930" y="281" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="28" font-weight="700" fill="#000">PPT</text>
+  <text x="470" y="382" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="31" fill="#fff">Trace precisely. Edit natively.</text>
+  <text x="470" y="458" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="2" fill="#fff">MAGNETIC TRACE  /  EDITABLE VECTOR  /  POWERPOINT</text>
 </svg>
