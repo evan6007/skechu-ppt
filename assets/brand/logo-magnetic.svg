@@ -1,12 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 190" role="img" aria-labelledby="title desc">
   <title id="title">Skechu-PPT</title>
   <desc id="desc">A presentation canvas flowing into a vector pen nib.</desc>
-  <rect x="15" y="15" width="160" height="160" rx="30" fill="#000"/>
-  <g fill="#fff">
-    <rect x="53" y="47" width="84" height="15" rx="2"/>
-    <path d="M76 59 C78 73 78 86 71 98 C79 117 88 142 95 164 C102 142 111 117 119 98 C112 86 112 73 114 59 Z"/>
+  <g transform="translate(15 15) scale(.15625)">
+    <rect width="1024" height="1024" rx="104" fill="#000"/>
+    <path fill="#fff" d="M390 228 C405 315 405 395 360 470 C410 590 470 760 512 890 C554 760 614 590 664 470 C619 395 619 315 634 228Z"/>
+    <rect x="348" y="160" width="328" height="69" rx="10" fill="#fff"/>
+    <path d="M512 486V890" stroke="#000" stroke-width="14" stroke-linecap="round"/>
+    <circle cx="512" cy="611" r="30" fill="#000"/>
   </g>
-  <g fill="#000"><rect x="93" y="113" width="4" height="51" rx="2"/><circle cx="95" cy="132" r="7"/></g>
   <text x="210" y="111" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3" fill="#000">Skechu</text>
   <rect x="460" y="70" width="96" height="42" rx="11" fill="#000"/>
   <text x="508" y="91" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="28" font-weight="700" fill="#fff">PPT</text>
