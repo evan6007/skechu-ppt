@@ -41,7 +41,7 @@ def social_preview() -> Image.Image:
     image.paste(tile, (84 * scale, 160 * scale), tile)
 
     title = ImageFont.truetype(str(FONT_BOLD), 88 * scale)
-    label = ImageFont.truetype(str(FONT_BOLD), 36 * scale)
+    label = ImageFont.truetype(str(FONT_BOLD), 34 * scale)
     subtitle = ImageFont.truetype(str(FONT_REGULAR), 31 * scale)
     eyebrow = ImageFont.truetype(str(FONT_BOLD), 18 * scale)
 
@@ -52,11 +52,11 @@ def social_preview() -> Image.Image:
     title_box = draw.textbbox(title_position, "Sketchou", font=title)
     u_box = draw.textbbox(title_position, "u", font=title)
     title_width = title_box[2] - title_box[0]
-    ppt_x = text_x + title_width + 26 * scale
+    ppt_x = text_x + title_width + 14 * scale
     # Match the pill to the lowercase u's x-height, not the capital S.
     pill_top = u_box[1]
     pill_bottom = u_box[3]
-    pill = (ppt_x, pill_top, ppt_x + 132 * scale, pill_bottom)
+    pill = (ppt_x, pill_top, ppt_x + 112 * scale, pill_bottom)
     draw.rounded_rectangle(
         pill,
         radius=14 * scale,
@@ -95,13 +95,15 @@ def main() -> None:
     preview_v2_path = BRAND / "social-preview-v2.png"
     preview_v3_path = BRAND / "social-preview-v3.png"
     preview_v4_path = BRAND / "social-preview-v4.png"
+    preview_v5_path = BRAND / "social-preview-v5.png"
     preview = social_preview()
     preview.save(preview_path, optimize=True)
     preview.save(preview_v2_path, optimize=True)
     preview.save(preview_v3_path, optimize=True)
     preview.save(preview_v4_path, optimize=True)
+    preview.save(preview_v5_path, optimize=True)
 
-    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path, preview_v3_path, preview_v4_path):
+    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path, preview_v3_path, preview_v4_path, preview_v5_path):
         print(path)
 
 
