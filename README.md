@@ -1,21 +1,21 @@
 <p align="center">
-  <img src="assets/brand/logo-banner-v3.svg" width="620" alt="Sketchou-PPT">
+  <img src="assets/brand/logo-banner-skechu.svg" width="620" alt="Skechu-PPT">
 </p>
 
 <p align="center"><strong>Turn raster references into clean, editable vector graphics — then paste them as native PowerPoint layers.</strong></p>
 
-<p align="center"><a href="assets/brand/Sketchou-PPT-social-preview-editable.pptx">Edit the GitHub social preview in PowerPoint</a></p>
+<p align="center"><a href="assets/brand/Skechu-PPT-social-preview-editable.pptx">Edit the GitHub social preview in PowerPoint</a></p>
 
 <p align="center">
-  <a href="https://github.com/evan6007/sketchou-ppt/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/evan6007/sketchou-ppt/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-22c55e.svg"></a>
   <img alt="Windows" src="https://img.shields.io/badge/PowerPoint-Windows-7c3aed.svg">
   <img alt="Local first" src="https://img.shields.io/badge/privacy-local--first-172033.svg">
 </p>
 
-## Why Sketchou-PPT?
+## Why Skechu-PPT?
 
-Scientific diagrams, teaching figures, and presentation artwork often begin as screenshots or raster references. Conventional tracing tools can produce vectors, but getting those paths into PowerPoint as separately editable shapes is still awkward. Sketchou-PPT closes that gap with a focused, local workflow.
+Scientific diagrams, teaching figures, and presentation artwork often begin as screenshots or raster references. Conventional tracing tools can produce vectors, but getting those paths into PowerPoint as separately editable shapes is still awkward. Skechu-PPT closes that gap with a focused, local workflow.
 
 - **Centerline magnetic tracing** follows the middle of thick raster strokes.
 - **Click-to-place anchors** show a quiet live preview instead of flooding the canvas with points.
@@ -30,8 +30,8 @@ Scientific diagrams, teaching figures, and presentation artwork often begin as s
 Requirements: Windows 10/11, Python 3.8+, and desktop Microsoft PowerPoint for native PPT export. The editor and SVG export work in a modern browser without PowerPoint.
 
 ```powershell
-git clone https://github.com/evan6007/sketchou-ppt.git
-cd sketchou-ppt
+git clone https://github.com/evan6007/skechu-ppt.git
+cd skechu-ppt
 powershell -ExecutionPolicy Bypass -File .\scripts\launch.ps1
 ```
 
@@ -43,7 +43,7 @@ The launcher installs `pywin32` when needed, starts a loopback-only server at `1
 powershell -ExecutionPolicy Bypass -File .\scripts\install-shortcut.ps1
 ```
 
-This creates a **Sketchou-PPT** icon on the current Windows desktop. Double-clicking it starts the local bridge silently and opens the editor.
+This creates a **Skechu-PPT** icon on the current Windows desktop. Double-clicking it starts the local bridge silently and opens the editor.
 
 ## Core workflow
 
@@ -58,7 +58,7 @@ Keyboard shortcuts and design notes are documented in [docs/guide.md](docs/guide
 
 ## Privacy and safety
 
-Sketchou-PPT binds only to `127.0.0.1`; it does not upload projects or reference images. The PowerPoint bridge serializes COM work on one permanent worker thread and cancels failed exports instead of leaving a partial error layout.
+Skechu-PPT binds only to `127.0.0.1`; it does not upload projects or reference images. The PowerPoint bridge serializes COM work on one permanent worker thread and cancels failed exports instead of leaving a partial error layout.
 
 ## Project status
 
@@ -70,4 +70,4 @@ Bug reports, reproducible sample files, documentation fixes, and focused pull re
 
 ## License
 
-Sketchou-PPT is released under the [MIT License](LICENSE). KaTeX is distributed under its own MIT license; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Skechu-PPT is released under the [MIT License](LICENSE). KaTeX is distributed under its own MIT license; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

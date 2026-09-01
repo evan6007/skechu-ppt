@@ -1,12 +1,12 @@
 cff-version: 1.2.0
-message: "If Sketchou-PPT helps your work, please cite the software."
-title: "Sketchou-PPT: local-first vector tracing for editable PowerPoint graphics"
+message: "If Skechu-PPT helps your work, please cite the software."
+title: "Skechu-PPT: local-first vector tracing for editable PowerPoint graphics"
 type: software
 authors:
   - family-names: Hsiao
     given-names: Chao-Hsiang
-repository-code: "https://github.com/evan6007/sketchou-ppt"
-url: "https://github.com/evan6007/sketchou-ppt"
+repository-code: "https://github.com/evan6007/skechu-ppt"
+url: "https://github.com/evan6007/skechu-ppt"
 license: MIT
 version: 0.1.0
 date-released: 2026-08-31

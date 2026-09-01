@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Sketchou-PPT.
+Thanks for helping improve Skechu-PPT.
 
 1. Search existing issues before opening a new one.
 2. Include Windows version, browser version, PowerPoint version, and a minimal project file when reporting export bugs.

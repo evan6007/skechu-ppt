@@ -13,7 +13,7 @@ import win32com.client
 
 
 LOCK = threading.Lock()
-PPT_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="sketchou-ppt")
+PPT_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="skechu-ppt")
 STATE = {"app": None, "presentation": None, "cache_key": None, "cached_group": None,
          "cached_count": 0, "item_hashes": {}, "item_shapes": {}, "origin": None}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -706,14 +706,14 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Sketchou-PPT local PowerPoint bridge")
+    parser = argparse.ArgumentParser(description="Skechu-PPT local PowerPoint bridge")
     parser.add_argument("--port", type=int, default=8766)
     args = parser.parse_args()
     # Static editor/font requests must stay responsive while the serialized
     # PowerPoint COM worker is preparing a large native group.
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     server.daemon_threads = True
-    print(f"Sketchou-PPT is ready at http://127.0.0.1:{args.port}/")
+    print(f"Skechu-PPT is ready at http://127.0.0.1:{args.port}/")
     server.serve_forever()
 
 

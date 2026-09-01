@@ -4,7 +4,7 @@
 
 Choose **Tracing pen**, click once to place the first anchor, move the pointer to preview the route, and click again to commit the next anchor. Press `Enter` or double-click to finish; press `Esc` to cancel the current path.
 
-When magnetic tracing is enabled, Sketchou-PPT estimates the centerline of the imported reference stroke. The orange indicator is the candidate point; the committed path uses the same routed centerline.
+When magnetic tracing is enabled, Skechu-PPT estimates the centerline of the imported reference stroke. The orange indicator is the candidate point; the committed path uses the same routed centerline.
 
 ## Editing anchors
 
@@ -35,4 +35,4 @@ Click the segment between two anchors to select that segment. The add-anchor com
 
 ## Project files
 
-The editor autosaves locally in IndexedDB. Use **Download project** for a portable `.sktc` project file and **Load project** to restore it. Imported reference images are embedded in that project data but excluded from SVG and PowerPoint output. Legacy `.sketchou`, `.sketchou.json`, and `.json` project files remain supported.
+The editor autosaves locally in IndexedDB. Use **Download project** for a portable `.skc` project file and **Load project** to restore it. Imported reference images are embedded in that project data but excluded from SVG and PowerPoint output. Legacy `.sktc`, `.sketchou`, `.sketchou.json`, and `.json` project files remain supported.

@@ -4,6 +4,7 @@ __pycache__/
 .idea/
 .vscode/
 .codex-tmp/
+*.skc
 *.sketchou.json
 *.pptx
 *.mp4

@@ -6,7 +6,7 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Changed
 
-- The canonical project file extension is now `.sktc`; legacy `.sketchou`, `.sketchou.json`, and `.json` files remain importable.
+- The canonical project file extension is now `.skc`; legacy `.sktc`, `.sketchou`, `.sketchou.json`, and `.json` files remain importable.
 - The default local port is now `8766` to avoid conflicts with earlier private builds.
 
 ### Added

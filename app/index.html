@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Sketchou-PPT — Trace. Shape. Present.</title>
+<title>Skechu-PPT — Trace. Shape. Present.</title>
 <link rel="stylesheet" href="vendor/katex/katex.min.css?v=01611-local">
 <script src="vendor/katex/katex.min.js?v=01611-local"></script>
 <style>
@@ -39,7 +39,7 @@
 <body>
 <div class="app">
   <header class="topbar">
-    <div class="brand"><span class="brand-mark">S</span> Sketchou-PPT</div>
+    <div class="brand"><span class="brand-mark">S</span> Skechu-PPT</div>
     <button class="mobile-only" id="show-assets">素材</button><button class="mobile-only" id="show-inspector">屬性</button>
     <button id="trace-pen" title="點一下放錨點；移動預覽；Enter／雙擊完成；Esc 取消目前這一筆">✎ 描圖筆</button>
     <button id="magnetic-trace" class="active" title="讓描圖筆與轉折點吸附參考底圖筆畫的正中心，不吸左右邊緣">🧲 中心線磁吸：開</button>
@@ -57,7 +57,7 @@
     <progress id="ppt-progress" class="ppt-progress" max="100" value="0" hidden aria-label="PowerPoint 複製進度"></progress>
     <button id="copy-ppt">複製到 PPT</button>
     <button id="save-json">下載專案</button>
-    <label><input id="load-json" type="file" accept=".sktc,.sketchou,.sketchou.json,.json,application/json" hidden><button id="load-button" type="button">載入專案</button></label>
+    <label><input id="load-json" type="file" accept=".skc,.sktc,.sketchou,.sketchou.json,.json,application/json" hidden><button id="load-button" type="button">載入專案</button></label>
     <button class="primary" id="export-svg">匯出 SVG</button>
   </header>
   <nav class="projectbar" aria-label="專案與圖頁">
@@ -115,8 +115,9 @@ const svg=document.getElementById('stage'), scene=document.getElementById('scene
 const workspace=document.querySelector('.workspace');
 let items=[], selected=null, selectedPoint=null, selectedSegment=null, selectedIds=new Set(), selectedPoints=new Set(), drag=null, traceDraft=null, marqueeRect=null, history=[], future=[], gridOn=false, editPoints=false, tracePenOn=false, magneticTraceOn=true, traceSnapTarget=null, zoom=1, baseStageWidth=0, wheelFrame=0, wheelFactor=1, wheelCx=0, wheelCy=0, snapLines=[], snapAnchors=[], hotAnchor=null, seq=1;
 let projects=[],activeProjectId=null,activePageId=null,workspaceReady=false,autosaveTimer=null,workspaceDb=null,workspaceThumbTimer=null;
-window.SKETCHOU_VERSION='0.2.0-dev';
+window.SKECHU_VERSION='0.2.0-dev';
 let pptPrepareTimer=null,pptPrepareRunning=false,pptPrepareWanted=null,pptPreparedBody=null,pptCopyRunning=false,pptAutoPrepareDisabled=false,internalClipboard=[];
+// Keep the legacy IndexedDB key so existing local projects survive the product rename.
 const WORKSPACE_DB_NAME=new URLSearchParams(location.search).get('storage')||'sketchou-ppt';
 const assetMeta=new Map(),assetJobs=new Map(),referenceEdgeCache=new Map();
 const byId=id=>items.find(x=>x.id===id), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -356,13 +357,13 @@ document.getElementById('delete-project').onclick=()=>{const project=activeProje
 document.getElementById('add-page').onclick=()=>{const project=activeProject();if(!project)return;syncActivePage();const page=makePage(`圖 ${project.pages.length+1}`,[]);project.pages.push(page);openPage(page.id);requestAnimationFrame(fitView)};
 document.getElementById('duplicate-page').onclick=()=>{const project=activeProject(),source=activePage();if(!project||!source)return;syncActivePage();const page=makePage(`${source.name} 複本`,source.items);project.pages.push(page);openPage(page.id)};
 document.getElementById('delete-page').onclick=()=>{const project=activeProject(),page=activePage();if(!project||!page||project.pages.length<=1||!confirm(`確定刪除圖頁「${page.name}」？`))return;const index=project.pages.findIndex(p=>p.id===page.id);project.pages.splice(index,1);openPage(project.pages[Math.max(0,index-1)].id)};
-document.getElementById('save-json').onclick=()=>{syncActivePage();const project=activeProject();if(!project)return;const safe=(project.name||'sketchou-project').replace(/[\\/:*?"<>|]/g,'-');download(new Blob([JSON.stringify({version:2,project:deepCopy(project)},null,2)],{type:'application/json'}),`${safe}.sktc`)};
-document.getElementById('load-button').onclick=()=>document.getElementById('load-json').click();document.getElementById('load-json').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result),incoming=o?.project?[o.project]:Array.isArray(o?.projects)?o.projects:[o],baseName=f.name.replace(/\.(?:sktc|sketchou(?:\.json)?|json)$/i,'');const imported=incoming.map((project,i)=>normalizeProject(project,`${baseName} ${i+1}`));projects.push(...imported);repairItemSequence();openProject(imported[0].id);setAutosaveStatus(`已載入 ${imported.length} 個專案`)}catch(err){console.error(err);alert('專案檔格式不正確')}finally{e.target.value=''}};r.readAsText(f)};
-document.getElementById('export-svg').onclick=()=>{const clone=svg.cloneNode(true);clone.querySelector('#selection').remove();clone.querySelector('#grid-layer').remove();clone.querySelectorAll('.arrow-hit,[data-reference-only="true"]').forEach(n=>n.remove());const xml=new XMLSerializer().serializeToString(clone),safe=(activePage()?.name||'sketchou-layered').replace(/[\\/:*?"<>|]/g,'-');download(new Blob([xml],{type:'image/svg+xml'}),`${safe}.svg`)};
+document.getElementById('save-json').onclick=()=>{syncActivePage();const project=activeProject();if(!project)return;const safe=(project.name||'skechu-project').replace(/[\\/:*?"<>|]/g,'-');download(new Blob([JSON.stringify({version:2,project:deepCopy(project)},null,2)],{type:'application/json'}),`${safe}.skc`)};
+document.getElementById('load-button').onclick=()=>document.getElementById('load-json').click();document.getElementById('load-json').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result),incoming=o?.project?[o.project]:Array.isArray(o?.projects)?o.projects:[o],baseName=f.name.replace(/\.(?:skc|sktc|sketchou(?:\.json)?|json)$/i,'');const imported=incoming.map((project,i)=>normalizeProject(project,`${baseName} ${i+1}`));projects.push(...imported);repairItemSequence();openProject(imported[0].id);setAutosaveStatus(`已載入 ${imported.length} 個專案`)}catch(err){console.error(err);alert('專案檔格式不正確')}finally{e.target.value=''}};r.readAsText(f)};
+document.getElementById('export-svg').onclick=()=>{const clone=svg.cloneNode(true);clone.querySelector('#selection').remove();clone.querySelector('#grid-layer').remove();clone.querySelectorAll('.arrow-hit,[data-reference-only="true"]').forEach(n=>n.remove());const xml=new XMLSerializer().serializeToString(clone),safe=(activePage()?.name||'skechu-layered').replace(/[\\/:*?"<>|]/g,'-');download(new Blob([xml],{type:'image/svg+xml'}),`${safe}.svg`)};
 window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;if(e.key==='Escape'){document.getElementById('context-menu').hidden=true;if(traceDraft){e.preventDefault();cancelTraceDraft()}else if(tracePenOn){e.preventDefault();setTracePen(false)}}if(e.key==='Enter'&&traceDraft){e.preventDefault();finishTraceDraft()}if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();document.getElementById('delete').click()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'){e.preventDefault();document.getElementById('select-all').click()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();document.getElementById(e.shiftKey?'redo':'undo').click()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='c'){e.preventDefault();if(e.shiftKey)copySelectionToClipboard();else copyInternalSelection()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='v'){e.preventDefault();pasteInternalSelection()}});
 // Community starter composition: generic and safe to redistribute.
 const STARTER_ITEMS=[
- {id:id(),type:'text',box:true,name:'Welcome title',text:'Sketchou-PPT',x:68,y:52,w:420,h:62,size:40,fontFamily:'Arial',color:'#172033',align:'left',valign:'middle',bold:true,italic:false,latex:false,r:0,marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1},
+ {id:id(),type:'text',box:true,name:'Welcome title',text:'Skechu-PPT',x:68,y:52,w:420,h:62,size:40,fontFamily:'Arial',color:'#172033',align:'left',valign:'middle',bold:true,italic:false,latex:false,r:0,marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1},
  {id:id(),type:'text',box:true,name:'Welcome subtitle',text:'Trace it. Shape it. Present it.',x:70,y:114,w:520,h:34,size:20,fontFamily:'Arial',color:'#667085',align:'left',valign:'middle',bold:false,italic:false,latex:false,r:0,marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1},
  {id:id(),type:'arrow',name:'Smooth demo path',points:[{x:112,y:280},{x:245,y:210},{x:390,y:284},{x:538,y:205},{x:688,y:282}],pointKinds:{},color:'#7c3aed',width:7,head:12,headShape:'triangle',startHead:false,endHead:false,style:'solid',closed:false,fill:'#dbeafe',fillOpacity:0,curved:true,explicitBezier:false},
  {id:id(),type:'arrow',name:'Sharp branch',points:[{x:390,y:284},{x:458,y:382},{x:582,y:396}],pointKinds:{1:'sharp'},color:'#f97316',width:6,head:12,headShape:'triangle',startHead:false,endHead:true,style:'solid',closed:false,fill:'#fff7ed',fillOpacity:0,curved:true,explicitBezier:false},
@@ -375,8 +376,8 @@ async function initializeWorkspace(){
   if(saved?.version===2&&Array.isArray(saved.projects)&&saved.projects.length){
    projects=saved.projects.map((project,i)=>{const p={...project};p.id=p.id||uid('project');p.name=String(p.name||`專案 ${i+1}`);p.pages=(Array.isArray(p.pages)&&p.pages.length?p.pages:[makePage('圖 1',[])]).map((page,j)=>({...page,id:page.id||uid('page'),name:String(page.name||`圖 ${j+1}`),items:Array.isArray(page.items)?page.items:[],canvasWidth:Number(page.canvasWidth)||1200,canvasHeight:Number(page.canvasHeight)||675}));p.activePageId=p.pages.some(page=>page.id===p.activePageId)?p.activePageId:p.pages[0].id;return p});
    activeProjectId=projects.some(p=>p.id===saved.activeProjectId)?saved.activeProjectId:projects[0].id
-  }else{const project=makeProject('Sketchou-PPT Demo',STARTER_ITEMS);projects=[project];activeProjectId=project.id}
- }catch(err){console.error(err);const project=makeProject('Sketchou-PPT Demo',STARTER_ITEMS);projects=[project];activeProjectId=project.id;setAutosaveStatus('無法讀取自動保存',true)}
+  }else{const project=makeProject('Skechu-PPT Demo',STARTER_ITEMS);projects=[project];activeProjectId=project.id}
+ }catch(err){console.error(err);const project=makeProject('Skechu-PPT Demo',STARTER_ITEMS);projects=[project];activeProjectId=project.id;setAutosaveStatus('無法讀取自動保存',true)}
  repairItemSequence();repairInvalidPoints();ensureUniqueItemIds();const project=activeProject();activePageId=project.activePageId;items=deepCopy(activePage().items||[]);inferArrowAttachments();workspaceReady=true;resetEditorState();applyCanvasSize();renderProjectNav();render();setAutosaveStatus('已自動保存');queueAutosave();requestAnimationFrame(fitView)
 }
 async function stabilizeTypography(){

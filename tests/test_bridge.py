@@ -9,7 +9,7 @@ BRIDGE = pathlib.Path(__file__).parents[1] / "app" / "bridge.py"
 class BridgePureFunctionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        spec = importlib.util.spec_from_file_location("sketchou_bridge", BRIDGE)
+        spec = importlib.util.spec_from_file_location("skechu_bridge", BRIDGE)
         cls.bridge = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.bridge)
 

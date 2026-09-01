@@ -1,6 +1,6 @@
 # Architecture
 
-Sketchou-PPT deliberately has two small parts:
+Skechu-PPT deliberately has two small parts:
 
 ```text
 Browser editor (SVG + IndexedDB)
