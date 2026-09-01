@@ -2,16 +2,17 @@
   <title id="title">Sketchou-PPT</title>
   <desc id="desc">Trace precisely. Edit natively.</desc>
   <rect width="1280" height="640" fill="#000"/>
+  <rect x="40" y="70" width="1200" height="500" rx="38" fill="#fff"/>
   <rect x="84" y="160" width="320" height="320" rx="55" fill="#000"/>
   <g transform="translate(84 160) scale(2)" fill="#fff">
     <rect x="38" y="32" width="84" height="15" rx="2"/>
     <path d="M46 44h68v38c0 7-5 10-11 15-10 9-13 20-14 33l-9 19-9-19c-1-13-4-24-14-33-6-5-11-8-11-15z"/>
   </g>
   <g transform="translate(84 160) scale(2)" fill="#000"><rect x="78" y="98" width="4" height="51" rx="2"/><circle cx="80" cy="117" r="7"/></g>
-  <text x="470" y="221" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="5" fill="#fff">SKETCHOU</text>
-  <text x="470" y="316" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="88" font-weight="700" letter-spacing="-4" fill="#fff">Sketchou</text>
-  <rect x="870" y="249" width="132" height="68" rx="15" fill="#fff"/>
-  <text x="936" y="284" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="36" font-weight="700" fill="#000">PPT</text>
-  <text x="470" y="382" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="31" fill="#fff">Trace precisely. Edit natively.</text>
-  <text x="470" y="458" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="2" fill="#fff">MAGNETIC TRACE  /  EDITABLE VECTOR  /  POWERPOINT</text>
+  <text x="470" y="221" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="5" fill="#000">SKETCHOU</text>
+  <text x="470" y="316" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="88" font-weight="700" letter-spacing="-4" fill="#000">Sketchou</text>
+  <rect x="870" y="249" width="132" height="68" rx="15" fill="#000"/>
+  <text x="936" y="284" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="36" font-weight="700" fill="#fff">PPT</text>
+  <text x="470" y="382" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="31" fill="#000">Trace precisely. Edit natively.</text>
+  <text x="470" y="458" font-family="Segoe UI,Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="2" fill="#000">MAGNETIC TRACE  /  EDITABLE VECTOR  /  POWERPOINT</text>
 </svg>

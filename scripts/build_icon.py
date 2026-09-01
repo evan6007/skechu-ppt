@@ -28,6 +28,14 @@ def social_preview() -> Image.Image:
     image = Image.new("RGB", (width, height), (0, 0, 0))
     draw = ImageDraw.Draw(image)
 
+    # A permanent white brand field keeps the lockup legible in both GitHub
+    # light and dark themes while the black surround retains the app identity.
+    draw.rounded_rectangle(
+        (40 * scale, 70 * scale, 1240 * scale, 570 * scale),
+        radius=38 * scale,
+        fill=(255, 255, 255),
+    )
+
     tile_size = 320 * scale
     tile = icon_tile(tile_size)
     image.paste(tile, (84 * scale, 160 * scale), tile)
@@ -38,9 +46,9 @@ def social_preview() -> Image.Image:
     eyebrow = ImageFont.truetype(str(FONT_BOLD), 18 * scale)
 
     text_x = 470 * scale
-    draw.text((text_x, 185 * scale), "SKETCHOU", font=eyebrow, fill=(255, 255, 255))
+    draw.text((text_x, 185 * scale), "SKETCHOU", font=eyebrow, fill=(0, 0, 0))
     title_position = (text_x, 220 * scale)
-    draw.text(title_position, "Sketchou", font=title, fill=(255, 255, 255))
+    draw.text(title_position, "Sketchou", font=title, fill=(0, 0, 0))
     title_box = draw.textbbox(title_position, "Sketchou", font=title)
     title_width = title_box[2] - title_box[0]
     ppt_x = text_x + title_width + 26 * scale
@@ -50,20 +58,20 @@ def social_preview() -> Image.Image:
     draw.rounded_rectangle(
         pill,
         radius=14 * scale,
-        fill=(255, 255, 255),
+        fill=(0, 0, 0),
     )
     label_box = draw.textbbox((0, 0), "PPT", font=label)
     label_width = label_box[2] - label_box[0]
     label_height = label_box[3] - label_box[1]
     label_x = pill[0] + (pill[2] - pill[0] - label_width) / 2 - label_box[0]
     label_y = pill[1] + (pill[3] - pill[1] - label_height) / 2 - label_box[1]
-    draw.text((label_x, label_y), "PPT", font=label, fill=(0, 0, 0))
-    draw.text((text_x, 350 * scale), "Trace precisely. Edit natively.", font=subtitle, fill=(255, 255, 255))
+    draw.text((label_x, label_y), "PPT", font=label, fill=(255, 255, 255))
+    draw.text((text_x, 350 * scale), "Trace precisely. Edit natively.", font=subtitle, fill=(0, 0, 0))
     draw.text(
         (text_x, 430 * scale),
         "MAGNETIC TRACE   /   EDITABLE VECTOR   /   POWERPOINT",
         font=eyebrow,
-        fill=(255, 255, 255),
+        fill=(0, 0, 0),
     )
 
     return image.resize((1280, 640), Image.Resampling.LANCZOS)
@@ -83,11 +91,13 @@ def main() -> None:
 
     preview_path = BRAND / "social-preview.png"
     preview_v2_path = BRAND / "social-preview-v2.png"
+    preview_v3_path = BRAND / "social-preview-v3.png"
     preview = social_preview()
     preview.save(preview_path, optimize=True)
     preview.save(preview_v2_path, optimize=True)
+    preview.save(preview_v3_path, optimize=True)
 
-    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path):
+    for path in (icon_png, icon_ico, brand_ico, legacy_ico, preview_path, preview_v2_path, preview_v3_path):
         print(path)
 
 
