@@ -1,0 +1,19 @@
+.palette-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+.palette-tools button,.reference-tools button{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;min-height:36px;padding:6px}
+.palette-tools svg,.reference-tools svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.palette-tools button.active{background:#ede9fe;color:#5b21b6;border-color:#8b5cf6;box-shadow:0 0 0 1px #8b5cf6}
+.palette-current{display:flex;align-items:center;gap:7px;font-size:11px;color:#667085;margin-top:8px}
+.palette-current i{width:13px;height:13px;border-radius:4px;border:1px solid #0002;background:var(--active-paint)}
+.reference-tools{margin:8px 0 12px}.reference-tools button{width:100%}.reference-tools button.active{color:#0369a1;background:#e0f2fe;border-color:#38bdf8}
+.stage.paint-bucket,.stage.color-picker{cursor:crosshair}.stage.paint-bucket #selection,.stage.color-picker #selection{pointer-events:none}
+.stage .reference-move{fill:transparent;stroke:#0284c7;stroke-width:1.5;stroke-dasharray:6 4;cursor:move;pointer-events:all}
+.stage .reference-resize-hit{fill:transparent;stroke:transparent;pointer-events:all;cursor:nwse-resize}
+.stage .reference-resize-hit[data-reference-corner="tr"],.stage .reference-resize-hit[data-reference-corner="bl"]{cursor:nesw-resize}
+.stage .reference-resize-dot{fill:white;stroke:#0284c7;stroke-width:2;pointer-events:none}
+.color-loupe{position:fixed;z-index:1000;width:112px;box-sizing:border-box;border:1px solid #d0d5dd;border-radius:12px;padding:7px;background:#fff;box-shadow:0 8px 28px #17203330;pointer-events:none}
+.color-loupe[hidden],.color-sample-cross[hidden]{display:none}
+.color-loupe canvas{display:block;width:96px;height:96px;border-radius:6px;image-rendering:pixelated}
+.color-loupe output{display:block;text-align:center;font:600 11px/24px monospace;color:#344054}
+.color-sample-cross{position:fixed;z-index:999;pointer-events:none;width:12px;height:12px;transform:translate(-50%,-50%);border:1px solid white;outline:1px solid #1d2939;border-radius:50%;background:transparent}
+/* The dragged chip also stays beside the drop point, not on top of it. */
+body .palette-drag-ghost{transform:translate(20px,20px)}

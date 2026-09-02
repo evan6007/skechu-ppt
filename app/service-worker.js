@@ -1,9 +1,12 @@
-const CACHE_NAME = 'skechu-ppt-v11-actual-anchors';
+const CACHE_NAME = 'skechu-ppt-v12-paint-tools';
 const APP_SHELL = [
   './',
   './index.html',
   './local-smoothing.js',
   './region-fill.js',
+  './paint-layers.js',
+  './paint-tools.js',
+  './paint-tools.css',
   './auto-trace.js',
   './auto-trace-ui.js',
   './auto-trace-worker.js',

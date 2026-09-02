@@ -32,6 +32,8 @@ jobs:
         run: node tests/check_clipboard.mjs
       - name: Check connected-region filling
         run: node tests/check_regions.mjs
+      - name: Check paint layers and reference tools
+        run: node tests/check_paint_tools.mjs
       - name: Check automatic tracing and junction topology
         run: node tests/check_auto_trace.mjs
       - name: Run unit tests

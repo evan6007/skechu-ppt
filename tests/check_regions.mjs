@@ -7,6 +7,7 @@ const html=fs.readFileSync(new URL('../app/index.html',import.meta.url),'utf8');
 const source=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).join('\n');
 const ctx=vm.createContext({Math,Number,Object,Set,JSON,clamp:(v,a,b)=>Math.max(a,Math.min(b,v))});
 vm.runInContext(fs.readFileSync(new URL('../app/region-fill.js',import.meta.url),'utf8')+'\nthis.R=RegionFill;',ctx);
+vm.runInContext(fs.readFileSync(new URL('../app/paint-layers.js',import.meta.url),'utf8'),ctx);
 const R=ctx.R,plain=x=>JSON.parse(JSON.stringify(x));
 function load(name){
   const start=source.indexOf('function '+name+'(');assert.ok(start>=0,name);
@@ -69,13 +70,11 @@ ctx.items=plain(ctx.items);assert.equal(ctx.fillTargetAt({x:30,y:50},null).id,cr
 ctx.items=ctx.items.slice(0,2);assert.ok(ctx.fillTargetAt({x:30,y:50},null).regionFace,'Undoing fill leaves the network usable');
 assert.equal(ctx.fillBoundaryPath({type:'image',referenceOnly:true}),null,'Reference images do not create boundaries');
 assert.equal(ctx.fillBoundaryPath({type:'arrow',referenceOnly:true,points:[{x:0,y:0},{x:1,y:1}]}),null);
-load('regionStrokeItems');load('nativeBody');load('exportableItems');
+load('nativeBody');load('exportableItems');
 ctx.items.push(created);ctx.items[0].stroke='#123f8c';ctx.items[1].color='#123f8c';
-const strokeCopies=ctx.regionStrokeItems(ctx.items);
-assert.equal(strokeCopies.length,2,'Source outlines are redrawn above adjacent fills');
-assert.ok(strokeCopies.every(it=>it.explicitBezier&&!it.closed&&!it.regionFill));
 const nativeScene=JSON.parse(ctx.nativeBody(ctx.items));
-assert.equal(nativeScene.items.length,5,'Native layering uses the same source-outline pass');
+assert.equal(nativeScene.items.length,4,'Native layering splits fills below all foreground lines');
+assert.deepEqual(plain(nativeScene.items.map(it=>it.id)),['box::paint-fill',created.id,'box','cut']);
 assert.equal(JSON.parse(ctx.nativeBody([created])).items.length,1,'Copying a color layer alone does not pull in unrelated lines');
 
 if(process.env.SKECHU_TEST_POWERPOINT==='1'){

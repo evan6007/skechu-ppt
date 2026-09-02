@@ -43,7 +43,9 @@ On the Windows edition, select your vectors and choose **Copy to PPT** to paste 
 - **Curve amount and tangent controls per anchor** let one path mix soft curves, linked tangents, independently distant split handles, inward valleys without loops, outward bulges, and deliberate sharp corners.
 - **Precise joining** snaps endpoints to endpoints or to the middle of another path for branches and T-junctions.
 - **Segment-aware editing** inserts a new anchor exactly on the segment you selected.
-- **Drag-to-fill colors** fills closed vector regions from a reusable local palette.
+- **Continuous paint bucket** (`B`) fills closed vector regions, including T-junction regions, with repeated clicks. Drag-and-drop swatches still work. Fills stay below all vector outlines in the editor, SVG and PowerPoint.
+- **Reference color picker** (`I`) samples the original image color with a magnifier beside the cursor. Sampling from the bucket returns you to continuous filling.
+- **Mouse-resizable reference image**: choose **調整底圖大小**, drag a corner to scale proportionally, or hold Shift for free sizing. Drag the center to move only the reference; Undo is supported. Escape or the selection tool (`V`) exits these modes.
 - **Portable projects** use the short `.skc` extension and can move between devices.
 - **Editable output** exports standard SVG everywhere and native PowerPoint layers on Windows.
 
