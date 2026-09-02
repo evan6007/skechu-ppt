@@ -1,6 +1,7 @@
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import sys
@@ -78,12 +79,245 @@ def point_is_sharp(point_kinds, index):
     return False
 
 
+def indexed_point_value(values, index, default=None):
+    if isinstance(values, dict):
+        return values.get(str(index), values.get(index, default))
+    if isinstance(values, list) and 0 <= index < len(values):
+        return values[index]
+    return default
+
+
+def point_smoothness_value(point_kinds, point_smoothness, index, default_strength=100):
+    if point_is_sharp(point_kinds, index):
+        return 0.0
+    try:
+        value = float(indexed_point_value(point_smoothness, index, default_strength))
+    except (TypeError, ValueError):
+        value = float(default_strength)
+    return max(0.0, min(150.0, value))
+
+
+def limited_control(origin, dx, dy, strength, max_length, sign=1):
+    vx, vy = dx * strength / 600 * sign, dy * strength / 600 * sign
+    length = (vx * vx + vy * vy) ** .5
+    if length > max_length and length:
+        ratio = max_length / length
+        vx, vy = vx * ratio, vy * ratio
+    return {"x": origin["x"] + vx, "y": origin["y"] + vy}
+
+
+def point_tangent_delta(points, index, closed=False, point_angles=None):
+    count = len(points)
+    point = points[index]
+    previous = points[(index - 1) % count] if closed else points[max(0, index - 1)]
+    following = points[(index + 1) % count] if closed else points[min(count - 1, index + 1)]
+    dx, dy = following["x"] - previous["x"], following["y"] - previous["y"]
+    if not dx and not dy:
+        fallback = following if following is not point else previous
+        dx, dy = fallback["x"] - point["x"], fallback["y"] - point["y"]
+    raw_angle = indexed_point_value(point_angles, index, None)
+    try:
+        angle = float(raw_angle)
+    except (TypeError, ValueError):
+        return dx, dy
+    length = (dx * dx + dy * dy) ** .5
+    radians = math.radians(angle)
+    return math.cos(radians) * length, math.sin(radians) * length
+
+
+def split_handle_delta(points, index, side, closed=False, point_handle_angles=None):
+    handles = indexed_point_value(point_handle_angles, index, None)
+    if not isinstance(handles, dict):
+        return None
+    try:
+        angle = float(handles[side])
+    except (KeyError, TypeError, ValueError):
+        return None
+    explicit_length = False
+    try:
+        length = max(4.0, min(600.0, float(handles[f"{side}Length"])))
+        explicit_length = True
+    except (KeyError, TypeError, ValueError):
+        automatic = point_tangent_delta(points, index, closed, None)
+        length = (automatic[0] ** 2 + automatic[1] ** 2) ** .5
+    radians = math.radians(angle)
+    return math.cos(radians) * length, math.sin(radians) * length, explicit_length
+
+
+def curve_segment_controls(points, index, closed, point_kinds=None, point_smoothness=None,
+                           point_angles=None, point_handle_angles=None, default_strength=100,
+                           centerline_locked=False):
+    count = len(points)
+    p0 = points[(index - 1) % count] if closed else points[max(0, index - 1)]
+    p1, p2 = points[index], points[(index + 1) % count]
+    p3 = points[(index + 2) % count] if closed else points[min(count - 1, index + 2)]
+    next_index = (index + 1) % count
+    distance = lambda a, b: ((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2) ** .5
+    current_length = distance(p1, p2)
+    previous_length = distance(p1, p0) or current_length
+    following_length = distance(p2, p3) or current_length
+    cap = 36 if centerline_locked else float("inf")
+    split_out = split_handle_delta(points, index, "out", closed, point_handle_angles)
+    split_in = split_handle_delta(points, next_index, "in", closed, point_handle_angles)
+    tangent1 = split_out or point_tangent_delta(points, index, closed, point_angles)
+    tangent2 = split_in or point_tangent_delta(points, next_index, closed, point_angles)
+    c1 = ({"x": p1["x"] + split_out[0], "y": p1["y"] + split_out[1]}
+          if split_out and split_out[2] else
+          limited_control(p1, tangent1[0], tangent1[1],
+                          point_smoothness_value(point_kinds, point_smoothness, index, default_strength),
+                          min(previous_length, current_length) * .48 if not centerline_locked else min(min(previous_length, current_length) * .48, cap)))
+    c2 = ({"x": p2["x"] + split_in[0], "y": p2["y"] + split_in[1]}
+          if split_in and split_in[2] else
+          limited_control(p2, tangent2[0], tangent2[1],
+                          point_smoothness_value(point_kinds, point_smoothness, next_index, default_strength),
+                          min(current_length, following_length) * .48 if not centerline_locked else min(min(current_length, following_length) * .48, cap), 1 if split_in else -1))
+    return c1, c2
+
+
+def solve_three_by_three(matrix, vector):
+    rows = [list(row) + [vector[index]] for index, row in enumerate(matrix)]
+    for column in range(3):
+        pivot = max(range(column, 3), key=lambda row: abs(rows[row][column]))
+        if abs(rows[pivot][column]) < 1e-8:
+            return None
+        rows[column], rows[pivot] = rows[pivot], rows[column]
+        divisor = rows[column][column]
+        rows[column] = [value / divisor for value in rows[column]]
+        for row in range(3):
+            if row == column:
+                continue
+            factor = rows[row][column]
+            rows[row] = [rows[row][item] - factor * rows[column][item] for item in range(4)]
+    return [row[3] for row in rows]
+
+
+def least_squares_circle(points):
+    mean_x = sum(point["x"] for point in points) / len(points)
+    mean_y = sum(point["y"] for point in points) / len(points)
+    uu = uv = vv = u = v = uq = vq = q = 0.0
+    for point in points:
+        x, y = point["x"] - mean_x, point["y"] - mean_y
+        z = x * x + y * y
+        uu, uv, vv = uu + x * x, uv + x * y, vv + y * y
+        u, v, uq, vq, q = u + x, v + y, uq + x * z, vq + y * z, q + z
+    solved = solve_three_by_three([[uu, uv, u], [uv, vv, v], [u, v, len(points)]],
+                                  [-uq, -vq, -q])
+    if not solved:
+        return None
+    d, e, f = solved
+    center_x, center_y = mean_x - d / 2, mean_y - e / 2
+    radius_squared = (d * d + e * e) / 4 - f
+    if radius_squared <= 4:
+        return None
+    radius = math.sqrt(radius_squared)
+    return {"cx": center_x, "cy": center_y, "r": radius} if math.isfinite(radius) else None
+
+
+def circle_arc_model(points, closed=False):
+    points = list(points)
+    if closed and len(points) > 5 and math.hypot(points[0]["x"] - points[-1]["x"],
+                                                 points[0]["y"] - points[-1]["y"]) < 4:
+        points = points[:-1]
+    if len(points) < 5:
+        return None
+    first, last = points[0], points[-1]
+    chord = math.hypot(last["x"] - first["x"], last["y"] - first["y"])
+    extent = max(max(point["x"] for point in points) - min(point["x"] for point in points),
+                 max(point["y"] for point in points) - min(point["y"] for point in points))
+    if extent < 12:
+        return None
+    circle = least_squares_circle(points)
+    if not circle:
+        return None
+    initial_errors = [abs(math.hypot(point["x"] - circle["cx"], point["y"] - circle["cy"]) - circle["r"])
+                      for point in points]
+    if len(points) >= 12:
+        cutoff = sorted(initial_errors)[int(len(initial_errors) * .88)]
+        trimmed = [point for index, point in enumerate(points) if initial_errors[index] <= cutoff]
+        refined = least_squares_circle(trimmed) if len(trimmed) >= 5 else None
+        if refined:
+            circle = refined
+    center_x, center_y, radius = circle["cx"], circle["cy"], circle["r"]
+    if radius > max(extent * 30, chord * 60):
+        return None
+    angles = [math.atan2(first["y"] - center_y, first["x"] - center_x)]
+    diffs = []
+    previous = angles[0]
+    for point in points[1:]:
+        raw = math.atan2(point["y"] - center_y, point["x"] - center_x)
+        difference = raw - previous
+        while difference > math.pi:
+            difference -= math.tau
+        while difference < -math.pi:
+            difference += math.tau
+        previous += difference
+        angles.append(previous)
+        diffs.append(difference)
+    span = angles[-1] - angles[0]
+    if abs(span) < .08 or abs(span) > math.pi * 1.999:
+        return None
+    direction = 1 if span > 0 else -1
+    travel = sum(abs(value) for value in diffs)
+    forward = sum(abs(value) for value in diffs if (1 if value > 0 else -1) == direction)
+    if not travel or forward / travel < .68:
+        return None
+    errors = [abs(math.hypot(point["x"] - center_x, point["y"] - center_y) - radius)
+              for point in points]
+    rms = math.sqrt(sum(value * value for value in errors) / len(errors))
+    wide_arc = abs(span) >= math.pi * 1.15
+    rms_limit = max(7, radius * .075) if wide_arc else max(2.5, radius * .02)
+    max_limit = max(20, radius * .18) if wide_arc else max(7, radius * .06)
+    if rms > rms_limit or max(errors) > max_limit:
+        return None
+    if closed:
+        span = (1 if span > 0 else -1) * math.tau
+    return {"cx": center_x, "cy": center_y, "r": radius, "angles": angles, "span": span,
+            "rms": rms, "maxError": max(errors), "wideArc": wide_arc, "fullCircle": closed}
+
+
+def circle_arc_bezier_nodes(points, closed=False):
+    model = circle_arc_model(points, closed)
+    if not model:
+        return None
+    start = model["angles"][0]
+    end = start + model["span"] if model.get("fullCircle") else model["angles"][-1]
+    segment_count = max(1, math.ceil(abs(end - start) / (math.pi / 2) - 1e-9))
+    step = (end - start) / segment_count
+
+    def point_at(angle):
+        return {"x": model["cx"] + math.cos(angle) * model["r"],
+                "y": model["cy"] + math.sin(angle) * model["r"]}
+
+    nodes = [point_at(start)]
+    for index in range(segment_count):
+        a, b = start + step * index, start + step * (index + 1)
+        p1, p2 = point_at(a), point_at(b)
+        factor = 4 / 3 * math.tan((b - a) / 4)
+        c1 = {"x": p1["x"] - math.sin(a) * model["r"] * factor,
+              "y": p1["y"] + math.cos(a) * model["r"] * factor}
+        c2 = {"x": p2["x"] + math.sin(b) * model["r"] * factor,
+              "y": p2["y"] - math.cos(b) * model["r"] * factor}
+        nodes.extend([c1, c2, p2])
+    return nodes
+
+
 def build_arrow_freeform(slide, points, min_x, min_y, scale, closed, curved=True, explicit_bezier=False,
-                         point_kinds=None):
+                         point_kinds=None, point_smoothness=None, point_angles=None,
+                         point_handle_angles=None, default_strength=100, centerline_locked=False,
+                         edge_locked=False):
     q = list(points)
     if closed and len(q) > 2 and abs(q[0]["x"] - q[-1]["x"]) < .01 and abs(q[0]["y"] - q[-1]["y"]) < .01:
         q = q[:-1]
     builder = slide.Shapes.BuildFreeform(0, (q[0]["x"] - min_x) * scale, (q[0]["y"] - min_y) * scale)
+    arc_nodes = circle_arc_bezier_nodes(q, closed) if edge_locked else None
+    if arc_nodes:
+        for i in range(1, len(arc_nodes), 3):
+            c1, c2, end = arc_nodes[i:i + 3]
+            builder.AddNodes(1, 0,
+                             (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
+                             (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
+                             (end["x"] - min_x) * scale, (end["y"] - min_y) * scale)
+        return builder.ConvertToShape()
     if explicit_bezier and not closed and len(q) >= 4 and (len(q) - 1) % 3 == 0:
         for i in range(1, len(q), 3):
             c1, c2, end = q[i:i + 3]
@@ -100,18 +334,14 @@ def build_arrow_freeform(slide, points, min_x, min_y, scale, closed, curved=True
         return builder.ConvertToShape()
     segment_count = len(q) if closed else len(q) - 1
     for i in range(segment_count):
-        p0 = q[(i - 1) % len(q)] if closed else q[max(0, i - 1)]
         p1 = q[i]
         p2 = q[(i + 1) % len(q)]
-        p3 = q[(i + 2) % len(q)] if closed else q[min(len(q) - 1, i + 2)]
-        next_index = (i + 1) % len(q)
-        c1x = p1["x"] if point_is_sharp(point_kinds, i) else p1["x"] + (p2["x"] - p0["x"]) / 6
-        c1y = p1["y"] if point_is_sharp(point_kinds, i) else p1["y"] + (p2["y"] - p0["y"]) / 6
-        c2x = p2["x"] if point_is_sharp(point_kinds, next_index) else p2["x"] - (p3["x"] - p1["x"]) / 6
-        c2y = p2["y"] if point_is_sharp(point_kinds, next_index) else p2["y"] - (p3["y"] - p1["y"]) / 6
+        c1, c2 = curve_segment_controls(q, i, closed, point_kinds, point_smoothness,
+                                        point_angles, point_handle_angles, default_strength,
+                                        centerline_locked)
         builder.AddNodes(1, 0,
-                         (c1x - min_x) * scale, (c1y - min_y) * scale,
-                         (c2x - min_x) * scale, (c2y - min_y) * scale,
+                         (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
+                         (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
                          (p2["x"] - min_x) * scale, (p2["y"] - min_y) * scale)
     return builder.ConvertToShape()
 
@@ -230,20 +460,22 @@ def freeform_node_points(item):
     q = points[:-1] if closed and len(points) > 2 and abs(points[0]["x"] - points[-1]["x"]) < .01 and abs(points[0]["y"] - points[-1]["y"]) < .01 else points
     if item.get("explicitBezier") and not closed and len(q) >= 4 and (len(q) - 1) % 3 == 0:
         return q
-    if not bool(item.get("curved", True)):
+    if not bool(item.get("curved", True)) and not bool(item.get("centerlineLocked")):
         return q + ([q[0]] if closed else [])
+    arc_nodes = circle_arc_bezier_nodes(q, closed) if item.get("edgeLocked") else None
+    if arc_nodes:
+        return arc_nodes
     nodes = [q[0]]
     segment_count = len(q) if closed else len(q) - 1
     for i in range(segment_count):
-        p0 = q[(i - 1) % len(q)] if closed else q[max(0, i - 1)]
-        p1, p2 = q[i], q[(i + 1) % len(q)]
-        p3 = q[(i + 2) % len(q)] if closed else q[min(len(q) - 1, i + 2)]
-        next_index = (i + 1) % len(q)
+        p2 = q[(i + 1) % len(q)]
+        c1, c2 = curve_segment_controls(q, i, closed, item.get("pointKinds"),
+                                        item.get("pointSmoothness"), item.get("pointAngles"),
+                                        item.get("pointHandleAngles"), item.get("smoothnessDefault", 100),
+                                        bool(item.get("centerlineLocked")))
         nodes.extend([
-            {"x": p1["x"] if point_is_sharp(item.get("pointKinds"), i) else p1["x"] + (p2["x"] - p0["x"]) / 6,
-             "y": p1["y"] if point_is_sharp(item.get("pointKinds"), i) else p1["y"] + (p2["y"] - p0["y"]) / 6},
-            {"x": p2["x"] if point_is_sharp(item.get("pointKinds"), next_index) else p2["x"] - (p3["x"] - p1["x"]) / 6,
-             "y": p2["y"] if point_is_sharp(item.get("pointKinds"), next_index) else p2["y"] - (p3["y"] - p1["y"]) / 6},
+            c1,
+            c2,
             p2
         ])
     return nodes
@@ -571,16 +803,22 @@ def copy_native(payload, progress=None, copy_clipboard=True):
                 if len(pts) < 2:
                     continue
                 closed = bool(item.get("closed"))
-                curved = bool(item.get("curved", True))
+                curved = bool(item.get("curved", True)) or bool(item.get("centerlineLocked"))
                 try:
                     shape = build_arrow_freeform(slide, pts, min_x, min_y, scale, closed, curved,
-                                                 bool(item.get("explicitBezier")), item.get("pointKinds"))
+                                                 bool(item.get("explicitBezier")), item.get("pointKinds"),
+                                                 item.get("pointSmoothness"), item.get("pointAngles"),
+                                                 item.get("pointHandleAngles"), item.get("smoothnessDefault", 100),
+                                                 bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")))
                 except Exception:
                     # Some PowerPoint versions reject a cyclic cubic segment
                     # with E_INVALIDARG. Preserve editability and geometry by
                     # retrying the same nodes as a closed native freeform.
                     shape = build_arrow_freeform(slide, pts, min_x, min_y, scale, closed, False, False,
-                                                 item.get("pointKinds"))
+                                                 item.get("pointKinds"), item.get("pointSmoothness"),
+                                                 item.get("pointAngles"), item.get("pointHandleAngles"),
+                                                 item.get("smoothnessDefault", 100),
+                                                 bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")))
                 stage = "line color"
                 try:
                     shape.Line.ForeColor.RGB = rgb(item.get("color", "#596a73"))

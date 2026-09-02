@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v2';
+const CACHE_NAME = 'skechu-ppt-v3-tracing-tools';
 const APP_SHELL = [
   './',
   './index.html',

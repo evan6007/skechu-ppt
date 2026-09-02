@@ -36,9 +36,9 @@ On the Windows edition, select your vectors and choose **Copy to PPT** to paste 
 
 ## Why it feels different
 
-- **Magnetic centerline tracing** follows the middle of thick raster strokes instead of either fuzzy edge.
-- **Click-to-place anchors** keep the canvas quiet while a live preview follows the source line.
-- **Smooth or sharp per anchor** lets one path mix soft curves with deliberate corners.
+- **Magnetic boundary tracing** follows visible brightness and color transitions, so it works for filled shapes, patterns, shadows, and ordinary line art.
+- **Click-to-place anchors** show the orange magnetic candidate even before the first click; the live curve uses a three-to-four-point neighborhood and remains drawable across small broken edges.
+- **Curve amount and tangent controls per anchor** let one path mix soft curves, linked tangents, independently distant split handles, inward valleys without loops, outward bulges, and deliberate sharp corners.
 - **Precise joining** snaps endpoints to endpoints or to the middle of another path for branches and T-junctions.
 - **Segment-aware editing** inserts a new anchor exactly on the segment you selected.
 - **Drag-to-fill colors** fills closed vector regions from a reusable local palette.
