@@ -5,11 +5,12 @@
 <p align="center"><strong>Trace an image into clean, editable vectors—without learning a complicated design tool.</strong></p>
 
 <p align="center">
-  <a href="https://evan6007.github.io/skechu-ppt/"><img alt="Open Skechu-PPT Online" src="https://img.shields.io/badge/Open_Skechu_Online-000000?style=for-the-badge&logo=googlechrome&logoColor=white"></a>
-  <a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe"><img alt="Download for Windows" src="https://img.shields.io/badge/Download_for_Windows-7c3aed?style=for-the-badge&logo=windows11&logoColor=white"></a>
+  <a href="https://evan6007.github.io/skechu-ppt/"><img src="assets/brand/open-web-cta.svg" width="620" alt="Open Web — launch Skechu-PPT free in your browser. No installation or sign-in."></a>
 </p>
 
-<p align="center">No terminal. No account. Works on Windows, macOS, Linux, Chromebook, iPhone, iPad, and Android.</p>
+<p align="center"><strong>Click Open Web and start drawing.</strong><br>免安裝、免登入，打開網頁就能開始描圖。</p>
+
+<p align="center">Works on Windows, macOS, Linux, Chromebook, iPhone, iPad, and Android.<br>Need native editable PowerPoint layers? <a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe">Get the Windows installer →</a></p>
 
 <p align="center">
   <a href="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml/badge.svg"></a>
@@ -21,7 +22,7 @@
 
 | Your device | What to click | Best for |
 | --- | --- | --- |
-| Windows, macOS, Linux, Chromebook, phone, or tablet | **[Open the web app](https://evan6007.github.io/skechu-ppt/)** | Tracing, editing, `.skc` projects, and SVG export |
+| Most users — on computer, phone, or tablet | **[Open Web — recommended](https://evan6007.github.io/skechu-ppt/)** | Instant access to tracing, editing, `.skc` projects, and SVG export |
 | Windows 10/11 with desktop PowerPoint | **[Download the Windows installer](https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe)** | Everything above, plus native editable PowerPoint layers |
 
 Want it to feel like a normal app? The web edition can be added to your desktop, Dock, application launcher, or phone home screen. See the **[click-by-click installation guide](docs/install.md)**—no command line is required.
@@ -29,7 +30,7 @@ Want it to feel like a normal app? The web edition can be added to your desktop,
 ## Make your first trace
 
 1. Open Skechu-PPT and choose **Import image to start tracing**.
-2. Turn on the tracing pen, click to place anchors, and let magnetic tracing follow the center of the source line.
+2. Choose **自動描圖 (Auto trace)** to generate editable curves from a line-art reference, or use the tracing pen to follow visible boundaries by placing anchors yourself.
 3. Download the result as an editable **SVG**, or save the whole workspace as a portable **`.skc` project**.
 
 On the Windows edition, select your vectors and choose **Copy to PPT** to paste them into PowerPoint as separately editable native shapes.
@@ -37,6 +38,7 @@ On the Windows edition, select your vectors and choose **Copy to PPT** to paste 
 ## Why it feels different
 
 - **Magnetic boundary tracing** follows visible brightness and color transitions, so it works for filled shapes, patterns, shadows, and ordinary line art.
+- **Automatic line-art tracing** generates editable curves with connected T-junctions. The live preview shows actual anchors; dense curves can be simplified afterward without moving their shared endpoints.
 - **Click-to-place anchors** show the orange magnetic candidate even before the first click; the live curve uses a three-to-four-point neighborhood and remains drawable across small broken edges.
 - **Curve amount and tangent controls per anchor** let one path mix soft curves, linked tangents, independently distant split handles, inward valleys without loops, outward bulges, and deliberate sharp corners.
 - **Precise joining** snaps endpoints to endpoints or to the middle of another path for branches and T-junctions.
@@ -49,7 +51,7 @@ On the Windows edition, select your vectors and choose **Copy to PPT** to paste 
 
 | Feature | Web edition | Windows edition |
 | --- | :---: | :---: |
-| Magnetic tracing and anchor editing | ✓ | ✓ |
+| Manual and automatic tracing, anchor editing | ✓ | ✓ |
 | Local autosave | ✓ | ✓ |
 | Download and load `.skc` projects | ✓ | ✓ |
 | Export editable SVG | ✓ | ✓ |

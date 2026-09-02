@@ -1,6 +1,7 @@
 import importlib.util
 import math
 import pathlib
+from types import SimpleNamespace
 import unittest
 
 
@@ -18,6 +19,10 @@ class BridgePureFunctionTests(unittest.TestCase):
         self.assertEqual(self.bridge.rgb("#ff0000"), 255)
         self.assertEqual(self.bridge.rgb("#00ff00"), 65280)
         self.assertEqual(self.bridge.rgb("#0000ff"), 16711680)
+
+    def test_worker_mime_does_not_depend_on_windows_registry(self):
+        self.assertEqual(self.bridge.Handler.extensions_map[".js"], "text/javascript")
+        self.assertEqual(self.bridge.Handler.extensions_map[".css"], "text/css")
 
     def test_latex_subset_stays_editable_unicode(self):
         result = self.bridge.latex_to_unicode(r"V_{mem,t}=V_{mem,t-1}\cdot\beta+X")
@@ -91,6 +96,38 @@ class BridgePureFunctionTests(unittest.TestCase):
         self.assertAlmostEqual(outgoing["x"], 10)
         self.assertAlmostEqual(outgoing["y"], -30)
 
+    def test_native_builder_uses_explicit_controls_and_preserves_every_node(self):
+        positions = []
+
+        class Builder:
+            def AddNodes(self, segment, editing, *coords):
+                # Office's auto mode cannot accept manual cubic controls.
+                self_outer.assertEqual((segment, editing), (1, 1))
+                positions.extend(zip(coords[::2], coords[1::2]))
+
+            def ConvertToShape(self):
+                nodes = SimpleNamespace(Count=len(positions),
+                                        Item=lambda index: SimpleNamespace(Points=[positions[index-1]]))
+                return SimpleNamespace(Nodes=nodes)
+
+        self_outer = self
+
+        def start(editing, x, y):
+            self.assertEqual(editing, 1)
+            positions.append((x, y))
+            return Builder()
+
+        item = {"type":"arrow", "points":[{"x":0,"y":0},{"x":10,"y":10},{"x":20,"y":0}],
+                "closed":True, "pointHandleAngles":{"1":{"in":-80,"out":-100,"inLength":20,"outLength":30}}}
+        slide = SimpleNamespace(Shapes=SimpleNamespace(BuildFreeform=start))
+        self.bridge.build_arrow_freeform(slide, item["points"], -3, -4, .75, True,
+                                         point_handle_angles=item["pointHandleAngles"])
+        expected = self.bridge.freeform_node_points(item)
+        self.assertEqual(len(positions), len(expected))
+        for actual, point in zip(positions, expected):
+            self.assertAlmostEqual(actual[0], (point["x"]+3)*.75)
+            self.assertAlmostEqual(actual[1], (point["y"]+4)*.75)
+
     def test_magnetic_circle_samples_export_as_one_true_arc_model(self):
         points = [
             {"x": 100 + 80 * math.cos(math.pi + math.pi / 16 * i),
@@ -131,9 +168,11 @@ class BridgePureFunctionTests(unittest.TestCase):
                          for point in nodes[::3]]
         self.assertLess(max(radial_errors), 1e-6)
         item = {"type": "arrow", "points": points, "curved": True,
-                "centerlineLocked": True, "edgeLocked": True,
-                "pointAngles": {"2": 35}}
+                "centerlineLocked": True, "edgeLocked": True}
         self.assertEqual(len(self.bridge.freeform_node_points(item)), 13)
+        # A user's tangent edit must override automatic circle recognition.
+        item["pointAngles"] = {"2": 35}
+        self.assertEqual(len(self.bridge.freeform_node_points(item)), 73)
 
     def test_closing_rough_circle_keeps_the_same_circle_instead_of_spline_fallback(self):
         points = []

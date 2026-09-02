@@ -7,6 +7,25 @@ if (!scripts.length) throw new Error('No inline application script found.');
 for (const [, source] of scripts) {
   if (source.trim()) new Function(source);
 }
+const smoothing=fs.readFileSync(new URL('../app/local-smoothing.js',import.meta.url),'utf8');
+for(const file of ['auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css']){
+  const asset=fs.readFileSync(new URL('../app/'+file,import.meta.url),'utf8');
+  if(file.endsWith('.js'))new Function(asset);
+  if(!fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes('./'+file))throw new Error('Missing offline asset '+file);
+  if(!fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+file+';.'))throw new Error('Missing packaged asset '+file);
+}
+const regions=fs.readFileSync(new URL('../app/region-fill.js',import.meta.url),'utf8');
+new Function(regions);
+for(const marker of ['region-fill.js','fillBoundaryPath','fillNetworkFaces','materializeFillTarget','data-region-preview'])assertMarker(marker);
+function assertMarker(marker){if(!html.includes(marker))throw new Error(`Missing network fill integration: ${marker}`)}
+if(!fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes('./region-fill.js'))throw new Error('Missing offline region-fill asset');
+if(!fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/region-fill.js;.'))throw new Error('Missing packaged region-fill asset');
+new Function(smoothing);
+for(const marker of ['local-smoothing.js','局部順線','local-smooth-range','local-smooth-number','applyLocalSmoothing','syncLocalSmoothing']) {
+  if(!html.includes(marker))throw new Error(`Missing local smoothing integration: ${marker}`);
+}
+if(!fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes('./local-smoothing.js'))throw new Error('Missing offline smoothing asset');
+if(!fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/local-smoothing.js;.'))throw new Error('Missing packaged smoothing asset');
 
 const forbidden = [
   /SemaSNN/i,
@@ -38,7 +57,7 @@ for (const tangentControl of ['point-angle', 'pointAngles', 'pointTangentAngle',
   if (!html.includes(tangentControl)) throw new Error(`Missing per-anchor tangent marker: ${tangentControl}`);
 }
 
-for (const splitHandle of ['point-handles-split', 'pointHandleAngles', 'splitHandleAngles', 'splitHandleDelta', 'inLength', 'outLength', 'point-in-length', 'point-out-length', 'anchorHandleLengths', 'tangent-handle-hit', 'r="14"', '可自由拉到遠處', 'tangent-in', 'tangent-out', '內凹尖谷、不繞圈']) {
+for (const splitHandle of ['point-handles-split', 'pointHandleAngles', 'splitHandleAngles', 'splitHandleDelta', 'inLength', 'outLength', 'point-in-length', 'point-out-length', 'anchorHandleLengths', 'tangent-handle-hit', 'r="18"', '可自由拉到遠處', 'tangent-in', 'tangent-out', '內凹尖谷、不繞圈']) {
   if (!html.includes(splitHandle)) throw new Error(`Missing split Bézier handle marker: ${splitHandle}`);
 }
 

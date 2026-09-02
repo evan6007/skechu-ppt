@@ -1,7 +1,13 @@
-const CACHE_NAME = 'skechu-ppt-v3-tracing-tools';
+const CACHE_NAME = 'skechu-ppt-v11-actual-anchors';
 const APP_SHELL = [
   './',
   './index.html',
+  './local-smoothing.js',
+  './region-fill.js',
+  './auto-trace.js',
+  './auto-trace-ui.js',
+  './auto-trace-worker.js',
+  './auto-trace.css',
   './manifest.webmanifest',
   './skechu-mark.svg',
   './skechu-icon.png',

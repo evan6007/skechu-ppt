@@ -135,7 +135,7 @@ def split_handle_delta(points, index, side, closed=False, point_handle_angles=No
         return None
     explicit_length = False
     try:
-        length = max(4.0, min(600.0, float(handles[f"{side}Length"])))
+        length = max(0.0, min(600.0, float(handles[f"{side}Length"])))
         explicit_length = True
     except (KeyError, TypeError, ValueError):
         automatic = point_tangent_delta(points, index, closed, None)
@@ -305,45 +305,31 @@ def build_arrow_freeform(slide, points, min_x, min_y, scale, closed, curved=True
                          point_kinds=None, point_smoothness=None, point_angles=None,
                          point_handle_angles=None, default_strength=100, centerline_locked=False,
                          edge_locked=False):
-    q = list(points)
-    if closed and len(q) > 2 and abs(q[0]["x"] - q[-1]["x"]) < .01 and abs(q[0]["y"] - q[-1]["y"]) < .01:
-        q = q[:-1]
-    builder = slide.Shapes.BuildFreeform(0, (q[0]["x"] - min_x) * scale, (q[0]["y"] - min_y) * scale)
-    arc_nodes = circle_arc_bezier_nodes(q, closed) if edge_locked else None
-    if arc_nodes:
-        for i in range(1, len(arc_nodes), 3):
-            c1, c2, end = arc_nodes[i:i + 3]
-            builder.AddNodes(1, 0,
+    item = {"type": "arrow", "points": points, "closed": closed, "curved": curved,
+            "explicitBezier": explicit_bezier, "pointKinds": point_kinds,
+            "pointSmoothness": point_smoothness, "pointAngles": point_angles,
+            "pointHandleAngles": point_handle_angles, "smoothnessDefault": default_strength,
+            "centerlineLocked": centerline_locked, "edgeLocked": edge_locked}
+    nodes = freeform_node_points(item)
+    cubic = curved or centerline_locked or (explicit_bezier and not closed and
+                                           len(points) >= 4 and (len(points) - 1) % 3 == 0)
+    builder = slide.Shapes.BuildFreeform(1, (nodes[0]["x"] - min_x) * scale,
+                                         (nodes[0]["y"] - min_y) * scale)
+    if cubic:
+        for i in range(1, len(nodes), 3):
+            c1, c2, end = nodes[i:i + 3]
+            # Corner means explicit Bezier controls, not a visually sharp curve.
+            # Auto discards the controls and lets Office reshape the segment.
+            builder.AddNodes(1, 1,
                              (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
                              (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
                              (end["x"] - min_x) * scale, (end["y"] - min_y) * scale)
-        return builder.ConvertToShape()
-    if explicit_bezier and not closed and len(q) >= 4 and (len(q) - 1) % 3 == 0:
-        for i in range(1, len(q), 3):
-            c1, c2, end = q[i:i + 3]
-            builder.AddNodes(1, 0,
-                             (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
-                             (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
-                             (end["x"] - min_x) * scale, (end["y"] - min_y) * scale)
-        return builder.ConvertToShape()
-    if not curved:
-        for p in q[1:]:
-            builder.AddNodes(0, 0, (p["x"] - min_x) * scale, (p["y"] - min_y) * scale)
-        if closed:
-            builder.AddNodes(0, 0, (q[0]["x"] - min_x) * scale, (q[0]["y"] - min_y) * scale)
-        return builder.ConvertToShape()
-    segment_count = len(q) if closed else len(q) - 1
-    for i in range(segment_count):
-        p1 = q[i]
-        p2 = q[(i + 1) % len(q)]
-        c1, c2 = curve_segment_controls(q, i, closed, point_kinds, point_smoothness,
-                                        point_angles, point_handle_angles, default_strength,
-                                        centerline_locked)
-        builder.AddNodes(1, 0,
-                         (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
-                         (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
-                         (p2["x"] - min_x) * scale, (p2["y"] - min_y) * scale)
-    return builder.ConvertToShape()
+    else:
+        for point in nodes[1:]:
+            builder.AddNodes(0, 0, (point["x"] - min_x) * scale, (point["y"] - min_y) * scale)
+    shape = builder.ConvertToShape()
+    verify_freeform_nodes(shape, nodes, min_x, min_y, scale)
+    return shape
 
 
 def build_rounded_polygon(slide, points, min_x, min_y, scale, radius):
@@ -358,11 +344,11 @@ def build_rounded_polygon(slide, points, min_x, min_y, scale, radius):
         b = {"x": p["x"] + (nxt["x"] - p["x"]) * d / ln, "y": p["y"] + (nxt["y"] - p["y"]) * d / ln}
         corners.append((p, a, b))
     first = corners[0][1]
-    builder = slide.Shapes.BuildFreeform(0, (first["x"] - min_x) * scale, (first["y"] - min_y) * scale)
+    builder = slide.Shapes.BuildFreeform(1, (first["x"] - min_x) * scale, (first["y"] - min_y) * scale)
     for i, (p, a, b) in enumerate(corners):
         c1 = {"x": a["x"] + (p["x"] - a["x"]) * 2 / 3, "y": a["y"] + (p["y"] - a["y"]) * 2 / 3}
         c2 = {"x": b["x"] + (p["x"] - b["x"]) * 2 / 3, "y": b["y"] + (p["y"] - b["y"]) * 2 / 3}
-        builder.AddNodes(1, 0,
+        builder.AddNodes(1, 1,
                          (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
                          (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
                          (b["x"] - min_x) * scale, (b["y"] - min_y) * scale)
@@ -462,7 +448,8 @@ def freeform_node_points(item):
         return q
     if not bool(item.get("curved", True)) and not bool(item.get("centerlineLocked")):
         return q + ([q[0]] if closed else [])
-    arc_nodes = circle_arc_bezier_nodes(q, closed) if item.get("edgeLocked") else None
+    authored = any(item.get(key) for key in ("pointKinds", "pointSmoothness", "pointAngles", "pointHandleAngles"))
+    arc_nodes = circle_arc_bezier_nodes(q, closed) if item.get("edgeLocked") and not authored and not item.get("explicitBezier") else None
     if arc_nodes:
         return arc_nodes
     nodes = [q[0]]
@@ -481,6 +468,17 @@ def freeform_node_points(item):
     return nodes
 
 
+def verify_freeform_nodes(shape, nodes, min_x, min_y, scale, tolerance=.02):
+    """Reject Office geometry drift instead of silently copying a different shape."""
+    if shape.Nodes.Count != len(nodes):
+        raise ValueError("PowerPoint changed the freeform node count")
+    for index, point in enumerate(nodes, 1):
+        actual = shape.Nodes.Item(index).Points[0]
+        expected = ((point["x"] - min_x) * scale, (point["y"] - min_y) * scale)
+        if math.hypot(actual[0] - expected[0], actual[1] - expected[1]) > tolerance:
+            raise ValueError(f"PowerPoint changed freeform control point {index}")
+
+
 def update_freeform_shape(shape, item, min_x, min_y, scale):
     nodes = freeform_node_points(item)
     if shape.Nodes.Count != len(nodes):
@@ -488,14 +486,22 @@ def update_freeform_shape(shape, item, min_x, min_y, scale):
     for index, point in enumerate(nodes, 1):
         shape.Nodes.SetPosition(index, (point["x"] - min_x) * scale,
                                 (point["y"] - min_y) * scale)
+    # Moving an anchor may move its adjacent handles. Repair the final positions;
+    # if Office still changes them, the caller rebuilds with explicit controls.
+    for index in range(len(nodes), 0, -1):
+        point = nodes[index - 1]
+        shape.Nodes.SetPosition(index, (point["x"] - min_x) * scale,
+                                (point["y"] - min_y) * scale)
+    verify_freeform_nodes(shape, nodes, min_x, min_y, scale)
     kind = item.get("type")
     if kind == "arrow":
         closed = bool(item.get("closed"))
         shape.Line.ForeColor.RGB = rgb(item.get("color", "#596a73"))
         shape.Line.Weight = float(item.get("width", 3)) * scale
+        shape.Line.Visible = -1 if float(item.get("width", 3)) > 0 else 0
         shape.Line.DashStyle = 4 if item.get("style") == "dash" else 1
         arrow_style = {"triangle": 2, "stealth": 4, "diamond": 5, "circle": 6}.get(item.get("headShape"), 2)
-        if not closed:
+        if not closed and math.hypot(nodes[0]["x"]-nodes[-1]["x"], nodes[0]["y"]-nodes[-1]["y"]) > .01:
             shape.Line.BeginArrowheadStyle = arrow_style if item.get("startHead") else 1
             shape.Line.EndArrowheadStyle = arrow_style if item.get("endHead", True) else 1
         shape.Fill.Visible = -1 if closed else 0
@@ -804,31 +810,22 @@ def copy_native(payload, progress=None, copy_clipboard=True):
                     continue
                 closed = bool(item.get("closed"))
                 curved = bool(item.get("curved", True)) or bool(item.get("centerlineLocked"))
-                try:
-                    shape = build_arrow_freeform(slide, pts, min_x, min_y, scale, closed, curved,
-                                                 bool(item.get("explicitBezier")), item.get("pointKinds"),
-                                                 item.get("pointSmoothness"), item.get("pointAngles"),
-                                                 item.get("pointHandleAngles"), item.get("smoothnessDefault", 100),
-                                                 bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")))
-                except Exception:
-                    # Some PowerPoint versions reject a cyclic cubic segment
-                    # with E_INVALIDARG. Preserve editability and geometry by
-                    # retrying the same nodes as a closed native freeform.
-                    shape = build_arrow_freeform(slide, pts, min_x, min_y, scale, closed, False, False,
-                                                 item.get("pointKinds"), item.get("pointSmoothness"),
-                                                 item.get("pointAngles"), item.get("pointHandleAngles"),
-                                                 item.get("smoothnessDefault", 100),
-                                                 bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")))
+                shape = build_arrow_freeform(slide, pts, min_x, min_y, scale, closed, curved,
+                                             bool(item.get("explicitBezier")), item.get("pointKinds"),
+                                             item.get("pointSmoothness"), item.get("pointAngles"),
+                                             item.get("pointHandleAngles"), item.get("smoothnessDefault", 100),
+                                             bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")))
                 stage = "line color"
                 try:
                     shape.Line.ForeColor.RGB = rgb(item.get("color", "#596a73"))
                     stage = "line weight"
                     shape.Line.Weight = float(item.get("width", 3)) * scale
+                    shape.Line.Visible = -1 if float(item.get("width", 3)) > 0 else 0
                     stage = "line dash"
                     if item.get("style") == "dash":
                         shape.Line.DashStyle = 4
                     arrow_style = {"triangle": 2, "stealth": 4, "diamond": 5, "circle": 6}.get(item.get("headShape"), 2)
-                    if not closed:
+                    if not closed and math.hypot(pts[0]["x"]-pts[-1]["x"], pts[0]["y"]-pts[-1]["y"]) > .01:
                         stage = "begin arrowhead"
                         shape.Line.BeginArrowheadStyle = arrow_style if item.get("startHead") else 1
                         stage = "end arrowhead"
@@ -886,6 +883,13 @@ def copy_native(payload, progress=None, copy_clipboard=True):
 
 
 class Handler(SimpleHTTPRequestHandler):
+    # Windows registry MIME overrides may label .js as text/plain. Workers and
+    # service workers require a JavaScript MIME type even when classic scripts run.
+    extensions_map = {**SimpleHTTPRequestHandler.extensions_map,
+                      ".js": "text/javascript", ".mjs": "text/javascript",
+                      ".css": "text/css", ".svg": "image/svg+xml",
+                      ".webmanifest": "application/manifest+json"}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=BASE_DIR, **kwargs)
 

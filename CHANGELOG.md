@@ -6,6 +6,20 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Changed
 
+- Made Open Web the primary README entry point with a large, locally hosted browser-launch card; Windows installation is a secondary link for native PowerPoint integration.
+- Automatic-trace previews now show actual cyan anchors and per-curve anchor counts; red rings are explicitly labeled as review warnings. Added undoable simplification of existing dense curves, preserving shared junctions and cusps. Balanced fitting splits avoid peeling tiny segments off the ends of simple arcs.
+- Automatic tracing now draws visible blue pen curves immediately and updates them automatically when settings change, without a regenerate button. Preview and applied curves use the manual tracing pen's stroke style; stale worker results cannot be applied.
+- Automatic pen tracing defaults to broader, smoother cubic steps (2.5 px fitting tolerance, 90 step size). Sample positions are refined along each cubic before adding anchors, avoiding unnecessary short segments while retaining shared branch points.
+- Added local, worker-based automatic line-art tracing with adjustable ink threshold, fitting tolerance, simplification, and small-fragment filtering. Preview/apply/cancel preserves the reference and existing artwork; output is editable cubic paths, not a flattened bitmap.
+- Automatic T junctions retain shared anchor identities, independent branch controls, and aligned through-tangents. Moving a shared anchor updates its branches; explicit detachment is required before deleting it. Near gaps are flagged rather than bridged, and ambiguous crossings have persistent review markers and a next-review action.
+- Fixed Windows JavaScript MIME headers so background tracing and offline workers load reliably. Automatic tracing assets are included in the web cache and Windows package.
+- Dragged colors now recognize bounded regions formed by multiple paths and T junctions, with an exact-region hover preview. Filling creates a separate editable vector color shape without merging or replacing source paths; cubic boundaries and zero-width outlines are preserved in PowerPoint.
+- Ctrl+C now writes selected objects to the native PowerPoint clipboard on Windows while retaining an internal Skechu copy. Ctrl+V works in either application; text fields keep normal text copying and Ctrl+Shift+C remains an alias for native export.
+- Added local smoothing for marquee/Shift-selected anchors: a reversible 0–300 softness control, numeric entry, ±5 buttons, and reset. The original 0–100 range coordinates selected tangents; 100–300 extends the aligned handles for stronger roundness with segment-length limits. Anchor positions, unselected handles, endpoints, sharp corners, and inward cusps are preserved.
+- Selected anchors now use bright red with a white border. Visible anchors/handles and their invisible hit targets are larger but stay screen-sized at every zoom; overlapping hit targets select the nearest center and tangent leaders leave more separation.
+- Native PowerPoint curves now use explicit corner-mode Bézier controls instead of Office auto-smoothing, with node-coordinate verification after creation and cache updates. Failed curve creation no longer silently substitutes a polygon.
+- Anchor, magnetic-snap, split/linked tangent, and join helpers keep a constant screen size at every canvas zoom. Dashed tangent leaders leave a clear clickable gap around the anchor and separate overlapping handles.
+- Linked tangent handles now preserve dragged distance as well as angle. Automatic circle fitting respects manual tangent edits, and reversed paths retain handle lengths.
 - Magnetic tracing now snaps to brightness and color boundaries instead of assuming every source feature has a useful stroke centerline.
 - The canonical project file extension is now `.skc`; legacy `.sktc`, `.sketchou`, `.sketchou.json`, and `.json` files remain importable.
 - The default local port is now `8766` to avoid conflicts with earlier private builds.

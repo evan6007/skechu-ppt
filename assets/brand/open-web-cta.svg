@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="132" viewBox="0 0 620 132" role="img" aria-labelledby="title desc">
+  <title id="title">Open Web — start drawing in your browser</title>
+  <desc id="desc">Open Skechu-PPT instantly. Free, no installation, no sign-in.</desc>
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#6d28d9"/><stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#c4b5fd"/><stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="5" width="618" height="126" rx="24" fill="#312e81"/>
+  <rect x="1" y="1" width="618" height="126" rx="24" fill="url(#surface)" stroke="url(#edge)"/>
+  <rect x="25" y="30" width="70" height="70" rx="18" fill="#ffffff" fill-opacity=".12" stroke="#ffffff" stroke-opacity=".2"/>
+  <g fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="40" y="46" width="40" height="32" rx="5"/>
+    <path d="M40 55h40"/>
+    <path d="M47 51h1m4 0h1"/>
+    <path d="M48 70c8-15 12 13 24-8" stroke="#a5f3fc"/>
+  </g>
+  <g font-family="Segoe UI, Inter, Arial, sans-serif">
+    <text x="115" y="35" fill="#ddd6fe" font-size="11" font-weight="700" letter-spacing="2">START HERE · SKECHU-PPT</text>
+    <text x="113" y="76" fill="#fff" font-size="38" font-weight="700" letter-spacing="-.8">Open Web</text>
+    <text x="115" y="103" fill="#ede9fe" font-size="14">Free. No installation. No sign-in.</text>
+  </g>
+  <circle cx="562" cy="65" r="26" fill="#fff"/>
+  <path d="M552 65h20m-8-8 8 8-8 8" fill="none" stroke="#5b21b6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

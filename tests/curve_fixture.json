@@ -1,0 +1,28 @@
+{
+  "id": "curve-parity-fixture",
+  "name": "內凹與分離控制柄測試",
+  "type": "arrow",
+  "points": [{"x":80,"y":190},{"x":380,"y":60},{"x":680,"y":220},{"x":590,"y":240},{"x":195,"y":185},{"x":280,"y":330},{"x":235,"y":260}],
+  "closed": true,
+  "curved": true,
+  "edgeLocked": true,
+  "centerlineLocked": true,
+  "centerlineSmoothingVersion": 2,
+  "smoothnessDefault": 100,
+  "pointHandleAngles": {
+    "0":{"in":90,"out":-90,"inLength":80,"outLength":65},
+    "1":{"in":180,"out":0,"inLength":155,"outLength":155},
+    "2":{"in":-90,"out":90,"inLength":85,"outLength":55},
+    "3":{"in":90,"out":-90,"inLength":60,"outLength":100},
+    "4":{"in":-90,"out":90,"inLength":80,"outLength":60},
+    "5":{"in":-65,"out":-105,"inLength":70,"outLength":65},
+    "6":{"in":55,"out":-125,"inLength":40,"outLength":40}
+  },
+  "pointAngles": {},
+  "width":3,
+  "color":"#163f86",
+  "fill":"#ead9a0",
+  "fillOpacity":0.5,
+  "startHead":false,
+  "endHead":false
+}

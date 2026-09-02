@@ -1,0 +1,15 @@
+#auto-trace-dialog{box-sizing:border-box;width:min(960px,94vw);max-height:92vh;margin:28px auto;border:1px solid #d9ddec;border-radius:16px;padding:18px;color:#24313a;background:#fff;box-shadow:0 24px 90px #17203355}
+#auto-trace-dialog::backdrop{background:#17203388}
+.auto-trace-heading,.auto-trace-actions,.auto-trace-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.auto-trace-heading h2{font-size:20px;margin:0 0 4px}.auto-trace-heading p{font-size:12px;margin:0;color:#64748b}.auto-trace-heading button{flex:none}
+.auto-trace-options{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0}
+.auto-trace-options label{font-size:12px;display:flex;flex-direction:column;gap:5px}.auto-trace-options input{width:100%;height:30px}.auto-trace-options small{font-size:11px;color:#64748b;line-height:1.4}
+.auto-trace-actions{justify-content:flex-start;font-size:12px;flex-wrap:wrap}.auto-trace-actions label{display:flex;align-items:center;gap:4px}.auto-trace-actions input{width:auto}.auto-trace-actions span{margin-left:auto;color:#475569}
+.auto-trace-actions .auto-trace-legend{margin-left:0;color:#123f8c;display:flex;align-items:center;gap:6px}.auto-trace-legend::before{content:"";width:24px;border-top:3px solid #123f8c;border-radius:2px}
+#auto-trace-svg[aria-busy="true"] #auto-trace-lines,#auto-trace-svg[aria-busy="true"] #auto-trace-issues{opacity:.35}
+.auto-trace-predicted-line{cursor:pointer}.auto-trace-predicted-line:focus{outline:none;stroke:#7c3aed}
+.sparse-curve-controls{display:grid;gap:6px;margin:0 0 12px;padding:10px;border:1px solid #bae6fd;background:#f0f9ff;border-radius:10px;font-size:12px}.sparse-curve-controls small{color:#64748b;line-height:1.5}.sparse-curve-controls input{width:100%;min-width:0}
+.auto-trace-canvas{background:#f8fafc;border:1px solid #dce3ee;border-radius:10px;margin:12px 0;overflow:auto}
+#auto-trace-svg{display:block;width:100%;height:46vh;background:#fff}
+.auto-trace-footer{font-size:12px;color:#64748b;line-height:1.5}.auto-trace-footer button{flex:none;font-size:14px}
+@media(max-width:700px){.auto-trace-options{grid-template-columns:repeat(2,1fr);gap:8px}#auto-trace-svg{height:40vh}.auto-trace-footer{align-items:flex-start}}

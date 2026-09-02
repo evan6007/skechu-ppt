@@ -24,5 +24,15 @@ jobs:
         run: python -m compileall -q app tests
       - name: Check browser application syntax and privacy boundary
         run: node tests/check_app.mjs
+      - name: Check web-first README entry
+        run: node tests/check_entry.mjs
+      - name: Check SVG and native curve parity
+        run: node tests/check_curves.mjs
+      - name: Check clipboard shortcuts
+        run: node tests/check_clipboard.mjs
+      - name: Check connected-region filling
+        run: node tests/check_regions.mjs
+      - name: Check automatic tracing and junction topology
+        run: node tests/check_auto_trace.mjs
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
