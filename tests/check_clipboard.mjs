@@ -38,10 +38,11 @@ function node(id){if(!nodes.has(id))nodes.set(id,{hidden:false,textContent:'',da
 const ctx=vm.createContext({
   requestWebPptCopy:async(body,progress)=>{assert.deepEqual(JSON.parse(body).items,[{id:'a',type:'box'}]);progress({stage:'已連接本機服務',percent:10});return{ok:true,count:1}},
   location:{protocol:'https:'},
-  HAS_NATIVE_PPT_BRIDGE:true,pptCopyRunning:false,pptPrepareTimer:null,pptPrepareWanted:null,pptPreparedBody:null,traceDraft:null,
+  HAS_NATIVE_PPT_BRIDGE:true,pptCopyRunning:false,pptPrepareTimer:null,pptPrepareWanted:null,pptPreparedBody:null,pptPreparePromise:null,traceDraft:null,
+  queueNativePrepare(){},noteNativeCopy(){},
   selected:'a',selectedIds:new Set(['a']),items:[{id:'ref',referenceOnly:true},{id:'a',type:'box'}],
   document:{getElementById:node},clearTimeout(){},
-  exportableItems:items=>items.filter(it=>!it.referenceOnly),nativeBody:items=>JSON.stringify({items}),
+  exportableItems:items=>items.filter(it=>!it.referenceOnly),nativeRequestBody:items=>JSON.stringify({items}),
   fetch:async(url,options)=>{requestCount++;assert.equal(url,'/copy');assert.deepEqual(JSON.parse(options.body).items,[{id:'a',type:'box'}]);return{}},
   readNativeStream:async(response,progress)=>{progress({stage:'寫入剪貼簿',percent:96});if(failNative)throw new Error('PowerPoint unavailable');return {ok:true,count:1}},
   navigator:{clipboard:{write:async entries=>{if(failWrite)throw new Error('NotAllowedError');writes.push(await entries[0].data['image/png'])},writeText(){throw new Error('Must never clear existing clipboard')}}},

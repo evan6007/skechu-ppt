@@ -24,6 +24,33 @@ class BridgePureFunctionTests(unittest.TestCase):
         self.assertEqual(self.bridge.Handler.extensions_map[".js"], "text/javascript")
         self.assertEqual(self.bridge.Handler.extensions_map[".css"], "text/css")
 
+    def test_cache_context_isolation_lru_and_exception_restore(self):
+        bridge = self.bridge
+        original = bridge.STATE
+        closed = []
+        try:
+            for index in range(bridge.MAX_NATIVE_CACHES):
+                with bridge.native_cache_context(str(index)):
+                    bridge.STATE["cached_count"] = index
+                    bridge.STATE["presentation"] = SimpleNamespace(Close=lambda i=index: closed.append(i))
+            with bridge.native_cache_context("0"):
+                self.assertEqual(bridge.STATE["cached_count"], 0)
+            with self.assertRaises(RuntimeError):
+                with bridge.native_cache_context("new"):
+                    raise RuntimeError("test")
+            self.assertIs(bridge.STATE, original)
+            self.assertEqual(closed, [1], "Evict only least-recently-used app-owned scratch")
+            self.assertEqual(len(bridge.CACHE_STATES), bridge.MAX_NATIVE_CACHES)
+        finally:
+            bridge.CACHE_STATES.clear()
+
+    def test_ui_only_changes_do_not_invalidate_native_payload(self):
+        item = {"id": "a", "type": "box", "x": 5, "locked": True,
+                "name": "renamed", "layerGroup": {"collapsed": True}, "autoTraceBatch": "batch"}
+        payload = self.bridge.native_payload({"items": [item], "cacheId": "page"})
+        self.assertEqual(payload, {"items": [{"id": "a", "type": "box", "x": 5}], "cacheId": "page"})
+        self.assertTrue(item["locked"], "Canonicalization does not mutate the project")
+
     def test_latex_subset_stays_editable_unicode(self):
         result = self.bridge.latex_to_unicode(r"V_{mem,t}=V_{mem,t-1}\cdot\beta+X")
         self.assertIn("V", result)

@@ -40,23 +40,27 @@ async function copySelectionToClipboard() {
   bar.hidden = false; bar.value = 0;
   clipboardFeedback('正在複製到 PowerPoint', '正在建立可編輯物件，請等到「複製成功」再切到 PPT 貼上。');
   try {
-    const body = nativeBody(clipboardSelection());
+    const body = nativeRequestBody(clipboardSelection());
     const progress = event => {
       bar.value = event.percent || 0;
       const count = event.total ? ` ${event.current}/${event.total}` : '';
       clipboardFeedback('正在複製到 PowerPoint', `${event.stage}${count}（${event.percent || 0}%）；完成後再按 Ctrl+V。`);
     };
+    // Let the one already-running preparation finish; never queue obsolete versions ahead of a copy.
+    if(HAS_NATIVE_PPT_BRIDGE&&pptPreparePromise)await pptPreparePromise;
     const result = HAS_NATIVE_PPT_BRIDGE
       ? await readNativeStream(await fetch('/copy', {method:'POST', headers:{'Content-Type':'application/json'}, body}), progress)
       : await requestWebPptCopy(body, progress);
     if (!(result.count > 0)) throw new Error('PowerPoint 未回傳可複製物件');
-    pptPreparedBody = body; bar.value = 100;
-    clipboardFeedback('複製成功：可編輯 PPT 物件', `已寫入系統剪貼簿，共 ${result.count} 個物件。切到 PowerPoint 投影片，按 Ctrl+V；取消群組後可分別編輯。`, 'success');
+    noteNativeCopy(body,result); bar.value = 100;
+    const speed=result.cached?'快取':result.incremental?`更新 ${result.changed} 個改動`:'首次建立';
+    const timing=Number.isFinite(result.seconds)?`（${speed} ${result.seconds} 秒）`:'';
+    clipboardFeedback('複製成功：可編輯 PPT 物件', `已寫入系統剪貼簿，共 ${result.count} 個物件${timing}。切到 PowerPoint 投影片，按 Ctrl+V；取消群組後可分別編輯。`, 'success');
   } catch (error) {
     clipboardFeedback('沒有確認複製成功', `${error.message || error}。請確認新版 Windows 本機服務與桌面 PowerPoint 正常執行。若連接頁是 404，請更新本機版。此時剪貼簿可能仍是舊內容。`, 'error', !HAS_NATIVE_PPT_BRIDGE);
     // Do not erase the user's existing clipboard when Office reports an error.
   } finally {
-    bar.hidden = true; bar.value = 0; setClipboardBusy(false);
+    bar.hidden = true; bar.value = 0; setClipboardBusy(false); queueNativePrepare();
   }
 }
 async function copySelectionPicture() {

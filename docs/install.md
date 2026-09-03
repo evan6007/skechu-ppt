@@ -27,6 +27,8 @@ The Windows edition is required only for **Copy to PPT**, which creates separate
 
 No project download/reload is needed. Drawing data passes from your browser to the service on your own computer, not to GitHub or another server. The connection accepts only the approved opener window and site; **中斷連接** stops new requests. A copy already sent to PowerPoint may still finish.
 
+For background/incremental acceleration, use **v0.1.3 or later**. After updating, restart the local Skechu service, close the old connection popup, save your project and refresh Open Web, then connect again. Keep the popup open: it prepares the latest drawing after a short editing pause without modifying the clipboard. **快取就緒** means the current scene has been prepared. Copy feedback shows cache/incremental status and native-service elapsed time; browser round trips and waiting for an in-flight preparation may add time. Background preparation is a temporary performance cache, not a replacement for `.skc` backups.
+
 If the connection page does not open, allow popups for Skechu-PPT and retry. If it says **404**, update/restart the old Windows edition; if the page cannot connect, start the local service (default port **8766**). If you close the connection window, click Copy again to reconnect. Do not paste until a new success message appears: on failure the clipboard may still contain an older item. SVG download and explicit PNG copying remain available without the companion; PNG is not editable vector output.
 
 ### If you downloaded the source folder

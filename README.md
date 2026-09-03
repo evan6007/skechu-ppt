@@ -39,6 +39,8 @@ The toolbar also has **全選並複製** (select all and copy). Both editions ke
 
 Without the local Windows companion, download SVG, or explicitly choose **複製圖片到 PPT** for a PNG (not editable anchors). Failed native copying never silently substitutes a picture. Web Ctrl+C also keeps the internal Skechu copy.
 
+**Faster repeated copying (v0.1.3+)**: after connection, edits are prepared in the background when you pause for about 0.65 seconds. Look for **快取就緒** beside the PPT button. Only changed geometry is updated where possible; selecting/locking/collapsing layers does not rebuild it. Full-scene and partial-selection caches are separate. Preparation does not overwrite your clipboard. A first copy, a new/evicted selection, structural changes, or restarting PowerPoint can still require initial preparation.
+
 ## Why it feels different
 
 - **Magnetic boundary tracing** follows visible brightness and color transitions, so it works for filled shapes, patterns, shadows, and ordinary line art.

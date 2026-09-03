@@ -135,8 +135,9 @@
 <script src="pan-tool.js"></script>
 <script src="selection-controls.js?v=22-visibility-web-native"></script>
 <script src="layer-controls.js?v=22-visibility-web-native"></script>
-<script src="clipboard-controls.js?v=22-visibility-web-native"></script>
-<script src="web-ppt-client.js?v=22-web-native"></script>
+<script src="clipboard-controls.js?v=23-incremental"></script>
+<script src="web-ppt-client.js?v=23-incremental"></script>
+<script src="ppt-preparation.js?v=23-incremental"></script>
 <script src="auto-trace.js?v=17-file-worker"></script>
 <script src="auto-trace-ui.js?v=20-layer-groups"></script>
 <script>
@@ -200,8 +201,6 @@ function exportableItems(sourceItems=items){return sourceItems.filter(it=>!it.re
 function nativeBody(sourceItems=items){return JSON.stringify({items:paintSceneItems(exportableItems(sourceItems))})}
 async function readNativeStream(response,onProgress){if(!response.ok)throw new Error((await response.json().catch(()=>null))?.error||`PowerPoint bridge ${response.status}`);if(!response.body)throw new Error('瀏覽器不支援串流進度');const reader=response.body.getReader(),decoder=new TextDecoder;let buffer='',result=null;const accept=line=>{if(!line.trim())return;const event=JSON.parse(line);if(event.type==='progress')onProgress?.(event);else if(event.type==='result')result=event};while(true){const {value,done}=await reader.read();buffer+=decoder.decode(value||new Uint8Array,{stream:!done});const lines=buffer.split('\n');buffer=lines.pop();for(const line of lines)accept(line);if(done)break}if(buffer.trim())accept(buffer);if(!result?.ok)throw new Error(result?.error||'PowerPoint bridge failed');return result}
 function currentNativeItems(){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]);return ids.length?items.filter(it=>ids.includes(it.id)):items}
-function queueNativePrepare(){const nativeItems=exportableItems(items);if(!HAS_NATIVE_PPT_BRIDGE||!workspaceReady||!nativeItems.length||pptCopyRunning||pptAutoPrepareDisabled)return;clearTimeout(pptPrepareTimer);const body=nativeBody(nativeItems);if(body===pptPreparedBody)return;pptPrepareTimer=setTimeout(()=>{pptPrepareWanted=body;runNativePrepare()},1800)}
-async function runNativePrepare(){if(pptPrepareRunning)return;pptPrepareRunning=true;const status=document.getElementById('status'),bar=document.getElementById('ppt-progress');while(pptPrepareWanted&&pptPrepareWanted!==pptPreparedBody){const body=pptPrepareWanted;pptPrepareWanted=null;bar.hidden=false;bar.value=0;try{const response=await fetch('/prepare',{method:'POST',headers:{'Content-Type':'application/json'},body}),result=await readNativeStream(response,event=>{bar.value=event.percent||0;const count=event.total?` ${event.current}/${event.total}`:'';status.textContent=`背景準備 PPT：${event.stage}${count}（${event.percent}%）`});pptPreparedBody=body;pptAutoPrepareDisabled=false;bar.value=100;status.textContent=`PPT 已預先準備（${result.seconds??'?'} 秒）；現在按複製會立即完成`}catch(err){pptAutoPrepareDisabled=true;pptPrepareWanted=null;console.info('PowerPoint prewarm unavailable; on-demand copy remains enabled.');bar.hidden=true;bar.value=0}}pptPrepareRunning=false;setTimeout(()=>{if(!pptPrepareRunning){bar.hidden=true;bar.value=0}},1600)}
 function renderProjectNav(){
  const project=activeProject(),page=activePage(),select=document.getElementById('project-select');
  select.innerHTML=projects.map(p=>`<option value="${p.id}" ${p.id===activeProjectId?'selected':''}>${esc(p.name)}</option>`).join('');

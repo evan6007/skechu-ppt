@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v22-visibility-web-native';
+const CACHE_NAME = 'skechu-ppt-v23-incremental';
 const APP_SHELL = [
   './',
   './index.html',
@@ -10,9 +10,10 @@ const APP_SHELL = [
   './selection-controls.js?v=22-visibility-web-native',
   './layer-controls.js?v=22-visibility-web-native',
   './layer-controls.css?v=22-visibility-web-native',
-  './clipboard-controls.js?v=22-visibility-web-native',
-  './web-ppt-client.js?v=22-web-native',
-  './web-ppt-helper.js?v=22-web-native',
+  './clipboard-controls.js?v=23-incremental',
+  './web-ppt-client.js?v=23-incremental',
+  './web-ppt-helper.js?v=23-incremental',
+  './ppt-preparation.js?v=23-incremental',
   './web-ppt.html',
   './clipboard-controls.css?v=17-file-worker-r2',
   './paint-tools.css?v=22-visibility-web-native',

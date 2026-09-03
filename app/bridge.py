@@ -8,6 +8,8 @@ import sys
 import threading
 import time
 import webbrowser
+from collections import OrderedDict
+from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
@@ -20,6 +22,47 @@ PPT_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="skechu-ppt"
 STATE = {"app": None, "presentation": None, "cache_key": None, "cached_group": None,
          "cached_count": 0, "item_hashes": {}, "item_shapes": {}, "origin": None}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CACHE_STATES = OrderedDict()
+MAX_NATIVE_CACHES = 6
+
+
+@contextmanager
+def native_cache_context(cache_id):
+    """Bounded per-tab/page/selection cache; called only under LOCK on the COM worker."""
+    global STATE
+    if not cache_id:
+        yield
+        return
+    if not isinstance(cache_id, str) or len(cache_id) > 200:
+        raise ValueError("Invalid native cache identity")
+    previous = STATE
+    state = CACHE_STATES.pop(cache_id, None)
+    if state is None:
+        if len(CACHE_STATES) >= MAX_NATIVE_CACHES:
+            _, expired = CACHE_STATES.popitem(last=False)
+            pres = expired.get("presentation")
+            if pres is not None:
+                try:
+                    pres.Saved = True
+                    pres.Close()  # Only an app-owned hidden scratch presentation.
+                except Exception:
+                    pass
+        state = {"app": None, "presentation": None, "cache_key": None,
+                 "cached_group": None, "cached_count": 0, "item_hashes": {},
+                 "item_shapes": {}, "origin": None}
+    CACHE_STATES[cache_id] = state
+    STATE = state
+    try:
+        yield
+    finally:
+        STATE = previous
+
+
+def native_payload(payload):
+    # Layer organization and selection metadata do not change Office geometry.
+    ignored = {"locked", "layerGroup", "name", "autoTraceBatch"}
+    return {**payload, "items": [{k: v for k, v in item.items() if k not in ignored}
+                                 for item in payload.get("items", [])]}
 
 
 def rgb(hex_color):
@@ -559,7 +602,8 @@ def update_cached_shape(shape, item, min_x, min_y, scale):
 
 def copy_native(payload, progress=None, copy_clipboard=True):
     pythoncom.CoInitialize()
-    with LOCK:
+    payload = native_payload(payload)
+    with LOCK, native_cache_context(payload.get("cacheId")):
         started = time.perf_counter()
         last_progress = {"percent": -1, "stage": None}
 
@@ -596,6 +640,11 @@ def copy_native(payload, progress=None, copy_clipboard=True):
         min_x = min((b[0] for b in all_bounds), default=0)
         min_y = min((b[1] for b in all_bounds), default=0)
         scale = float(payload.get("scale") or next((item.get("pptScale") for item in selected if item.get("pptScale")), 0.75))
+        # Keep a cache's coordinate origin stable when an outermost anchor moves.
+        # Copying a group uses its actual bounds, not this internal coordinate offset.
+        cached_origin = STATE.get("origin")
+        if STATE.get("cached_group") is not None and cached_origin and cached_origin[2] == round(scale, 6):
+            min_x, min_y = cached_origin[:2]
         origin = (round(min_x, 6), round(min_y, 6), round(scale, 6))
         current_hashes = {str(item.get("id")): item_hash(item) for item in selected}
         if cache_key == STATE.get("cache_key") and STATE.get("cached_group") is not None:
@@ -646,6 +695,7 @@ def copy_native(payload, progress=None, copy_clipboard=True):
         old = STATE.get("presentation")
         if old is not None:
             try:
+                old.Saved = True
                 old.Close()
             except Exception:
                 pass

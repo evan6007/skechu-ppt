@@ -24,12 +24,50 @@ class NativePowerPointGeometryTests(unittest.TestCase):
         cls.fixture = json.loads((ROOT / "tests" / "curve_fixture.json").read_text(encoding="utf-8"))
 
     def tearDown(self):
-        pres = self.bridge.STATE.get("presentation")
-        if pres is not None:
-            pres.Saved = True
-            pres.Close()
+        for state in [self.bridge.STATE, *self.bridge.CACHE_STATES.values()]:
+            pres = state.get("presentation")
+            if pres is not None:
+                pres.Saved = True
+                pres.Close()
+        self.bridge.CACHE_STATES.clear()
         self.bridge.STATE.update(presentation=None, cache_key=None, cached_group=None,
                                  item_hashes={}, item_shapes={}, origin=None)
+
+    def test_incremental_caches_and_background_clipboard_isolation(self):
+        import win32clipboard
+        curves = [{"id": f"curve-{i}", "type": "arrow", "curved": True,
+                   "centerlineLocked": True, "explicitBezier": True, "width": 2,
+                   "color": "#123f8c", "startHead": False, "endHead": False,
+                   "points": [{"x": 100, "y": 20+i*4}, {"x": 140, "y": 5+i*4}, {"x": 190, "y": 20+i*4}]}
+                  for i in range(100)]
+        payload = {"items": curves, "cacheId": "qa:all"}
+        before = win32clipboard.GetClipboardSequenceNumber()
+        cold = self.bridge.copy_native(payload, copy_clipboard=False)
+        self.assertEqual(win32clipboard.GetClipboardSequenceNumber(), before)
+        warm = self.bridge.copy_native(payload, copy_clipboard=True)
+        self.assertTrue(warm["cached"])
+        before = win32clipboard.GetClipboardSequenceNumber()
+        # Moving the leftmost point changes the scene bounds, but only one native curve needs updating.
+        curves[0]["points"][0]["x"] -= 10
+        updated = self.bridge.copy_native(payload, copy_clipboard=False)
+        self.assertTrue(updated["incremental"])
+        self.assertEqual(updated["changed"], 1)
+        self.assertEqual(win32clipboard.GetClipboardSequenceNumber(), before)
+        self.bridge.copy_native({"items": curves[:1], "cacheId": "qa:selection"}, copy_clipboard=False)
+        self.bridge.copy_native({"items": curves[1:2], "cacheId": "qa:other-tab"}, copy_clipboard=False)
+        again = self.bridge.copy_native(payload, copy_clipboard=True)
+        self.assertTrue(again["cached"], "Partial copying and another tab must not evict the full scene")
+        with self.bridge.native_cache_context("qa:all"):
+            state = self.bridge.STATE
+            x, y, scale = state["origin"]
+            for curve in curves:
+                shape = state["cached_group"].GroupItems.Item(state["item_shapes"][curve["id"]][0])
+                self.bridge.verify_freeform_nodes(shape, self.bridge.freeform_node_points(curve), x, y, scale)
+            output = ROOT / ".codex-tmp" / "native-cache-qa"
+            output.mkdir(parents=True, exist_ok=True)
+            state["presentation"].Slides(1).Export(str(output / "curves.png"), "PNG", 1200, 900)
+        print("100-curve cache benchmark:", json.dumps({"coldPrepare": cold, "warmCopy": warm,
+              "onePointPrepare": updated, "fullCopyAfterOtherSelections": again}))
 
     def assert_native_matches(self, item):
         state = self.bridge.STATE

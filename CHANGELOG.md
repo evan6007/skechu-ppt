@@ -4,6 +4,14 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-09-03
+
+### Changed
+
+- Connected web sessions now prepare native PowerPoint shapes in the background after a 650 ms editing pause. Repeated/no-op renders do not rebuild; intermediate changes are coalesced and explicit copying takes priority over queued preparation. Preparation never writes the system clipboard.
+- Keep up to six native caches isolated by editor tab, page and full/partial selection so copying one object or using another tab does not replace the whole-scene cache. UI-only layer metadata no longer invalidates native shapes. Moving the outermost point keeps a stable internal origin and updates only the changed native curve.
+- Copy feedback now distinguishes cached copying, incremental updates and initial creation, with measured bridge time. Temporary preparation errors back off without permanently disabling on-demand copying. New connection sessions force a fresh helper document, avoiding stale popup handshakes.
+
 ## [0.1.2] - 2026-09-03
 
 ### Added
