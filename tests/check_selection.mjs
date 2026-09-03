@@ -39,6 +39,8 @@ const ctx=vm.createContext({
 ctx.byId=id=>ctx.items.find(it=>it.id===id);ctx.state=()=>JSON.stringify(ctx.items);
 ctx.commit=()=>{ctx.history.push(ctx.state());if(ctx.history.length>80)ctx.history.shift();ctx.future=[]};
 vm.runInContext(source,ctx);
+vm.runInContext(fs.readFileSync(new URL('../app/paint-layers.js',import.meta.url),'utf8'),ctx);
+vm.runInContext(html.split('\n').find(l=>l.startsWith("document.getElementById('image-locked').onchange=")),ctx);
 for(const name of ['moveFromBase','select']) vm.runInContext(html.split('\n').find(l=>l.startsWith('function '+name+'(')),ctx);
 const downStart=html.indexOf("svg.addEventListener('pointerdown',");
 vm.runInContext(html.slice(downStart,html.indexOf("svg.addEventListener('auxclick',",downStart)),ctx);
@@ -89,6 +91,38 @@ reset(['a','b']);down(event(250,250,{target:target('a')}));move(event(270,260));
 assert.deepEqual([...ctx.selectedIds],['a','b']);assert.equal(ctx.byId('a').x,180);assert.equal(ctx.byId('b').x,540,'Dragging a selected member moves the existing group');
 reset(['a']);down(event(250,250,{target:target('b'),shiftKey:true}));move(event(270,260));up(event(270,260));
 assert.equal(ctx.byId('a').x,180);assert.equal(ctx.byId('b').x,540,'Shift-select and drag moves both in the same gesture');
+
+// References are editable when unlocked; referenceOnly controls export, not locking.
+reset(['ref']);const referenceOriginal=ctx.state();
+down(event(100,100,{target:target('ref')}));move(event(130,120));up(event(130,120));
+assert.equal(ctx.state(),referenceOriginal,'Locked reference cannot move');
+ctx.select('ref');el('image-locked').onchange({target:{checked:false}});
+assert.equal(ctx.selected,'ref');assert.equal(ctx.byId('ref').locked,false);
+ctx.history=[];ctx.future=['redo'];const unlockedOriginal=ctx.state();
+down(event(100,100,{target:target('ref')}));move(event(130,120));up(event(130,120));
+assert.equal(ctx.byId('ref').x,30,'Unlocked reference moves directly with left drag');
+assert.equal(ctx.byId('ref').y,20);assert.equal(ctx.history.length,1);
+assert.deepEqual(plain(ctx.items.slice(1)),plain(seed.slice(1)),'Moving reference never changes traced vectors');
+ctx.items=JSON.parse(ctx.history.pop());assert.equal(ctx.state(),unlockedOriginal,'Reference move is undoable');
+assert.equal(ctx.byId('ref').referenceOnly,true,'Unlock never changes reference export exclusion');
+for(const corner of ['tl','tr','bl','br']) for(const r of [0,30,90]) {
+  reset(['ref']);Object.assign(ctx.byId('ref'),{locked:false,r});
+  const base=plain(ctx.byId('ref'));
+  down(event(100,100,{target:target(null,corner)}));move(event(160,135));up(event(160,135));
+  const expected=plain(ctx.resizedReference(base,corner,60,35));
+  for(const key of ['x','y','w','h'])assert.equal(ctx.byId('ref')[key],expected[key],corner+' uses rotated proportional resizing: '+key);
+  assert.equal(ctx.history.length,1);assert.deepEqual(plain(ctx.items.slice(1)),plain(seed.slice(1)));
+}
+reset(['ref']);ctx.byId('ref').locked=false;
+down(event(100,100,{target:target(null,'tr')}));move(event(170,100,{shiftKey:true}));up(event(170,100));
+assert.equal(ctx.byId('ref').w,1270);assert.equal(ctx.byId('ref').h,675,'Shift allows free image sizing');
+reset(['ref']);ctx.byId('ref').locked=false;const cancelRef=ctx.state();
+down(event(100,100,{target:target(null,'tl')}));move(event(170,140));ctx.finishSelectionGesture(null,true);
+assert.equal(ctx.state(),cancelRef);assert.equal(ctx.history.length,0);assert.deepEqual(plain(ctx.future),['redo']);
+el('image-locked').onchange({target:{checked:true}});const relocked=ctx.state();
+down(event(100,100,{target:target(null,'br')}));move(event(160,140));up(event(160,140));assert.equal(ctx.state(),relocked,'Relocking disables resize');
+assert.equal((ctx.imageSelectionMarkup({...reference,locked:false}).match(/data-handle=/g)||[]).length,4,'Unlocked image shows all four corners without an extra edit mode');
+assert.ok(!ctx.imageSelectionMarkup(reference).includes('data-handle='),'Locked image does not show misleading active handles');
 
 reset(['line']);ctx.selectedPoints=new Set([0,1]);ctx.selectedPoint=1;
 down(event(200,440,{target:target(null,'arrow-point',0),shiftKey:true}));up(event(200,440));
@@ -155,7 +189,7 @@ assert.match(html,/data-outline-only=/);assert.match(html,/items\.filter\(select
 assert.ok(!html.includes('左鍵拖空白可框選'),'Help text must match right-button marquee');
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
 for(const asset of ['paint-layers.js','paint-tools.js','paint-tools.css','selection-controls.js']) {
-  const versioned=asset+'?v='+(asset==='selection-controls.js'?'15-right-marquee':asset==='paint-layers.js'?'18-fill-order':'14-selection');
+  const versioned=asset+'?v='+(asset==='selection-controls.js'?'19-reference-unlock':asset==='paint-layers.js'?'18-fill-order':asset==='paint-tools.css'?'19-reference-unlock':'14-selection');
   assert.ok(html.includes('"'+versioned+'"'),'Changed runtime asset must bypass stale HTTP caches: '+asset);
   assert.ok(worker.includes("'./"+versioned+"'"),'Offline cache must use the same asset version: '+asset);
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v18-fill-order';
+const CACHE_NAME = 'skechu-ppt-v20-layer-groups';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,12 +7,14 @@ const APP_SHELL = [
   './paint-layers.js?v=18-fill-order',
   './paint-tools.js?v=14-selection',
   './pan-tool.js',
-  './selection-controls.js?v=15-right-marquee',
+  './selection-controls.js?v=19-reference-unlock',
+  './layer-controls.js?v=20-layer-groups',
+  './layer-controls.css?v=20-layer-groups',
   './clipboard-controls.js?v=17-file-worker',
   './clipboard-controls.css?v=17-file-worker-r2',
-  './paint-tools.css?v=14-selection',
+  './paint-tools.css?v=19-reference-unlock',
   './auto-trace.js?v=17-file-worker',
-  './auto-trace-ui.js?v=17-file-worker',
+  './auto-trace-ui.js?v=20-layer-groups',
   './auto-trace-worker.js',
   './auto-trace.css',
   './manifest.webmanifest',

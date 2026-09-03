@@ -64,6 +64,9 @@ context.items=transformed;context.syncAutoJunctions();
 const members=[...context.autoJunctionMembers().values()][0];context.selected=members[1].it.id;
 members[1].it.points[members[1].index]={x:80,y:90};context.syncAutoJunctions();
 for(const m of members)assert.deepEqual(JSON.parse(JSON.stringify(m.it.points[m.index])),{x:80,y:90},'Moving any T member moves the common anchor');
+members[0].it.locked=true;members[1].it.points[members[1].index]={x:100,y:110};context.syncAutoJunctions();
+for(const m of members)assert.deepEqual(JSON.parse(JSON.stringify(m.it.points[m.index])),{x:80,y:90},'Locked branch holds the shared junction in place');
+members[0].it.locked=false;
 const restored=JSON.parse(JSON.stringify(transformed));context.items=restored;context.autoJunctionPositions.clear();context.syncAutoJunctions();assert.equal([...context.autoJunctionMembers().values()][0].length,3,'Save/reload retains topology');
 delete context.items[1].pointJunctions[Object.keys(context.items[1].pointJunctions)[0]];
 assert.equal([...context.autoJunctionMembers().values()][0].length,2,'Detaching only one branch leaves the other members connected');
@@ -85,6 +88,7 @@ const review=context.transformAutoTraceItems({...result,issues:[{...result.items
 assert.ok(review.some(it=>Object.values(it.autoTraceReview||{}).includes('review')),'Review marks survive Apply and serialization');
 
 const nativeItems=context.transformAutoTraceItems({items:[...result.items,...c.items,sparseArc,sparseClosed]}, {x:0,y:0,w:100,h:100,r:0},100,100,'native',()=>`native-${seq++}`);
+assert.ok(nativeItems.every(it=>it.layerGroup?.id==='trace-native'&&it.layerGroup.collapsed),'Apply puts every predicted curve into one collapsed editable folder');
 const nativeCode='import sys,json;sys.path.insert(0,"app");import bridge;print(json.dumps([bridge.freeform_node_points(it) for it in json.load(sys.stdin)]))';
 const native=spawnSync(process.env.PYTHON||'python',['-X','utf8','-c',nativeCode],{cwd:root,input:JSON.stringify(nativeItems),encoding:'utf8'});assert.equal(native.status,0,native.stderr);
 const nativeNodes=JSON.parse(native.stdout);

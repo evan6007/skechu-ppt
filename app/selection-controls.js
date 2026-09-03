@@ -19,7 +19,12 @@ function clearSelectionState(refresh = true) {
   document.getElementById('context-menu').hidden = true;
   if (refresh) { refreshSelectionUI(); document.getElementById('status').textContent = '已取消全部選取'; }
 }
-function selectableOnCanvas(it) { return !!it && !it.locked && !it.referenceOnly; }
+function selectableOnCanvas(it) { return !!it && !it.locked; }
+function imageSelectionMarkup(it) {
+  const corners = [['tl', it.x, it.y], ['tr', it.x + it.w, it.y], ['bl', it.x, it.y + it.h], ['br', it.x + it.w, it.y + it.h]];
+  const handles = it.locked ? '' : corners.map(([key, x, y]) => `<circle class="handle image-resize-hit" data-handle="${key}" cx="${x}" cy="${y}" r="18"/><circle class="handle image-resize-dot" cx="${x}" cy="${y}" r="7"/>`).join('');
+  return `<g transform="rotate(${it.r || 0} ${it.x + it.w / 2} ${it.y + it.h / 2})"><rect class="selected-outline" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}"/>${handles}</g>`;
+}
 function ownsSelectionPointer(event) { return !drag || drag.pointerId === event.pointerId; }
 function registerSelectionGesture(event, before, capture = svg) {
   Object.assign(drag, {pointerId: event.pointerId, startClient: {x: event.clientX, y: event.clientY},

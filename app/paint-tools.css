@@ -19,6 +19,8 @@
 body .palette-drag-ghost{transform:translate(20px,20px)}
 .stage .handle[data-handle="tl"],.stage .handle[data-handle="br"]{cursor:nwse-resize}
 .stage .handle[data-handle="tr"],.stage .handle[data-handle="bl"]{cursor:nesw-resize}
+.stage .image-resize-hit,.stage .image-resize-hit:hover{fill:transparent;stroke:transparent;pointer-events:all}
+.stage .image-resize-dot{fill:#fff;stroke:#0284c7;pointer-events:none}
 .tool-icon svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .stage-wrap.hand-tool,.stage-wrap.hand-tool .stage,.stage-wrap.hand-tool .stage *{cursor:grab;touch-action:none;user-select:none}
 .stage-wrap.hand-dragging,.stage-wrap.hand-dragging .stage,.stage-wrap.hand-dragging .stage *{cursor:grabbing}

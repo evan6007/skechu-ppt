@@ -88,7 +88,7 @@ function transformAutoTraceItems(result,ref,w,h,batch,makeId){
  const sx=ref.w/w,sy=ref.h/h,angle=(ref.r||0)*Math.PI/180,cx=ref.x+ref.w/2,cy=ref.y+ref.h/2;
  const transform=p=>{const x=ref.x+p.x*sx-cx,y=ref.y+p.y*sy-cy;return{x:cx+x*Math.cos(angle)-y*Math.sin(angle),y:cy+x*Math.sin(angle)+y*Math.cos(angle)}};
  const created=result.items.map((source,index)=>{
-  const it=deepCopy(source);it.id=makeId();it.name=`自動描圖 ${index+1}`;it.autoTraceBatch=batch;Object.assign(it,tracePenStrokeStyle());
+  const it=deepCopy(source);it.id=makeId();it.name=`自動描圖 ${index+1}`;it.autoTraceBatch=batch;it.layerGroup={id:'trace-'+batch,name:'自動描圖',collapsed:true};Object.assign(it,tracePenStrokeStyle());
   for(const [key,handle] of Object.entries(it.pointHandleAngles)){const p=source.points[key],anchor=transform(p);for(const side of ['in','out']){const a=handle[side]*Math.PI/180,c=transform({x:p.x+Math.cos(a)*handle[side+'Length'],y:p.y+Math.sin(a)*handle[side+'Length']}),dx=c.x-anchor.x,dy=c.y-anchor.y;handle[side]=Math.atan2(dy,dx)*180/Math.PI;handle[side+'Length']=Math.hypot(dx,dy)}}
   it.points=source.points.map(transform);it.pointJunctions=Object.fromEntries(Object.entries(it.pointJunctions).map(([i,key])=>[i,`${batch}-${key}`]));return it;
  });
@@ -115,7 +115,7 @@ function mergeAutoTraceProperties(a,b,merged,offset){
 function syncAutoJunctions(){
  const groups=autoJunctionMembers();for(const key of autoJunctionPositions.keys())if(!groups.has(key))autoJunctionPositions.delete(key);
  for(const [key,members] of groups){
-  const prior=autoJunctionPositions.get(key),changed=prior?members.filter(m=>Math.hypot(m.p.x-prior.x,m.p.y-prior.y)>.001):[],chosen=changed.find(m=>m.it.id===selected)||changed[0]||members[0],p={...chosen.p};
+  const prior=autoJunctionPositions.get(key),changed=prior?members.filter(m=>Math.hypot(m.p.x-prior.x,m.p.y-prior.y)>.001):[],chosen=members.find(m=>m.it.locked)||changed.find(m=>m.it.id===selected)||changed[0]||members[0],p={...chosen.p};
   for(const member of members)member.it.points[member.index]={...p};autoJunctionPositions.set(key,p);
  }
 }

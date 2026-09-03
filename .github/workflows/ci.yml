@@ -36,6 +36,8 @@ jobs:
         run: node tests/check_paint_tools.mjs
       - name: Check selection and gesture behavior
         run: node tests/check_selection.mjs
+      - name: Check layer folders and drag ordering
+        run: node tests/check_layers.mjs
       - name: Check automatic tracing and junction topology
         run: node tests/check_auto_trace.mjs
       - name: Run unit tests
