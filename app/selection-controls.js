@@ -19,7 +19,7 @@ function clearSelectionState(refresh = true) {
   document.getElementById('context-menu').hidden = true;
   if (refresh) { refreshSelectionUI(); document.getElementById('status').textContent = '已取消全部選取'; }
 }
-function selectableOnCanvas(it) { return !!it && !it.locked; }
+function selectableOnCanvas(it) { return !!it && !it.locked && !it.hidden; }
 function imageSelectionMarkup(it) {
   const corners = [['tl', it.x, it.y], ['tr', it.x + it.w, it.y], ['bl', it.x, it.y + it.h], ['br', it.x + it.w, it.y + it.h]];
   const handles = it.locked ? '' : corners.map(([key, x, y]) => `<circle class="handle image-resize-hit" data-handle="${key}" cx="${x}" cy="${y}" r="18"/><circle class="handle image-resize-dot" cx="${x}" cy="${y}" r="7"/>`).join('');

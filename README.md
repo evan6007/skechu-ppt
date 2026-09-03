@@ -35,7 +35,9 @@ Want it to feel like a normal app? The web edition can be added to your desktop,
 
 On the Windows edition, select your vectors and choose **Copy to PPT** to paste them into PowerPoint as separately editable native shapes.
 
-The toolbar also has **全選並複製** (select all and copy). Both editions keep the PPT button visible, with a persistent success/error message. On the web edition, choose **複製圖片到 PPT** to copy a PNG (not editable anchors), or download the selected PNG/SVG. For native editable objects, save the `.skc` project and load it in the Windows edition. Web Ctrl+C keeps the internal Skechu copy and opens these options; it does not pretend to have copied Office shapes.
+The toolbar also has **全選並複製** (select all and copy). Both editions keep the PPT button visible, with a persistent success/error message. **The web editor can copy directly to native editable PowerPoint shapes on Windows**: install/start Skechu-PPT **v0.1.2 or later**, click **複製到 PPT** (or Ctrl+C), and approve the local connection window with **允許連接**. Keep that small window open, wait for **複製成功**, then press Ctrl+V in desktop PowerPoint. You keep drawing on the website—no `.skc` transfer is needed. See the [connection guide](docs/install.md#copy-from-open-web-directly-to-powerpoint).
+
+Without the local Windows companion, download SVG, or explicitly choose **複製圖片到 PPT** for a PNG (not editable anchors). Failed native copying never silently substitutes a picture. Web Ctrl+C also keeps the internal Skechu copy.
 
 ## Why it feels different
 
@@ -48,7 +50,8 @@ The toolbar also has **全選並複製** (select all and copy). Both editions ke
 - **Continuous paint bucket** (`B`) fills closed vector regions, including T-junction regions, with repeated clicks. Drag-and-drop swatches still work. The most recently painted fill sits above older fills, while all vector outlines stay on top. This order is shared by the editor, SVG and PowerPoint, including cached native copies.
 - **Hand tool** (`H`): choose **拖移** beside the selection tool and drag with the left mouse button to pan the canvas without moving objects or anchors. Use `V` / Escape to return to selection, or **適合** to recenter.
 - **Predictable selection**: left-drag an object to move it; right-drag to marquee-select objects or anchors, with Shift to add. A right-click without dragging keeps the context menu. Left-click blank canvas or checkerboard space to deselect. Shift-click toggles selection, and marquee selection excludes locked references. Clicks and small pointer movements do not consume Undo or discard Redo; Escape cancels an active drag or clears selection.
-- **Layer folders**: automatic tracing creates one collapsed, expandable folder per batch (including existing projects). Shift-select layers and choose **建立群組** to organize your own folders, or **移出群組** to remove members. Drag the left grip to reorder a layer or folder; drop a layer in a folder header's center to add it. The right-hand lock toggles one layer or the entire folder. Curves remain separately editable; grouping, locks and order survive `.skc` save/reload and support Undo. References stay below artwork and fills stay below outlines.
+- **Layer folders**: automatic tracing creates one collapsed, expandable folder per batch (including existing projects). Shift-select layers and choose **建立群組** to organize your own folders, or **移出群組** to remove members. Drag the left grip to reorder a layer or folder; drop a layer in a folder header's center to add it. The right-hand eye shows/hides one layer or the entire folder, independently of its lock. Hidden items remain saved but cannot be selected on the canvas and are excluded from exports. Curves remain separately editable; grouping, visibility, locks and order survive `.skc` save/reload and support Undo. References stay below artwork and fills stay below outlines.
+- **Always-visible layers panel**: the right sidebar reserves its upper two thirds for tools and its lower third for layers, with independent scrolling in each section.
 - **Reference color picker** (`I`) samples the original image color with a magnifier beside the cursor. Sampling from the bucket returns you to continuous filling.
 - **Mouse-resizable reference image**: unlock the reference in the inspector to drag it directly and resize from any of its four corners. Corners keep proportions by default; hold Shift for free sizing. Locked references show only their outline. **調整底圖大小** remains a shortcut for adjusting only the reference without unlocking it. Neither workflow moves traced vectors; Undo is supported and references remain excluded from exports.
 - **Portable projects** use the short `.skc` extension and can move between devices.
@@ -63,9 +66,9 @@ The toolbar also has **全選並複製** (select all and copy). Both editions ke
 | Download and load `.skc` projects | ✓ | ✓ |
 | Export editable SVG | ✓ | ✓ |
 | Install as an app | ✓ | ✓ |
-| Copy native editable layers to PowerPoint | — | ✓ |
+| Copy native editable layers to PowerPoint | ✓ with Windows companion | ✓ |
 
-The native PowerPoint bridge uses Windows COM automation, so **Copy to PPT is Windows-only**. macOS, Linux, and mobile users still get the complete browser editor and SVG workflow.
+The native PowerPoint bridge uses Windows COM automation, so **Copy to PPT is Windows-only**, including when drawing in the web editor. It requires desktop PowerPoint and the running local companion. macOS, Linux, and mobile users still get the complete browser editor and SVG workflow.
 
 ## Your work stays yours
 

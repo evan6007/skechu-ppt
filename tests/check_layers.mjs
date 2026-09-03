@@ -65,6 +65,23 @@ reset();const clones=plain(ctx.items.filter(it=>it.autoTrace));ctx.cloneLayerGro
 assert.equal(ctx.layerGroupOf(clones[0]).id,ctx.layerGroupOf(clones[1]).id);assert.notEqual(ctx.layerGroupOf(clones[0]).id,'trace-old-batch','Pasted group does not merge with original');
 assert.deepEqual(clones[0].points,seed[2].points,'Grouping never flattens or changes anchors');
 reset();ctx.selected='t2';ctx.selectedIds=new Set(['t2']);ctx.nudgeSelectedLayers('below');assert.equal(ids().indexOf('t2')+1,ids().indexOf('t1'),'Existing reorder buttons share group ordering');
+reset();const visibleBefore=JSON.stringify(ctx.items);ctx.selected='t2';ctx.selectedIds=new Set(['a','t1','t2']);
+ctx.toggleLayerVisibility('group:trace-old-batch');assert.ok(ctx.byId('t1').hidden&&ctx.byId('t2').hidden);
+assert.deepEqual([...ctx.selectedIds],['a']);assert.equal(ctx.selected,'a','Hiding selection clears invisible handles');
+assert.equal(ctx.history[0],visibleBefore);assert.ok(!ctx.paintSceneItems(ctx.items).some(it=>it.id==='t1'),'Hidden lines never render or export');
+ctx.items=JSON.parse(JSON.stringify(ctx.items));assert.ok(ctx.byId('t2').hidden,'Visibility survives project save/reload');
+ctx.toggleLayerVisibility('item:t1');assert.equal(ctx.byId('t1').hidden,false);assert.equal(ctx.byId('t2').hidden,true);
+assert.ok(ctx.layerRowMarkup('group:trace-old-batch',ctx.layerMembers('group:trace-old-batch'),ctx.layerGroupOf(ctx.byId('t1'))).includes('部分隱藏'));
+ctx.toggleLayerVisibility('group:trace-old-batch');assert.ok(ctx.byId('t1').hidden&&ctx.byId('t2').hidden,'Mixed eye click hides whole folder');
+ctx.toggleLayerVisibility('group:trace-old-batch');assert.ok(!ctx.byId('t1').hidden&&!ctx.byId('t2').hidden);
+ctx.toggleLayerVisibility('item:ref');assert.equal(ctx.byId('ref').locked,true);assert.equal(ctx.byId('ref').hidden,true,'Eye works independently of lock');
+ctx.toggleLayerVisibility('item:a');assert.ok(!ctx.paintSceneItems(ctx.items).some(it=>it.id==='a'||it.paintSourceId==='a'),'Hide removes both color fill and outline');
+ctx.items=JSON.parse(ctx.history.pop());assert.equal(ctx.byId('a').hidden,undefined,'Undo restores visibility');
+vm.runInContext(html.split('\n').find(l=>l.startsWith('function exportableItems(')),ctx);
+assert.ok(!ctx.exportableItems().some(it=>it.referenceOnly||it.hidden),'Native and SVG copying omit hidden items');
+const layerCss=fs.readFileSync(new URL('../app/layer-controls.css',import.meta.url),'utf8');
+assert.ok(layerCss.includes('grid-template-rows:minmax(0,2fr) minmax(0,1fr)'));
+assert.ok(html.includes('class="inspector-tools"')&&html.includes('class="inspector-layers"'),'Tools and layers have independent scroll containers');
 assert.ok(!ctx.layerRowMarkup('item:a',[{...a,name:'<img onerror="bad">'}]).includes('<img'),'Layer labels escape HTML');
 // Exercise the actual drag event handlers, including cancellation and pointer ownership.
 reset();ctx.initializeLayerControls();let hovered=null;
@@ -78,8 +95,8 @@ events.get('layers:pointermove:false')(event(85));events.get('layers:pointerup:f
 reset();events.get('layers:pointerdown:false')(event(20,{target:{closest:()=>grip}}));events.get('layers:pointermove:false')(event(85));ctx.finishLayerPointer(true);
 assert.deepEqual(ids(),seed.map(it=>it.id));assert.equal(ctx.history.length,0,'Cancel leaves order and Undo untouched');
 for(const asset of ['layer-controls.js','layer-controls.css']){
-  assert.ok(html.includes(asset+'?v=20-layer-groups'));
-  assert.ok(fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes(asset+'?v=20-layer-groups'));
+  assert.ok(html.includes(asset+'?v=22-visibility-web-native'));
+  assert.ok(fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes(asset+'?v=22-visibility-web-native'));
   assert.ok(fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+asset+';.'));
 }
 assert.match(html,/cloneLayerGroups\(clones\)/);assert.match(html,/initializeLayerControls\(\)/);

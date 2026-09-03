@@ -36,6 +36,9 @@ jobs:
             --add-data "app/layer-controls.css;." `
             --add-data "app/clipboard-controls.js;." `
             --add-data "app/clipboard-controls.css;." `
+            --add-data "app/web-ppt-client.js;." `
+            --add-data "app/web-ppt-helper.js;." `
+            --add-data "app/web-ppt.html;." `
             --add-data "app/paint-tools.css;." `
             --add-data "app/auto-trace.js;." `
             --add-data "app/auto-trace-ui.js;." `
@@ -50,7 +53,7 @@ jobs:
       - name: Smoke-test packaged application
         shell: pwsh
         run: |
-          $process = Start-Process -FilePath dist/Skechu-PPT/Skechu-PPT.exe -ArgumentList '--no-open-browser','--port','8877' -PassThru
+          $process = Start-Process -FilePath dist/Skechu-PPT/Skechu-PPT.exe -ArgumentList '--no-open-browser','--port','8877' -PassThru -WindowStyle Hidden
           try {
             $ready = $false
             foreach ($attempt in 1..40) {
@@ -61,6 +64,10 @@ jobs:
               } catch {}
             }
             if (-not $ready) { throw 'Packaged Skechu-PPT did not start.' }
+            foreach ($asset in @('web-ppt.html','web-ppt-helper.js','web-ppt-client.js','layer-controls.js','layer-controls.css')) {
+              $assetResponse = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:8877/$asset" -TimeoutSec 2
+              if ($assetResponse.StatusCode -ne 200) { throw "Missing packaged asset: $asset" }
+            }
           } finally {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
           }

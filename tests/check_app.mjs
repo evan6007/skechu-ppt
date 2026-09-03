@@ -8,7 +8,7 @@ for (const [, source] of scripts) {
   if (source.trim()) new Function(source);
 }
 const smoothing=fs.readFileSync(new URL('../app/local-smoothing.js',import.meta.url),'utf8');
-for(const file of ['auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css','paint-layers.js','paint-tools.js','paint-tools.css','pan-tool.js','selection-controls.js','layer-controls.js','layer-controls.css','clipboard-controls.js','clipboard-controls.css']){
+for(const file of ['auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css','paint-layers.js','paint-tools.js','paint-tools.css','pan-tool.js','selection-controls.js','layer-controls.js','layer-controls.css','clipboard-controls.js','web-ppt-client.js','web-ppt-helper.js','web-ppt.html','clipboard-controls.css']){
   const asset=fs.readFileSync(new URL('../app/'+file,import.meta.url),'utf8');
   if(file.endsWith('.js'))new Function(asset);
   if(!fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes('./'+file))throw new Error('Missing offline asset '+file);
@@ -31,7 +31,7 @@ const forbidden = [
   /SemaSNN/i,
   /hippocamp/i,
   /Figure\s+[2b]/i,
-  /(?:fetch|src|href)\s*[=(]\s*['"]https?:\/\/(?!127\.0\.0\.1|localhost)/i,
+  /(?:fetch|src|href)\s*[=(]\s*['"]https?:\/\/(?!127\.0\.0\.1|localhost|github\.com\/evan6007\/skechu-ppt\/releases\/latest\/download\/Skechu-PPT-Windows-Setup\.exe)/i,
 ];
 for (const pattern of forbidden) {
   if (pattern.test(html)) throw new Error(`Forbidden private or remote reference: ${pattern}`);

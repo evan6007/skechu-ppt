@@ -123,6 +123,7 @@ el('image-locked').onchange({target:{checked:true}});const relocked=ctx.state();
 down(event(100,100,{target:target(null,'br')}));move(event(160,140));up(event(160,140));assert.equal(ctx.state(),relocked,'Relocking disables resize');
 assert.equal((ctx.imageSelectionMarkup({...reference,locked:false}).match(/data-handle=/g)||[]).length,4,'Unlocked image shows all four corners without an extra edit mode');
 assert.ok(!ctx.imageSelectionMarkup(reference).includes('data-handle='),'Locked image does not show misleading active handles');
+reset(['a']);ctx.byId('a').hidden=true;assert.equal(ctx.selectableOnCanvas(ctx.byId('a')),false,'Invisible items cannot be dragged or marquee-selected');
 
 reset(['line']);ctx.selectedPoints=new Set([0,1]);ctx.selectedPoint=1;
 down(event(200,440,{target:target(null,'arrow-point',0),shiftKey:true}));up(event(200,440));
@@ -189,7 +190,7 @@ assert.match(html,/data-outline-only=/);assert.match(html,/items\.filter\(select
 assert.ok(!html.includes('左鍵拖空白可框選'),'Help text must match right-button marquee');
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
 for(const asset of ['paint-layers.js','paint-tools.js','paint-tools.css','selection-controls.js']) {
-  const versioned=asset+'?v='+(asset==='selection-controls.js'?'19-reference-unlock':asset==='paint-layers.js'?'18-fill-order':asset==='paint-tools.css'?'19-reference-unlock':'14-selection');
+  const versioned=asset+'?v=22-visibility-web-native';
   assert.ok(html.includes('"'+versioned+'"'),'Changed runtime asset must bypass stale HTTP caches: '+asset);
   assert.ok(worker.includes("'./"+versioned+"'"),'Offline cache must use the same asset version: '+asset);
 }

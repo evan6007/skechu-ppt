@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skechu-PPT 本機連接</title>
+<style>body{margin:0;background:#f5f3ff;color:#172033;font:15px/1.6 system-ui,"Microsoft JhengHei",sans-serif}main{margin:24px;padding:24px;background:white;border:1px solid #ddd6fe;border-radius:16px}h1{font-size:22px;margin:0 0 12px}p{margin:12px 0}strong{color:#6d28d9}button{padding:10px 16px;border:1px solid #c4b5fd;border-radius:8px;background:white;cursor:pointer;font:inherit}#allow{background:#6d28d9;color:white}button:disabled{opacity:.45;cursor:default}#status{padding:12px;background:#f3f4f6;border-radius:8px;overflow-wrap:anywhere}progress{width:100%}.muted{font-size:12px;color:#667085}code{overflow-wrap:anywhere} [hidden]{display:none}</style></head>
+<body><main><h1>連接桌面 PowerPoint</h1><p>允許 <strong id="site">Skechu 網頁版</strong> 透過這個視窗，把你選取的線圖複製成<strong>可編輯 PPT 物件</strong>。</p>
+<p class="muted">只在這台 Windows 電腦處理，不上傳圖形。需要已安裝桌面 PowerPoint。允許後，保留此視窗；回網頁按「複製到 PPT」，再到 PowerPoint 按 Ctrl+V。</p>
+<button id="allow" type="button" disabled>允許連接</button> <button id="disconnect" type="button" hidden>中斷連接</button>
+<p id="status" role="status">正在確認來源…</p><progress id="progress" max="100" value="0" hidden></progress>
+<p class="muted">關閉視窗或按「中斷連接」即撤銷此連接。本機版需包含這個連接頁面；無須搬移或重新載入網頁作品。</p></main><script src="web-ppt-helper.js?v=22-web-native"></script></body></html>

@@ -1,6 +1,7 @@
 /* One paint order for the editor, SVG and native PowerPoint.
  * Keep editable source objects intact; split only their rendered appearance. */
 function renderedFillIsVisible(it) {
+  if (it.hidden) return false;
   const opacity = it.type === 'arrow' ? (it.closed ? (it.fillOpacity ?? .25) : 0) : (it.opacity ?? 1);
   return ['arrow', 'box', 'ellipse', 'polygon'].includes(it.type) && opacity > 0 && !['none', 'transparent', ''].includes(it.fill);
 }
@@ -14,6 +15,7 @@ function topFilledItem(sourceItems) {
 function paintSceneItems(sourceItems) {
   const reference = [], fills = [], foreground = [];
   for (const it of sourceItems) {
+    if (it.hidden) continue;
     if (it.referenceOnly) { reference.push(it); continue; }
     const arrow = it.type === 'arrow';
     const fillable = arrow ? it.closed : ['box', 'ellipse', 'polygon'].includes(it.type);

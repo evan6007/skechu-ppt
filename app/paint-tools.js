@@ -47,6 +47,7 @@ function activateReferenceResize() {
   if (paintTool === 'reference') { activateSelectTool(); return; }
   const current = byId(selected), ref = current?.referenceOnly ? current : items.find(it => it.type === 'image' && it.referenceOnly);
   if (!ref) { paintStatus('請先匯入描圖底圖'); return; }
+  if (ref.hidden) { paintStatus('底圖目前隱藏；先按圖層旁的眼睛顯示，再調整大小'); return; }
   setPaintTool('reference'); setOnlySelected(ref.id); render();
   paintStatus('調整底圖：拖四角等比例縮放，拖中央移動；Shift 可自由縮放。只改底圖，Esc 完成');
 }
@@ -67,7 +68,7 @@ function finishReferenceDrag(cancel = false) {
 
 async function activateColorPicker() {
   if (paintTool === 'picker') { activateSelectTool(); return; }
-  const refs = items.filter(it => it.type === 'image' && it.referenceOnly);
+  const refs = items.filter(it => it.type === 'image' && it.referenceOnly && !it.hidden);
   if (!refs.length) { paintStatus('請先匯入底圖，再使用「底圖取色」；一般顏色仍可從色框選擇'); return; }
   const returnMode = paintTool === 'bucket' ? 'bucket' : null;
   setPaintTool('picker'); colorPickerReturn = returnMode;

@@ -18,6 +18,17 @@ You do not need Git, Python, or a terminal to use the web edition.
 
 The Windows edition is required only for **Copy to PPT**, which creates separately editable native PowerPoint layers. The early preview installer is not yet code-signed, so Windows SmartScreen may show **Windows protected your PC**. If you downloaded it from this repository, choose **More info → Run anyway**.
 
+### Copy from Open Web directly to PowerPoint
+
+1. Install **v0.1.2 or later** from the Windows download above. Open **Skechu-PPT** once to start its local service, and leave it running. Desktop PowerPoint must be installed.
+2. Keep drawing in [Open Web](https://evan6007.github.io/skechu-ppt/). Select objects and click **複製到 PPT**, press Ctrl+C, or use **全選並複製**.
+3. The first copy opens **Skechu-PPT 本機連接**. Check that its site is `https://evan6007.github.io`, then click **允許連接**. Leave this small window open for subsequent copies.
+4. Wait until the website says **複製成功：可編輯 PPT 物件**. Switch to a desktop PowerPoint slide and press Ctrl+V. Ungroup when needed to edit individual shapes; traced curves retain their editable nodes.
+
+No project download/reload is needed. Drawing data passes from your browser to the service on your own computer, not to GitHub or another server. The connection accepts only the approved opener window and site; **中斷連接** stops new requests. A copy already sent to PowerPoint may still finish.
+
+If the connection page does not open, allow popups for Skechu-PPT and retry. If it says **404**, update/restart the old Windows edition; if the page cannot connect, start the local service (default port **8766**). If you close the connection window, click Copy again to reconnect. Do not paste until a new success message appears: on failure the clipboard may still contain an older item. SVG download and explicit PNG copying remain available without the companion; PNG is not editable vector output.
+
 ### If you downloaded the source folder
 
 Double-click **啟動Skechu-PPT.cmd** in the repository folder. It starts the local service and opens the editor at `http://127.0.0.1:8766/` (requires Python on the source-code edition). Do not use `app/index.html` as the native PowerPoint launcher: a `file://` tab cannot connect to Office automatically. Direct-file auto tracing is supported, but native copying still needs the local service.

@@ -28,7 +28,7 @@ function setClipboardBusy(busy) {
 async function copySelectionToClipboard() {
   if (pptCopyRunning) return;
   if (!validateClipboardSelection()) return;
-  if (!HAS_NATIVE_PPT_BRIDGE) {
+  if (!HAS_NATIVE_PPT_BRIDGE && location.protocol === 'file:') {
     const fromFile = location.protocol === 'file:';
     clipboardFeedback(fromFile ? '目前直接開啟 HTML，尚未連接 PPT 服務' : '網頁版：請選擇貼上方式', fromFile
       ? '目前尚未寫入系統剪貼簿。請先「另存專案給本機版」，雙擊專案資料夾的「啟動Skechu-PPT.cmd」，再載入 .skc 複製可編輯物件。也可選擇複製圖片，但不是可編輯錨點。'
@@ -41,17 +41,19 @@ async function copySelectionToClipboard() {
   clipboardFeedback('正在複製到 PowerPoint', '正在建立可編輯物件，請等到「複製成功」再切到 PPT 貼上。');
   try {
     const body = nativeBody(clipboardSelection());
-    const response = await fetch('/copy', {method:'POST', headers:{'Content-Type':'application/json'}, body});
-    const result = await readNativeStream(response, event => {
+    const progress = event => {
       bar.value = event.percent || 0;
       const count = event.total ? ` ${event.current}/${event.total}` : '';
       clipboardFeedback('正在複製到 PowerPoint', `${event.stage}${count}（${event.percent || 0}%）；完成後再按 Ctrl+V。`);
-    });
+    };
+    const result = HAS_NATIVE_PPT_BRIDGE
+      ? await readNativeStream(await fetch('/copy', {method:'POST', headers:{'Content-Type':'application/json'}, body}), progress)
+      : await requestWebPptCopy(body, progress);
     if (!(result.count > 0)) throw new Error('PowerPoint 未回傳可複製物件');
     pptPreparedBody = body; bar.value = 100;
     clipboardFeedback('複製成功：可編輯 PPT 物件', `已寫入系統剪貼簿，共 ${result.count} 個物件。切到 PowerPoint 投影片，按 Ctrl+V；取消群組後可分別編輯。`, 'success');
   } catch (error) {
-    clipboardFeedback('沒有確認複製成功', `${error.message || error}。請確認 Windows 本機版與桌面 PowerPoint 正常執行，並關閉 PowerPoint 的對話框後重試。此時剪貼簿可能仍是舊內容。`, 'error');
+    clipboardFeedback('沒有確認複製成功', `${error.message || error}。請確認新版 Windows 本機服務與桌面 PowerPoint 正常執行。若連接頁是 404，請更新本機版。此時剪貼簿可能仍是舊內容。`, 'error', !HAS_NATIVE_PPT_BRIDGE);
     // Do not erase the user's existing clipboard when Office reports an error.
   } finally {
     bar.hidden = true; bar.value = 0; setClipboardBusy(false);
@@ -85,8 +87,8 @@ async function downloadClipboardSelection(asPng) {
 function initializeClipboardControls() {
   const copy = document.getElementById('copy-ppt');
   copy.hidden = false; copy.removeAttribute('aria-hidden');
-  copy.title = HAS_NATIVE_PPT_BRIDGE ? '複製選取的可編輯物件到 PowerPoint（Ctrl+C）' : '選擇圖片複製／向量下載；原生 PPT 物件需 Windows 本機版';
-  document.getElementById('copy-ppt-mode').textContent = HAS_NATIVE_PPT_BRIDGE ? '可編輯物件' : location.protocol === 'file:' ? '尚未連接服務' : '網頁版選項';
+  copy.title = HAS_NATIVE_PPT_BRIDGE ? '複製選取的可編輯物件到 PowerPoint（Ctrl+C）' : '透過本機連接視窗複製可編輯 PPT 物件；需要 Windows 與桌面 PowerPoint';
+  document.getElementById('copy-ppt-mode').textContent = HAS_NATIVE_PPT_BRIDGE ? '可編輯物件' : location.protocol === 'file:' ? '尚未連接服務' : '連接桌面 PPT';
   document.getElementById('file-entry-notice').hidden = location.protocol !== 'file:';
   copy.onclick = copySelectedObjects;
   document.getElementById('copy-all-ppt').onclick = () => {

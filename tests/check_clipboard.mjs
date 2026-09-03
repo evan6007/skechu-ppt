@@ -36,6 +36,7 @@ const source=fs.readFileSync(new URL('../app/clipboard-controls.js',import.meta.
 const nodes=new Map(),writes=[],downloads=[];let requestCount=0,failNative=false,failWrite=false;
 function node(id){if(!nodes.has(id))nodes.set(id,{hidden:false,textContent:'',dataset:{},disabled:false,setAttribute(){},removeAttribute(){},click(){this.onclick?.()}});return nodes.get(id)}
 const ctx=vm.createContext({
+  requestWebPptCopy:async(body,progress)=>{assert.deepEqual(JSON.parse(body).items,[{id:'a',type:'box'}]);progress({stage:'已連接本機服務',percent:10});return{ok:true,count:1}},
   location:{protocol:'https:'},
   HAS_NATIVE_PPT_BRIDGE:true,pptCopyRunning:false,pptPrepareTimer:null,pptPrepareWanted:null,pptPreparedBody:null,traceDraft:null,
   selected:'a',selectedIds:new Set(['a']),items:[{id:'ref',referenceOnly:true},{id:'a',type:'box'}],
@@ -61,8 +62,10 @@ node('select-all').onclick=()=>{ctx.selected='a';ctx.selectedIds=new Set(['a'])}
 // The button starts the async request synchronously; wait for its completion.
 await new Promise(resolve=>setTimeout(resolve,0));assert.equal(requestCount,countBefore+1);
 ctx.HAS_NATIVE_PPT_BRIDGE=false;ctx.initializeClipboardControls();await ctx.copySelectionToClipboard();
-assert.equal(node('copy-ppt').hidden,false);assert.match(node('copy-ppt-mode').textContent,/網頁版/);
-assert.equal(node('clipboard-web-actions').hidden,false);assert.match(node('clipboard-message').textContent,/尚未寫入系統剪貼簿/);
+assert.equal(node('copy-ppt').hidden,false);assert.match(node('copy-ppt-mode').textContent,/連接桌面/);
+assert.match(node('clipboard-title').textContent,/成功.*可編輯/);
+ctx.requestWebPptCopy=async()=>{throw new Error('本機連接視窗被阻擋')};await ctx.copySelectionToClipboard();
+assert.equal(node('clipboard-web-actions').hidden,false);assert.match(node('clipboard-message').textContent,/本機連接視窗被阻擋/);
 assert.equal(writes.length,0,'Never silently downgrade native shapes into a bitmap');
 await ctx.copySelectionPicture();assert.deepEqual(writes,['png']);assert.match(node('clipboard-title').textContent,/PNG 圖片/);
 assert.match(node('clipboard-message').textContent,/不是可編輯錨點/);

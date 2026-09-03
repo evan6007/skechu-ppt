@@ -4,6 +4,14 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-03
+
+### Added
+
+- Web-to-native PowerPoint copying through a user-approved localhost companion window. Repeated copies stay in Open Web, preserve native curve nodes and fill order, and report real clipboard results. Exact site/window/channel checks, payload validation, disconnect controls and timeout handling protect the connection. The updated Windows installer includes the companion.
+- Eye controls for individual layers and folders, independent of locks. Hidden artwork remains saved, supports Undo, cannot be hit on the canvas, and is excluded from filling and exports.
+- Independently scrolling right-sidebar sections: tools occupy the upper two thirds; layers stay visible in the lower third.
+
 ### Changed
 
 - Made Open Web the primary README entry point with a large, locally hosted browser-launch card; Windows installation is a secondary link for native PowerPoint integration.

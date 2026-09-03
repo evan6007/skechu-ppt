@@ -26,16 +26,20 @@ function layerMembers(key) {
 }
 function layerIcon(kind) {
   const paths = {lock:'M7 10V7a5 5 0 0 1 10 0v3 M5 10h14v11H5z M12 14v3',unlock:'M7 10V7a5 5 0 0 1 9-3 M5 10h14v11H5z M12 14v3',folder:'M3 6h7l2 3h9v11H3z',grip:'M8 5h1 M15 5h1 M8 12h1 M15 12h1 M8 19h1 M15 19h1'};
+  paths.eye='M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0';
+  paths.eyeOff='M3 3l18 18 M9 5.4A11 11 0 0 1 12 5c6 0 10 7 10 7a22 22 0 0 1-4 4 M6 6.5A23 23 0 0 0 2 12s4 7 10 7a12 12 0 0 0 4-.7 M10 10a3 3 0 0 0 4 4';
   return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[kind]}"/></svg>`;
 }
 function layerRowMarkup(key, members, group = null, child = false) {
   const name = group?.name || members[0].name, all = members.every(it => selectedIds.has(it.id)), some = members.some(it => selectedIds.has(it.id));
   const locked = members.every(it => it.locked), mixed = !locked && members.some(it => it.locked);
+  const hidden = members.every(it=>it.hidden), partialHidden = !hidden && members.some(it=>it.hidden);
   const safeKey = esc(key), safeName = esc(name);
-  return `<div class="layer-entry ${child?'layer-child':''} ${all?'active':some?'partial':''} ${locked?'is-locked':''}" data-layer-key="${safeKey}">
+  return `<div class="layer-entry ${child?'layer-child':''} ${all?'active':some?'partial':''} ${locked?'is-locked':''} ${hidden?'is-hidden':''}" data-layer-key="${safeKey}">
     <button type="button" class="layer-grip" data-layer-drag="${safeKey}" aria-label="拖曳排序：${safeName}" title="拖曳上下排序；放到群組中央可加入" ${members.some(it=>it.locked)?'disabled':''}>${layerIcon('grip')}</button>
     ${group?`<button type="button" class="layer-fold" data-layer-fold="${safeKey}" aria-label="${group.collapsed?'展開':'收合'}：${safeName}" aria-expanded="${!group.collapsed}">${group.collapsed?'▸':'▾'}</button>`:'<span class="layer-fold-space"></span>'}
     <button type="button" class="layer-name" ${group?`data-layer-group="${safeKey}"`:`data-layer="${esc(members[0].id)}"`} title="${safeName}" aria-pressed="${all}">${group?layerIcon('folder'):`<i class="dot ${esc(members[0].type)}"></i>`}<span>${safeName}</span>${group?`<small>${members.length}</small>`:''}</button>
+    <button type="button" class="layer-eye ${hidden?'eye-off':partialHidden?'mixed':''}" data-layer-visibility="${safeKey}" aria-label="${hidden?'顯示':'隱藏'}：${safeName}" aria-pressed="${!hidden}" title="${partialHidden?'部分隱藏；點一下隱藏整組':hidden?'顯示圖層':'隱藏圖層（匯出時也排除）'}">${layerIcon(hidden?'eyeOff':'eye')}</button>
     <button type="button" class="layer-lock ${locked?'locked':mixed?'mixed':''}" data-layer-lock="${safeKey}" aria-label="${locked?'解除鎖定':'鎖定'}：${safeName}" aria-pressed="${locked}" title="${mixed?'部分鎖定；點一下鎖定整組':locked?'點一下解除鎖定':'點一下鎖定'}">${layerIcon(locked?'lock':'unlock')}</button>
   </div>`;
 }
@@ -75,6 +79,16 @@ function toggleLayerLock(key) {
   activateSelectTool(); commit(); const locked = !members.every(it=>it.locked);
   members.forEach(it=>it.locked=locked); selectedPoint=selectedSegment=null;selectedPoints.clear();
   render(); paintStatus(`已${locked?'鎖定':'解鎖'} ${members.length} 個圖層${locked?'；再次點鎖頭即可解除':'；可在畫布直接拖曳'}`);
+}
+function toggleLayerVisibility(key) {
+  const members=layerMembers(key);if(!members.length)return;
+  activateSelectTool();commit();const hidden=!members.every(it=>it.hidden);
+  members.forEach(it=>it.hidden=hidden);
+  selectedIds=new Set([...selectedIds].filter(id=>!byId(id)?.hidden));
+  if(byId(selected)?.hidden)selected=[...selectedIds].at(-1)||null;
+  selectedPoint=selectedSegment=null;selectedPoints.clear();
+  snapLines=[];snapAnchors=[];hotAnchor=traceSnapTarget=null;
+  render();paintStatus(`已${hidden?'隱藏':'顯示'} ${members.length} 個圖層；資料仍保留，隱藏圖層不會匯出`);
 }
 function moveLayerEntry(sourceKey, targetKey, position) {
   const moving = layerMembers(sourceKey), targets = layerMembers(targetKey);
@@ -139,7 +153,8 @@ function initializeLayerControls() {
   host.onclick=event=>{
     if(suppressLayerClick){suppressLayerClick=false;return;}
     const button=event.target.closest('button');if(!button)return;
-    if(button.dataset.layerLock)toggleLayerLock(button.dataset.layerLock);
+    if(button.dataset.layerVisibility)toggleLayerVisibility(button.dataset.layerVisibility);
+    else if(button.dataset.layerLock)toggleLayerLock(button.dataset.layerLock);
     else if(button.dataset.layerFold)toggleLayerFolder(button.dataset.layerFold);
     else if(button.dataset.layerGroup)selectLayerGroup(button.dataset.layerGroup,event.shiftKey);
     else if(button.dataset.layer)selectLayerFromEvent(event,button.dataset.layer);
