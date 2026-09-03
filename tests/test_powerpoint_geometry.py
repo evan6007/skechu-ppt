@@ -1,7 +1,8 @@
 """Opt-in integration test: SKECHU_TEST_POWERPOINT=1 python -m unittest discover -s tests.
 
-Uses a separate hidden scratch presentation; never copies to the clipboard or
-closes an existing user presentation. Preview files stay under .codex-tmp.
+Uses separate hidden scratch presentations; never closes a user presentation.
+The clipboard benchmark additionally requires SKECHU_TEST_CLIPBOARD=1 and copies
+test curves to the system clipboard. Other tests do not copy. Previews stay under .codex-tmp.
 """
 import copy
 import importlib.util
@@ -33,6 +34,7 @@ class NativePowerPointGeometryTests(unittest.TestCase):
         self.bridge.STATE.update(presentation=None, cache_key=None, cached_group=None,
                                  item_hashes={}, item_shapes={}, origin=None)
 
+    @unittest.skipUnless(os.environ.get("SKECHU_TEST_CLIPBOARD") == "1", "explicit clipboard benchmark opt-in")
     def test_incremental_caches_and_background_clipboard_isolation(self):
         import win32clipboard
         curves = [{"id": f"curve-{i}", "type": "arrow", "curved": True,
