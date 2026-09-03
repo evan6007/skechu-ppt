@@ -35,6 +35,8 @@ Want it to feel like a normal app? The web edition can be added to your desktop,
 
 On the Windows edition, select your vectors and choose **Copy to PPT** to paste them into PowerPoint as separately editable native shapes.
 
+The toolbar also has **全選並複製** (select all and copy). Both editions keep the PPT button visible, with a persistent success/error message. On the web edition, choose **複製圖片到 PPT** to copy a PNG (not editable anchors), or download the selected PNG/SVG. For native editable objects, save the `.skc` project and load it in the Windows edition. Web Ctrl+C keeps the internal Skechu copy and opens these options; it does not pretend to have copied Office shapes.
+
 ## Why it feels different
 
 - **Magnetic boundary tracing** follows visible brightness and color transitions, so it works for filled shapes, patterns, shadows, and ordinary line art.
@@ -43,8 +45,9 @@ On the Windows edition, select your vectors and choose **Copy to PPT** to paste 
 - **Curve amount and tangent controls per anchor** let one path mix soft curves, linked tangents, independently distant split handles, inward valleys without loops, outward bulges, and deliberate sharp corners.
 - **Precise joining** snaps endpoints to endpoints or to the middle of another path for branches and T-junctions.
 - **Segment-aware editing** inserts a new anchor exactly on the segment you selected.
-- **Continuous paint bucket** (`B`) fills closed vector regions, including T-junction regions, with repeated clicks. Drag-and-drop swatches still work. Fills stay below all vector outlines in the editor, SVG and PowerPoint.
+- **Continuous paint bucket** (`B`) fills closed vector regions, including T-junction regions, with repeated clicks. Drag-and-drop swatches still work. The most recently painted fill sits above older fills, while all vector outlines stay on top. This order is shared by the editor, SVG and PowerPoint, including cached native copies.
 - **Hand tool** (`H`): choose **拖移** beside the selection tool and drag with the left mouse button to pan the canvas without moving objects or anchors. Use `V` / Escape to return to selection, or **適合** to recenter.
+- **Predictable selection**: left-drag an object to move it; right-drag to marquee-select objects or anchors, with Shift to add. A right-click without dragging keeps the context menu. Left-click blank canvas or checkerboard space to deselect. Shift-click toggles selection, and marquee selection excludes locked references. Clicks and small pointer movements do not consume Undo or discard Redo; Escape cancels an active drag or clears selection.
 - **Reference color picker** (`I`) samples the original image color with a magnifier beside the cursor. Sampling from the bucket returns you to continuous filling.
 - **Mouse-resizable reference image**: choose **調整底圖大小**, drag a corner to scale proportionally, or hold Shift for free sizing. Drag the center to move only the reference; Undo is supported. Escape or the selection tool (`V`) exits these modes.
 - **Portable projects** use the short `.skc` extension and can move between devices.

@@ -38,6 +38,26 @@ assert.match(html,/items:paintSceneItems\(exportableItems\(sourceItems\)\)/,'Nat
 assert.match(html,/return paintSceneItems\(sourceItems\)\.map/);
 assert.match(html,/it\.paintSourceId\|\|it\.id/,'Rendered fill still selects the original object');
 assert.match(html,/chosen\.some\(it=>it\.id===n\.dataset\.id\)/,'Selection SVG includes fill and stroke but excludes reference');
+ctx.items=plain(source);
+const fillIds=()=>plain(ctx.paintSceneItems(ctx.items)).filter(it=>it.paintLayer==='fill').map(it=>it.paintSourceId||it.id);
+ctx.raiseFilledItem(ctx.items.find(it=>it.id==='outer'));
+assert.deepEqual(fillIds(),['circle','outer'],'Repainting an earlier shape raises only its fill');
+const undoFill=JSON.stringify(ctx.items);ctx.raiseFilledItem(ctx.items.find(it=>it.id==='circle'));
+assert.deepEqual(fillIds(),['outer','circle']);
+assert.deepEqual(plain(ctx.paintSceneItems(ctx.items)).filter(it=>it.paintLayer!=='fill').map(it=>it.id),['ref','detail','outer','divider','circle'],'Fill order never changes line order');
+ctx.items=JSON.parse(JSON.stringify(ctx.items));assert.deepEqual(fillIds(),['outer','circle'],'Fill order survives save/reload');
+ctx.items=JSON.parse(undoFill);assert.deepEqual(fillIds(),['circle','outer'],'Undo restores the previous color stack');
+const colorStart=html.indexOf('function applyColorToItem('),colorEnd=html.indexOf('function applyPaletteToSelection(',colorStart);
+vm.runInContext(html.slice(colorStart,colorEnd),ctx);
+ctx.applyColorToItem(ctx.items.find(it=>it.id==='circle'),'#ef4444',true);assert.deepEqual(fillIds(),['outer','circle']);
+ctx.raiseFilledItem(ctx.items.find(it=>it.id==='outer'));
+const dropped=ctx.items.find(it=>it.id==='circle');
+Object.assign(ctx,{svg:{getBoundingClientRect:()=>({left:0,top:0,right:1200,bottom:675})},svgPt:p=>p,fillTargetAt:()=>dropped,
+  document:{getElementById:()=>({textContent:''})},selectedPoints:new Set(),commit(){ctx.dropCommits++},dropCommits:0,
+  materializeFillTarget:target=>target,rememberPaletteColor(){},render(){}});
+vm.runInContext(html.split('\n').find(line=>line.startsWith('function completePaletteDrop(')),ctx);
+ctx.completePaletteDrop('#ef4444',800,300,null);assert.deepEqual(fillIds(),['outer','circle'],'Same-color repaint can still raise a lower fill');
+assert.equal(ctx.dropCommits,1);ctx.completePaletteDrop('#ef4444',800,300,null);assert.equal(ctx.dropCommits,1,'Same-color repaint already on top is a no-op');
 
 for (const corner of ['tl','tr','bl','br']) for (const r of [0,30,90,-120]) {
   const base={x:100,y:150,w:800,h:480,r};
@@ -82,7 +102,7 @@ const controller=vm.createContext({
   commit(){controller.history.push('snapshot');controller.future=[]},
   byId:id=>controller.items.find(it=>it.id===id),
   setOnlySelected:id=>{controller.selected=id;controller.selectedIds=new Set([id])},
-  renderPalette(){},
+  renderPalette(){},clearSelectionState(){},
 });
 vm.runInContext(geometry+'\n'+fs.readFileSync(new URL('../app/paint-tools.js',import.meta.url),'utf8')+'\n'+fs.readFileSync(new URL('../app/pan-tool.js',import.meta.url),'utf8'),controller);
 controller.setTracePen=()=>controller.resetPaintTools();
@@ -158,6 +178,16 @@ try:
         if item.get("paintLayer")=="line":
             assert shape.Fill.Transparency>.999,(item["id"],"foreground fill must be transparent")
     assert all(ordered[i][1]<ordered[i+1][1] for i in range(len(ordered)-1)),ordered
+    # Recolor and reorder together used to reuse the old group's stacking order.
+    items[0],items[1]=items[1],items[0]
+    items[0]['fill']='#22c55e'
+    changed=bridge.copy_native({"items":items},copy_clipboard=False)
+    assert not changed.get('incremental'),changed
+    state=bridge.STATE;group=state['cached_group']
+    positions=[group.GroupItems.Item(state['item_shapes'][item['id']][0]).ZOrderPosition for item in items]
+    assert positions==sorted(positions),positions
+    items[0]['fill']='#2563eb'
+    assert bridge.copy_native({"items":items},copy_clipboard=False).get('incremental'),'Same-order recolor should stay fast'
     out=pathlib.Path(".codex-tmp/paint-native-qa").resolve();out.mkdir(parents=True,exist_ok=True)
     state["presentation"].Slides(1).Export(str(out/"layer-order.png"),"PNG",1200,675)
     print("Actual PowerPoint fill/line ordering verified:",ordered)
@@ -175,5 +205,7 @@ if(process.argv.includes('--fixture')) {
   ref.src='data:image/svg+xml;base64,'+Buffer.from(image).toString('base64');
   const fixture=html.replace('<head>','<head><base href="/">').replace(/const STARTER_ITEMS=\[[\s\S]*?\n\];/,()=>`const STARTER_ITEMS=${JSON.stringify([ref,unrelated,outer,divider,shape])};`);
   assert.notEqual(fixture,html);fs.writeFileSync(path.join(dir,'editor.html'),fixture);
+  const overlap=html.replace('<head>','<head><base href="/">').replace(/const STARTER_ITEMS=\[[\s\S]*?\n\];/,()=>`const STARTER_ITEMS=${JSON.stringify([ref,outer,{...shape,x:420,y:260,w:250,h:230},unrelated])};`);
+  fs.writeFileSync(path.join(dir,'overlap.html'),overlap);
   console.log(dir);
 }

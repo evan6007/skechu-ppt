@@ -18,6 +18,12 @@ You do not need Git, Python, or a terminal to use the web edition.
 
 The Windows edition is required only for **Copy to PPT**, which creates separately editable native PowerPoint layers. The early preview installer is not yet code-signed, so Windows SmartScreen may show **Windows protected your PC**. If you downloaded it from this repository, choose **More info → Run anyway**.
 
+### If you downloaded the source folder
+
+Double-click **啟動Skechu-PPT.cmd** in the repository folder. It starts the local service and opens the editor at `http://127.0.0.1:8766/` (requires Python on the source-code edition). Do not use `app/index.html` as the native PowerPoint launcher: a `file://` tab cannot connect to Office automatically. Direct-file auto tracing is supported, but native copying still needs the local service.
+
+If you already drew in a direct-file tab, download the `.skc` project **before** switching, then load it in the local-service tab. Each origin has separate browser storage; opening the other tab does not transfer your drawing automatically.
+
 ## macOS
 
 1. Open [Skechu-PPT Online](https://evan6007.github.io/skechu-ppt/).

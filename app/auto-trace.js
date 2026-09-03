@@ -3,7 +3,7 @@
  * https://docs.opencv.org/3.4.12/df/d2d/group__ximgproc.html
  * Junction graph extraction and constrained cubic fitting are implemented here.
  */
-const AutoTrace = (() => {
+const AutoTrace = (function createAutoTrace() {
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y});
@@ -237,5 +237,13 @@ const AutoTrace = (() => {
     for(const key of ['pointJunctions','autoTraceReview','pointKinds'])result[key]=Object.fromEntries(Object.entries(source[key]||{}).filter(([i])=>mapping.has(Number(i))).map(([i,value])=>[mapping.get(Number(i)),value]));
     return result;
   }
-  return {run,thin,graph,fit,at,toItem,simplifyItem};
+  const workerSource=()=>`const AutoTrace=(${createAutoTrace.toString()})();(${autoTraceWorkerRuntime.toString()})();`;
+  return {run,thin,graph,fit,at,toItem,simplifyItem,workerSource};
 })();
+
+function autoTraceWorkerRuntime() {
+  self.onmessage=event=>{
+    try {const result=AutoTrace.run(event.data,(percent,stage)=>self.postMessage({type:'progress',percent,stage}));self.postMessage({type:'result',result});}
+    catch(error){self.postMessage({type:'error',message:error.message||String(error)});}
+  };
+}

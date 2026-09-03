@@ -2,6 +2,16 @@
 let autoTraceJob=null,autoTraceResult=null,autoTraceSource=null,autoTraceSerial=0,autoTraceTimer=null;
 let autoTraceReviewCursor=0,autoTracePreviewSelection=null;
 const autoJunctionPositions=new Map();
+function createAutoTraceJob() {
+ // The worker contains the already-loaded engine, with no file:// fetch or importScripts.
+ // This also keeps the preview worker and editable-anchor engine on the same version.
+ const url=URL.createObjectURL(new Blob([AutoTrace.workerSource()],{type:'text/javascript'}));
+ try {
+  const worker=new Worker(url),terminate=worker.terminate.bind(worker);
+  worker.terminate=()=>{terminate();URL.revokeObjectURL(url)};
+  return worker;
+ } catch(error) {URL.revokeObjectURL(url);throw new Error(`自動描圖背景運算無法啟動：${error.message||error}`);}
+}
 document.querySelector('.tool-group[aria-label="工具模式"]').insertAdjacentHTML('beforeend','<button id="auto-trace" class="tool-button" title="把底圖深色筆畫轉成可編輯曲線，保留 T 型分岔"><span class="tool-icon" aria-hidden="true">✧</span><span class="tool-text">自動描圖</span></button>');
 document.body.insertAdjacentHTML('beforeend',`
 <dialog id="auto-trace-dialog" aria-labelledby="auto-trace-title">
@@ -61,7 +71,7 @@ async function generateAutoTracePreview(){
   autoTraceSource.width=w;autoTraceSource.height=h;
   document.getElementById('auto-trace-svg').setAttribute('viewBox',`0 0 ${w} ${h}`);
   document.getElementById('auto-trace-image').innerHTML=`<image href="${esc(ref.src)}" width="${w}" height="${h}" opacity=".25" preserveAspectRatio="none"/>`;
-  autoTraceJob=new Worker(new URL('auto-trace-worker.js',document.baseURI));
+  autoTraceJob=createAutoTraceJob();
   autoTraceJob.onmessage=event=>{
    if(serial!==autoTraceSerial)return;const message=event.data;
    if(message.type==='progress'){summary.textContent=`${message.stage}（${message.percent}%）`;return}
@@ -72,7 +82,7 @@ async function generateAutoTracePreview(){
   autoTraceJob.onerror=event=>{if(serial!==autoTraceSerial)return;autoTraceJob?.terminate();autoTraceJob=null;setAutoTraceBusy(false);document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';summary.textContent='自動描圖未能啟動；請重新整理頁面後重試。';console.error('Auto trace worker failed:',event.message)};
   const options=autoTraceOptions();options.accuracy=Math.max(.3,options.accuracy*scale);options.minLength*=scale;
   autoTraceJob.postMessage({width:w,height:h,data:pixels,options},[pixels.buffer]);
- }catch(error){if(serial!==autoTraceSerial)return;setAutoTraceBusy(false);document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';summary.textContent=`無法讀取底圖：${error.message||error}`}
+ }catch(error){if(serial!==autoTraceSerial)return;autoTraceJob?.terminate();autoTraceJob=null;setAutoTraceBusy(false);document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';summary.textContent=`自動描圖未完成：${error.message||error}`}
 }
 function transformAutoTraceItems(result,ref,w,h,batch,makeId){
  const sx=ref.w/w,sy=ref.h/h,angle=(ref.r||0)*Math.PI/180,cx=ref.x+ref.w/2,cy=ref.y+ref.h/2;

@@ -171,7 +171,7 @@ function initializePaintTools() {
   for (const event of ['dblclick', 'contextmenu']) svg.addEventListener(event, e => { if (paintTool) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
   window.addEventListener('keydown', event => {
     if (document.getElementById('auto-trace-dialog')?.open || ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName) || event.target.isContentEditable) return;
-    if (event.key === 'Escape' && paintTool) { event.preventDefault(); event.stopImmediatePropagation(); activateSelectTool(); renderSelection(); return; }
+    if (event.key === 'Escape' && paintTool) { event.preventDefault(); event.stopImmediatePropagation(); activateSelectTool(); clearSelectionState(); return; }
     if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
     if (event.key.toLowerCase() === 'h') { event.preventDefault(); activateHandTool(); }
     if (event.key.toLowerCase() === 'b') { event.preventDefault(); activatePaintBucket(); }

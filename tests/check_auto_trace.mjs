@@ -11,6 +11,12 @@ const image=(w=100,h=100)=>({width:w,height:h,data:new Uint8Array(w*h*4).fill(25
 function line(im,a,b,width=3){for(let t=0;t<=1;t+=1/(Math.hypot(b.x-a.x,b.y-a.y)*2)){const x=Math.round(a.x+(b.x-a.x)*t),y=Math.round(a.y+(b.y-a.y)*t);for(let dy=-Math.floor(width/2);dy<=Math.floor(width/2);dy++)for(let dx=-Math.floor(width/2);dx<=Math.floor(width/2);dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=im.width||yy>=im.height)continue;const i=(yy*im.width+xx)*4;im.data[i]=18;im.data[i+1]=63;im.data[i+2]=140}}}
 const t=image();line(t,{x:15,y:30},{x:85,y:30});line(t,{x:50,y:30},{x:50,y:85});
 const result=trace.run(t);assert.equal(result.items.length,3,'T produces three branches, not one zigzag');assert.equal(result.stats.junctions,1);
+const workerMessages=[],workerScope={postMessage:message=>workerMessages.push(message)};
+const workerSource=trace.workerSource();
+assert.ok(!workerSource.includes('importScripts('),'Blob worker must not load a file:// dependency');
+vm.runInNewContext(workerSource,{self:workerScope});workerScope.onmessage({data:t});
+assert.equal(JSON.stringify(workerMessages.at(-1).result),JSON.stringify(result),'Self-contained worker uses exactly the same curve engine');
+assert.ok(workerMessages.some(message=>message.type==='progress'));
 const ends=result.items.flatMap(it=>Object.entries(it.pointJunctions).map(([i,key])=>({p:it.points[i],key})));
 assert.equal(ends.length,3);assert.equal(new Set(ends.map(e=>e.key)).size,1);ends.forEach(e=>assert.deepEqual(e.p,ends[0].p));
 const cross=image();line(cross,{x:10,y:50},{x:90,y:50});line(cross,{x:50,y:10},{x:50,y:90});const x=trace.run(cross);assert.equal(x.items.length,4);assert.ok(x.issues.some(i=>i.kind==='junction'));
@@ -91,10 +97,10 @@ const elements=new Map(),timers=new Map(),workers=[];let timerId=0;
 const defaults={'auto-trace-threshold':['150',40,220],'auto-trace-accuracy':['2.5',.3,6],'auto-trace-simplify':['90',0,100],'auto-trace-min-length':['3',0,30]};
 function element(id){if(!elements.has(id)){const [value='',min=-Infinity,max=Infinity]=defaults[id]||[];elements.set(id,{value,innerHTML:'',textContent:'',disabled:false,open:false,attributes:{},style:{},insertAdjacentHTML(){},addEventListener(){},showModal(){this.open=true},close(){this.open=false},setAttribute(k,v){this.attributes[k]=v},checkValidity(){return this.value!==''&&Number.isFinite(Number(this.value))&&Number(this.value)>=min&&Number(this.value)<=max}})}return elements.get(id)}
 const reference={id:'ref',type:'image',referenceOnly:true,preserveFull:true,src:'data:image/png;base64,fixture',x:0,y:0,w:100,h:100,r:0};
-const controller=vm.createContext({console,URL,Uint8Array,Map,Number,Math,JSON,selected:'ref',items:[reference],traceDraft:null,activeProjectId:'project',activePageId:'page',deepCopy:context.deepCopy,esc:String,byId:id=>id==='ref'?reference:null,
+const controller=vm.createContext({console,URL,Blob,AutoTrace:trace,Uint8Array,Map,Number,Math,JSON,selected:'ref',items:[reference],traceDraft:null,activeProjectId:'project',activePageId:'page',deepCopy:context.deepCopy,esc:String,byId:id=>id==='ref'?reference:null,
  document:{baseURI:'http://localhost/',body:element('body'),querySelector:()=>element('toolbar'),getElementById:element,createElement:()=>({getContext:()=>({drawImage(){},getImageData:()=>({data:new Uint8Array(40000)})})})},
  Image:class{naturalWidth=100;naturalHeight=100;decode(){return Promise.resolve()}},
- Worker:class{constructor(){workers.push(this)}terminate(){this.terminated=true}postMessage(payload){this.payload=payload}},
+ Worker:class{constructor(url){assert.ok(url.startsWith('blob:'),'Works with opaque file:// origins, never starts a file:// worker');workers.push(this)}terminate(){this.terminated=true}postMessage(payload){this.payload=payload}},
  setTimeout:fn=>{const id=++timerId;timers.set(id,fn);return id},clearTimeout:id=>timers.delete(id)});
 vm.runInContext(app.split('\n').find(l=>l.startsWith('function tracePenStrokeStyle('))+'\n'+ui+'\nthis.actions={open:openAutoTrace,change:invalidateAutoTrace,cancel:cancelAutoTrace};',controller);
 const settle=async()=>{await Promise.resolve();await Promise.resolve()};
@@ -173,6 +179,8 @@ if(process.argv[2]){
   const fixture={id:'qa-brain-reference',type:'image',name:'大腦測試底圖',src:'data:image/png;base64,'+fs.readFileSync(file).toString('base64'),x:100,y:20,w:930,h:930*h/w,r:0,opacity:.25,preserveFull:true,referenceOnly:true,locked:true};
   const testPage=html.replace('<head>','<head><base href="/">').replace(/const STARTER_ITEMS=\[[\s\S]*?\n\];/,()=>`const STARTER_ITEMS=${JSON.stringify([fixture])};`);
   assert.notEqual(testPage,html);fs.writeFileSync(path.join(dir,'editor.html'),testPage);
+  const filePage=testPage.replace('<base href="/">',`<base href="${new URL('../app/',import.meta.url).href}">`);
+  fs.writeFileSync(path.join(dir,'file-editor.html'),filePage);
   const denseFixture={...JSON.parse(JSON.stringify(denseArc)),name:'51 點圓滑弧線',id:'qa-dense-arc'};
   const branchFixtures=[{...JSON.parse(JSON.stringify(denseArc)),id:'qa-top-branch',name:'上方支線',points:[denseArc.points[0],{x:245,y:30}],pointHandleAngles:{},pointJunctions:{0:'j0'},curved:false},{...JSON.parse(JSON.stringify(denseArc)),id:'qa-bottom-branch',name:'下方支線',points:[denseArc.points.at(-1),{x:245,y:330}],pointHandleAngles:{},pointJunctions:{0:'j1'},curved:false}];
   fs.writeFileSync(path.join(dir,'dense.html'),html.replace('<head>','<head><base href="/">').replace(/const STARTER_ITEMS=\[[\s\S]*?\n\];/,()=>`const STARTER_ITEMS=${JSON.stringify([denseFixture,...branchFixtures])};`));

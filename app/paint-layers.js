@@ -1,5 +1,16 @@
 /* One paint order for the editor, SVG and native PowerPoint.
  * Keep editable source objects intact; split only their rendered appearance. */
+function renderedFillIsVisible(it) {
+  const opacity = it.type === 'arrow' ? (it.closed ? (it.fillOpacity ?? .25) : 0) : (it.opacity ?? 1);
+  return ['arrow', 'box', 'ellipse', 'polygon'].includes(it.type) && opacity > 0 && !['none', 'transparent', ''].includes(it.fill);
+}
+function fillOrderValue(it) { return Number.isFinite(it.fillOrder) ? it.fillOrder : 0; }
+function raiseFilledItem(it, sourceItems = items) {
+  it.fillOrder = sourceItems.reduce((highest, item) => Math.max(highest, fillOrderValue(item)), 0) + 1;
+}
+function topFilledItem(sourceItems) {
+  return sourceItems.filter(renderedFillIsVisible).sort((a,b) => fillOrderValue(a)-fillOrderValue(b)).at(-1);
+}
 function paintSceneItems(sourceItems) {
   const reference = [], fills = [], foreground = [];
   for (const it of sourceItems) {
@@ -19,6 +30,8 @@ function paintSceneItems(sourceItems) {
       width: 0, strokeWidth: 0, startHead: false, endHead: false, label: ''});
     foreground.push({...it, paintLayer: 'line', ...(arrow ? {fillOpacity: 0} : {opacity: 0})});
   }
+  // Stable sort keeps legacy projects in their original order until repainted.
+  fills.sort((a,b) => fillOrderValue(a)-fillOrderValue(b));
   return [...reference, ...fills, ...foreground];
 }
 

@@ -613,7 +613,7 @@ def copy_native(payload, progress=None, copy_clipboard=True):
         cached_hashes = STATE.get("item_hashes") or {}
         changed_ids = [key for key, value in current_hashes.items() if cached_hashes.get(key) != value]
         can_increment = (STATE.get("cached_group") is not None and STATE.get("origin") == origin and
-                         set(current_hashes) == set(cached_hashes) and changed_ids)
+                         list(current_hashes) == list(cached_hashes) and changed_ids)
         if can_increment:
             changed_items = [item for item in selected if str(item.get("id")) in changed_ids]
             can_increment = all(item.get("type") in ("text", "box", "ellipse", "arrow", "polygon") and

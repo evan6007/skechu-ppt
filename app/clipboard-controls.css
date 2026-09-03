@@ -1,0 +1,22 @@
+.export-actions .ppt-copy-button{display:inline-flex;align-items:center;gap:8px;background:#6d28d9;color:#fff;border:1px solid #6d28d9;font-weight:700;white-space:nowrap;box-shadow:0 3px 8px #6d28d930}
+.export-actions .ppt-copy-button:hover{background:#5b21b6}
+.ppt-copy-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
+#copy-ppt-mode{font-size:10px;font-weight:400;padding-left:7px;border-left:1px solid #ffffff60}
+#copy-all-ppt{white-space:nowrap}
+.clipboard-feedback{position:fixed;right:18px;top:118px;z-index:2200;width:min(410px,calc(100vw - 36px));box-sizing:border-box;padding:16px 42px 16px 16px;border:1px solid #c4b5fd;border-left:5px solid #7c3aed;border-radius:12px;background:#fff;box-shadow:0 8px 32px #17203325;color:#172033;line-height:1.55;font-size:13px}
+.clipboard-feedback[hidden]{display:none}
+.clipboard-feedback[data-kind="success"]{border-left-color:#16a34a}
+.clipboard-feedback[data-kind="error"]{border-left-color:#dc2626}
+.clipboard-feedback[data-kind="warning"]{border-left-color:#d97706}
+.clipboard-feedback strong{font-size:15px}
+.clipboard-feedback p{margin:7px 0 0;overflow-wrap:anywhere}
+#clipboard-dismiss{position:absolute;right:8px;top:7px;border:0;background:none;font-size:21px;padding:0 6px;color:#64748b}
+.clipboard-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.clipboard-actions button,.clipboard-actions a{font-size:12px;padding:6px 9px;border-radius:6px}
+.clipboard-actions a{color:#6d28d9;text-decoration:underline}
+.clipboard-actions[hidden]{display:none}
+.file-entry-notice{padding:8px 16px;background:#fff7ed;border-bottom:1px solid #fed7aa;color:#9a3412;font-size:12px;line-height:1.5}
+.file-entry-notice a{color:#6d28d9;font-weight:700;margin-left:8px}
+.file-entry-notice[hidden]{display:none}
+.app:has(> .file-entry-notice:not([hidden])){grid-template-rows:64px 48px auto minmax(0,1fr)}
+@media(max-width:900px){.app:has(> .file-entry-notice:not([hidden])){grid-template-rows:58px auto auto minmax(0,1fr)}.projectbar .export-actions{flex-wrap:wrap}}

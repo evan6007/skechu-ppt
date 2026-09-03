@@ -22,3 +22,5 @@ body .palette-drag-ghost{transform:translate(20px,20px)}
 .tool-icon svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .stage-wrap.hand-tool,.stage-wrap.hand-tool .stage,.stage-wrap.hand-tool .stage *{cursor:grab;touch-action:none;user-select:none}
 .stage-wrap.hand-dragging,.stage-wrap.hand-dragging .stage,.stage-wrap.hand-dragging .stage *{cursor:grabbing}
+.stage [data-outline-only="true"],.stage [data-outline-only="true"] .arrow-line,.stage [data-outline-only="true"] .polygon-shape{pointer-events:stroke}
+#scene [data-locked="true"],#scene [data-locked="true"] *{pointer-events:none}
