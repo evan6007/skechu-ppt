@@ -30,6 +30,7 @@ jobs:
             --add-data "app/region-fill.js;." `
             --add-data "app/paint-layers.js;." `
             --add-data "app/paint-tools.js;." `
+            --add-data "app/pan-tool.js;." `
             --add-data "app/paint-tools.css;." `
             --add-data "app/auto-trace.js;." `
             --add-data "app/auto-trace-ui.js;." `

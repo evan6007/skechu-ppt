@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v12-paint-tools';
+const CACHE_NAME = 'skechu-ppt-v13-hand-tool-cursors';
 const APP_SHELL = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const APP_SHELL = [
   './region-fill.js',
   './paint-layers.js',
   './paint-tools.js',
+  './pan-tool.js',
   './paint-tools.css',
   './auto-trace.js',
   './auto-trace-ui.js',

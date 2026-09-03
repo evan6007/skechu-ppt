@@ -6,6 +6,10 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 const html = fs.readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
 const geometry = fs.readFileSync(new URL('../app/paint-layers.js', import.meta.url), 'utf8');
+const paintCss = fs.readFileSync(new URL('../app/paint-tools.css', import.meta.url), 'utf8');
+assert.ok(paintCss.includes('.stage .handle[data-handle="tl"],.stage .handle[data-handle="br"]{cursor:nwse-resize}'));
+assert.ok(paintCss.includes('.stage .handle[data-handle="tr"],.stage .handle[data-handle="bl"]{cursor:nesw-resize}'));
+assert.ok(paintCss.indexOf('.stage-wrap.hand-tool') > paintCss.indexOf('cursor:nesw-resize'), 'Hand cursor must override resize cursors in pan mode');
 const ctx = vm.createContext({}); vm.runInContext(geometry, ctx);
 const plain = value => JSON.parse(JSON.stringify(value));
 const ref = {id:'ref', type:'image', name:'底圖', x:100,y:100,w:800,h:480,r:0,opacity:.35,referenceOnly:true,locked:true,preserveFull:true};
@@ -70,7 +74,7 @@ function element(id) {
 let paintCount=0,renderCount=0;
 const controller=vm.createContext({
   document:{getElementById:element,querySelector:element,body:element('body')},
-  window:element('window'),svg:element('stage'),items:[plain(ref),plain(divider)],selected:ref.id,
+  window:element('window'),svg:element('stage'),stageWrap:element('.stage-wrap'),stageShell:element('.stage-shell'),items:[plain(ref),plain(divider)],selected:ref.id,
   selectedIds:new Set([ref.id]),selectedPoints:new Set(),history:[],future:['redo'],drag:null,palettePointerDrag:null,
   activePaletteColor:'#7c3aed',setFillHover(){},renderSelection(){},render(){renderCount++},
   svgPt:e=>({x:e.clientX,y:e.clientY}),overlayUnit:()=>1,deepCopy:plain,
@@ -80,7 +84,7 @@ const controller=vm.createContext({
   setOnlySelected:id=>{controller.selected=id;controller.selectedIds=new Set([id])},
   renderPalette(){},
 });
-vm.runInContext(geometry+'\n'+fs.readFileSync(new URL('../app/paint-tools.js',import.meta.url),'utf8'),controller);
+vm.runInContext(geometry+'\n'+fs.readFileSync(new URL('../app/paint-tools.js',import.meta.url),'utf8')+'\n'+fs.readFileSync(new URL('../app/pan-tool.js',import.meta.url),'utf8'),controller);
 controller.setTracePen=()=>controller.resetPaintTools();
 controller.activateSelectTool=()=>controller.setTracePen(false);
 controller.initializePaintTools();controller.activatePaintBucket();
@@ -105,6 +109,36 @@ move(pointer(500,340));controller.finishReferenceDrag(true);
 assert.equal(controller.items[0].w,600);assert.equal(controller.history.length,1,'Canceled drag restores the previous size');
 assert.ok(renderCount>0);
 console.log('Paint interaction OK: persistent bucket, color-only swatch choice, Escape, proportional drag, isolated geometry and canceled gesture.');
+
+controller.initializeHandTool();
+controller.stageWrap.scrollLeft=0;controller.stageWrap.scrollTop=0;
+controller.activateHandTool();
+const handBefore=JSON.stringify(controller.items),selectionBefore=controller.selected,undoBefore=controller.history.length;
+const handDown=events.get('.stage-wrap:pointerdown:true'),handMove=events.get('.stage-wrap:pointermove:true');
+handDown(pointer(400,300));handMove(pointer(580,380));
+assert.equal(controller.stageShell.style.transform,'translate(180px, 80px)','Hand pans even with no scrollbars at fit zoom');
+handMove(pointer(500,320,{pointerId:2}));
+assert.equal(controller.stageShell.style.transform,'translate(180px, 80px)','A second pointer must not take over the gesture');
+events.get('.stage-wrap:pointerup:true')(pointer(580,380));
+assert.equal(vm.runInContext('handDrag',controller),null);
+controller.drag={kind:'pan'};
+handMove({...pointer(300,300),stopImmediatePropagation(){throw new Error('Middle-button panning must keep its existing handler')}});
+controller.drag=null;
+assert.equal(JSON.stringify(controller.items),handBefore);assert.equal(controller.selected,selectionBefore);
+assert.equal(controller.history.length,undoBefore,'View movement never creates drawing undo steps');
+controller.activatePaintBucket();assert.equal(vm.runInContext('paintTool',controller),'bucket','Hand and paint modes are exclusive');
+assert.equal(controller.stageShell.style.transform,'translate(180px, 80px)','Changing tools retains view position');
+events.get('window:keydown:true')({...pointer(0,0),key:'h',target:{tagName:'svg'}});
+assert.equal(vm.runInContext('paintTool',controller),'pan');
+handDown(pointer(200,200));events.get('window:blur:false')();
+assert.equal(vm.runInContext('handDrag',controller),null,'Window blur releases the hand');
+controller.resetCanvasPan();assert.equal(controller.stageShell.style.transform,'','Fit/page switch can reset view');
+events.get('window:keydown:true')({...pointer(0,0),key:'Escape',target:{tagName:'svg'}});
+assert.equal(vm.runInContext('paintTool',controller),null);
+assert.match(html,/function fitView\(\)\{resetCanvasPan\(\)/);
+assert.match(html,/function resetEditorState\(\)\{resetPaintTools\(\);resetCanvasPan\(\)/);
+assert.match(html,/id="select-tool"[\s\S]*?id="pan-tool"[\s\S]*?id="trace-pen"/);
+console.log('Hand tool OK: toolbar order, free panning, selection/geometry/history isolation, H/Escape, pointer ownership, tool switching and reset.');
 
 if (process.env.SKECHU_TEST_POWERPOINT === '1') {
   const payload = plain(ctx.paintSceneItems([unrelated,{...outer,fill:'#ef4444'},divider,shape]));

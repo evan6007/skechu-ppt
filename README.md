@@ -44,6 +44,7 @@ On the Windows edition, select your vectors and choose **Copy to PPT** to paste 
 - **Precise joining** snaps endpoints to endpoints or to the middle of another path for branches and T-junctions.
 - **Segment-aware editing** inserts a new anchor exactly on the segment you selected.
 - **Continuous paint bucket** (`B`) fills closed vector regions, including T-junction regions, with repeated clicks. Drag-and-drop swatches still work. Fills stay below all vector outlines in the editor, SVG and PowerPoint.
+- **Hand tool** (`H`): choose **拖移** beside the selection tool and drag with the left mouse button to pan the canvas without moving objects or anchors. Use `V` / Escape to return to selection, or **適合** to recenter.
 - **Reference color picker** (`I`) samples the original image color with a magnifier beside the cursor. Sampling from the bucket returns you to continuous filling.
 - **Mouse-resizable reference image**: choose **調整底圖大小**, drag a corner to scale proportionally, or hold Shift for free sizing. Drag the center to move only the reference; Undo is supported. Escape or the selection tool (`V`) exits these modes.
 - **Portable projects** use the short `.skc` extension and can move between devices.

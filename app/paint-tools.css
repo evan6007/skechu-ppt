@@ -17,3 +17,8 @@
 .color-sample-cross{position:fixed;z-index:999;pointer-events:none;width:12px;height:12px;transform:translate(-50%,-50%);border:1px solid white;outline:1px solid #1d2939;border-radius:50%;background:transparent}
 /* The dragged chip also stays beside the drop point, not on top of it. */
 body .palette-drag-ghost{transform:translate(20px,20px)}
+.stage .handle[data-handle="tl"],.stage .handle[data-handle="br"]{cursor:nwse-resize}
+.stage .handle[data-handle="tr"],.stage .handle[data-handle="bl"]{cursor:nesw-resize}
+.tool-icon svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.stage-wrap.hand-tool,.stage-wrap.hand-tool .stage,.stage-wrap.hand-tool .stage *{cursor:grab;touch-action:none;user-select:none}
+.stage-wrap.hand-dragging,.stage-wrap.hand-dragging .stage,.stage-wrap.hand-dragging .stage *{cursor:grabbing}

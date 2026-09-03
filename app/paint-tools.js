@@ -4,12 +4,14 @@ let colorPickerSerial = 0, colorPickerReturn = null;
 
 function resetPaintTools() {
   paintTool = null; colorPickerSerial++; colorSample = null; colorSampleSource = null;
+  finishHandDrag();
   if (referenceDrag) finishReferenceDrag(true);
-  for (const [id, cls] of [['paint-bucket', 'paint-bucket'], ['palette-eyedropper', 'color-picker'], ['resize-reference', 'reference-edit']]) {
+  for (const [id, cls] of [['paint-bucket', 'paint-bucket'], ['palette-eyedropper', 'color-picker'], ['resize-reference', 'reference-edit'], ['pan-tool', 'hand-tool']]) {
     const button = document.getElementById(id);
     button?.classList.remove('active'); button?.setAttribute('aria-pressed', 'false');
     document.getElementById('stage')?.classList.remove(cls);
   }
+  document.querySelector('.stage-wrap')?.classList.remove('hand-tool');
   for (const id of ['color-loupe', 'color-sample-cross']) { const el = document.getElementById(id); if (el) el.hidden = true; }
   if (typeof setFillHover === 'function') setFillHover(null);
 }
@@ -26,12 +28,13 @@ function setPaintTool(mode) {
   setTracePen(false); // Ends a draft and resets all mutually exclusive modes.
   paintTool = mode;
   if (mode) {
-    const id = {bucket: 'paint-bucket', picker: 'palette-eyedropper', reference: 'resize-reference'}[mode];
+    const id = {bucket: 'paint-bucket', picker: 'palette-eyedropper', reference: 'resize-reference', pan: 'pan-tool'}[mode];
     document.getElementById(id).classList.add('active');
     document.getElementById(id).setAttribute('aria-pressed', 'true');
     document.getElementById('select-tool').classList.remove('active');
     document.getElementById('select-tool').setAttribute('aria-pressed', 'false');
-    svg.classList.add({bucket: 'paint-bucket', picker: 'color-picker', reference: 'reference-edit'}[mode]);
+    svg.classList.add({bucket: 'paint-bucket', picker: 'color-picker', reference: 'reference-edit', pan: 'hand-tool'}[mode]);
+    if (mode === 'pan') stageWrap.classList.add('hand-tool');
   }
   renderSelection();
 }
@@ -135,7 +138,7 @@ function initializePaintTools() {
   document.getElementById('resize-reference').onclick = activateReferenceResize;
   syncPaintColor();
   svg.addEventListener('pointerdown', event => {
-    if (!paintTool || event.button !== 0) return;
+    if (!paintTool || paintTool === 'pan' || event.button !== 0) return;
     event.preventDefault(); event.stopImmediatePropagation();
     if (paintTool === 'bucket') {
       if (completePaletteDrop(activePaletteColor, event.clientX, event.clientY, event.target)) paintStatus('已填色，線條保留在上方；可繼續點下一個區域，Esc 退出');
@@ -170,6 +173,7 @@ function initializePaintTools() {
     if (document.getElementById('auto-trace-dialog')?.open || ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName) || event.target.isContentEditable) return;
     if (event.key === 'Escape' && paintTool) { event.preventDefault(); event.stopImmediatePropagation(); activateSelectTool(); renderSelection(); return; }
     if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
+    if (event.key.toLowerCase() === 'h') { event.preventDefault(); activateHandTool(); }
     if (event.key.toLowerCase() === 'b') { event.preventDefault(); activatePaintBucket(); }
     if (event.key.toLowerCase() === 'i') { event.preventDefault(); activateColorPicker(); }
     if (event.key.toLowerCase() === 'v') { event.preventDefault(); activateSelectTool(); renderSelection(); }
