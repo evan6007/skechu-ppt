@@ -10,7 +10,7 @@
 <link rel="icon" type="image/svg+xml" href="skechu-mark.svg?v=1">
 <link rel="apple-touch-icon" href="skechu-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="auto-trace.css">
+<link rel="stylesheet" href="auto-trace.css?v=24-logo-sliders">
 <link rel="stylesheet" href="paint-tools.css?v=22-visibility-web-native">
 <link rel="stylesheet" href="layer-controls.css?v=22-visibility-web-native">
 <link rel="stylesheet" href="clipboard-controls.css?v=17-file-worker-r2">
@@ -133,13 +133,14 @@
 <script src="paint-layers.js?v=22-visibility-web-native"></script>
 <script src="paint-tools.js?v=22-visibility-web-native"></script>
 <script src="pan-tool.js"></script>
-<script src="selection-controls.js?v=22-visibility-web-native"></script>
+<script src="selection-controls.js?v=25-workspace"></script>
+<script src="workspace-actions.js?v=25-workspace"></script>
 <script src="layer-controls.js?v=22-visibility-web-native"></script>
 <script src="clipboard-controls.js?v=23-incremental"></script>
 <script src="web-ppt-client.js?v=23-incremental"></script>
 <script src="ppt-preparation.js?v=23-incremental"></script>
-<script src="auto-trace.js?v=17-file-worker"></script>
-<script src="auto-trace-ui.js?v=20-layer-groups"></script>
+<script src="auto-trace.js?v=24-logo-sliders"></script>
+<script src="auto-trace-ui.js?v=24-logo-sliders"></script>
 <script>
 const svg=document.getElementById('stage'), scene=document.getElementById('scene'), selection=document.getElementById('selection'), gridLayer=document.getElementById('grid-layer'),stageWrap=document.querySelector('.stage-wrap'),stageShell=document.querySelector('.stage-shell');
 const workspace=document.querySelector('.workspace');
@@ -384,7 +385,7 @@ function anchorHandleLengths(it,index){const p=it.points[index],count=it.points.
 function setLinkedTangent(it,index,angle,length,inLength=length){it.pointAngles=it.pointAngles||{};it.pointAngles[index]=angle;it.pointHandleAngles=it.pointHandleAngles||{};it.pointHandleAngles[index]={in:normalizeAngle(angle+180),out:angle,inLength,outLength:length,linked:true};it.pointKinds=it.pointKinds||{};delete it.pointKinds[index];it.curved=true}
 function tangentHandleLayout(it,index){const p=it.points[index],handles=splitHandleAngles(it.pointHandleAngles,index),split=handles&&!handles.linked,lengths=anchorHandleLengths(it,index),unit=overlayUnit(),angle=pointTangentAngle(it.points,index,it.pointAngles,!!it.closed),make=(side,offset)=>{const degrees=handles?handles[side]:(side==='in'?normalizeAngle(angle+180):angle),radians=degrees*Math.PI/180,length=lengths[side]+offset;return{side,offset,x:p.x+Math.cos(radians)*length,y:p.y+Math.sin(radians)*length}};const incoming=make('in',44*unit);let outgoing=make('out',44*unit);if(split&&Math.hypot(incoming.x-outgoing.x,incoming.y-outgoing.y)<42*unit)outgoing=make('out',44*unit+Math.max(0,lengths.in-lengths.out)+44*unit);return{split,incoming,outgoing}}
 function tangentGuideMarkup(it){if(it?.type!=='arrow'||!Number.isInteger(selectedPoint)||!it.points[selectedPoint]||pointIsSharp(it.pointKinds,selectedPoint))return'';const p=it.points[selectedPoint],layout=tangentHandleLayout(it,selectedPoint),sides=layout.split?[layout.incoming,layout.outgoing]:[layout.outgoing];return sides.map(handle=>{const kind=layout.split?'tangent-'+handle.side:'tangent-angle',cls=layout.split?'tangent-'+handle.side:'',label=layout.split?(handle.side==='in'?'進入柄':'離開柄'):'連動切線';return `<line class="tangent-guide ${cls}" x1="${p.x}" y1="${p.y}" x2="${handle.x}" y2="${handle.y}"/><circle class="tangent-handle-hit ${cls}" data-handle="${kind}" data-point="${selectedPoint}" data-reach-offset="${handle.offset}" cx="${handle.x}" cy="${handle.y}" r="18"><title>${label}：可拉到遠處調整角度與弧度，虛線連回錨點</title></circle><circle class="tangent-angle-handle ${cls}" cx="${handle.x}" cy="${handle.y}" r="8"/>`}).join('')}
-function renderSelection(){if(paintTool==='bucket'||paintTool==='picker'){selection.innerHTML='';return}if(paintTool==='reference'&&byId(selected)?.referenceOnly&&!byId(selected)?.hidden){selection.innerHTML=referenceEditMarkup(byId(selected));scaleSelectionOverlay();return}let html=[...selectedIds].filter(x=>x!==selected&&!byId(x)?.hidden).map(x=>{const b=itemBounds(byId(x));return`<rect class="group-outline" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>`}).join('');if(marqueeRect)html+=`<rect class="marquee" x="${marqueeRect.x}" y="${marqueeRect.y}" width="${marqueeRect.w}" height="${marqueeRect.h}"/>`;selection.innerHTML=html;const it=byId(selected);if(!it||it.hidden||traceDraft?.id===selected){selection.insertAdjacentHTML('beforeend',snapOverlay()+traceJoinOverlay());scaleSelectionOverlay();return}let main='';
+function renderSelection(){if(paintTool==='bucket'||paintTool==='picker'){selection.innerHTML='';return}if(paintTool==='reference'&&byId(selected)?.referenceOnly&&!byId(selected)?.hidden){selection.innerHTML=referenceEditMarkup(byId(selected));scaleSelectionOverlay();return}let html=selectedIds.size>1&&!traceDraft?multiSelectionMarkup():'';if(marqueeRect)html+=`<rect class="marquee" x="${marqueeRect.x}" y="${marqueeRect.y}" width="${marqueeRect.w}" height="${marqueeRect.h}"/>`;selection.innerHTML=html;if(selectedIds.size>1&&!traceDraft){selection.insertAdjacentHTML('beforeend',snapOverlay());scaleSelectionOverlay();return}const it=byId(selected);if(!it||it.hidden||traceDraft?.id===selected){selection.insertAdjacentHTML('beforeend',snapOverlay()+traceJoinOverlay());scaleSelectionOverlay();return}let main='';
  if(it.locked){const b=itemBounds(it);main=`<rect class="selected-outline" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>`}
  else if(it.type==='image'){main=imageSelectionMarkup(it)}
  else if(it.type==='box'||it.type==='ellipse'){const all=it.type!=='image'||editPoints,pts=all?`<circle class="handle" data-handle="tl" cx="${it.x}" cy="${it.y}" r="8"/><circle class="handle" data-handle="tr" cx="${it.x+it.w}" cy="${it.y}" r="8"/><circle class="handle" data-handle="bl" cx="${it.x}" cy="${it.y+it.h}" r="8"/><circle class="handle" data-handle="br" cx="${it.x+it.w}" cy="${it.y+it.h}" r="8"/>`:`<circle class="handle" data-handle="br" cx="${it.x+it.w}" cy="${it.y+it.h}" r="8"/>`;main=`<g transform="rotate(${it.r||0} ${it.x+it.w/2} ${it.y+it.h/2})"><rect class="selected-outline" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}"/>${pts}</g>`}
@@ -493,7 +494,7 @@ document.getElementById('show-inspector').onclick=()=>{workspace.classList.toggl
 document.getElementById('toggle-grid').onclick=()=>{gridOn=!gridOn;const size=canvasSize();gridLayer.innerHTML=gridOn?Array.from({length:Math.floor(size.width/10)-1},(_,i)=>`<line class="guide" x1="${(i+1)*10}" y1="0" x2="${(i+1)*10}" y2="${size.height}"/>`).join('')+Array.from({length:Math.floor(size.height/10)-1},(_,i)=>`<line class="guide" x1="0" y1="${(i+1)*10}" x2="${size.width}" y2="${(i+1)*10}"/>`).join(''):''};
 document.getElementById('delete').onclick=()=>{const ids=new Set(items.filter(it=>selectedIds.has(it.id)&&!it.locked).map(it=>it.id));if(!ids.size)return;commit();items=items.filter(x=>!ids.has(x.id));selected=null;selectedIds.clear();selectedPoints.clear();render()};
 document.getElementById('duplicate').onclick=()=>{if(copyInternalSelection())pasteInternalSelection()};
-function copyInternalSelection(){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]);if(!ids.length){document.getElementById('status').textContent='請先選取要複製的線段或物件';return false}internalClipboard=deepCopy(items.filter(it=>ids.includes(it.id)));document.getElementById('status').textContent=`已複製 ${internalClipboard.length} 個物件；按 Ctrl+V 貼上`;return true}
+function copyInternalSelection(){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]);if(!ids.length){document.getElementById('status').textContent='請先選取要複製的線段或物件';return false}internalClipboard=deepCopy(items.filter(it=>ids.includes(it.id)));noteInternalCopy();document.getElementById('status').textContent=`已複製 ${internalClipboard.length} 個物件；按 Ctrl+V 貼上`;return true}
 function copySelectedObjects(){if(pptCopyRunning)return;copyInternalSelection();return copySelectionToClipboard()}
 function pasteInternalSelection(){if(!internalClipboard.length){document.getElementById('status').textContent='內部剪貼簿是空的；先選物件按 Ctrl+C';return}commit();const idMap=new Map,junctionMap=new Map,clones=deepCopy(internalClipboard);clones.forEach(c=>{const old=c.id;c.id=id();idMap.set(old,c.id);c.name=`${c.name} 複本`;if(c.points){c.points=c.points.map(p=>({x:p.x+20,y:p.y+20}));if(Number.isFinite(c.labelX)){c.labelX+=20;c.labelY+=20}}else{c.x+=20;c.y+=20}});clones.forEach(c=>{if(c.pointJunctions)c.pointJunctions=Object.fromEntries(Object.entries(c.pointJunctions).map(([i,key])=>{if(!junctionMap.has(key))junctionMap.set(key,uid('junction'));return[i,junctionMap.get(key)]}));if(c.regionFill)c.regionFill.sources=(c.regionFill.sources||[]).filter(owner=>idMap.has(owner)).map(owner=>idMap.get(owner));if(!c.attachments)return;for(const key of ['start','end']){const link=c.attachments[key];if(!link)continue;if(idMap.has(link.owner))link.owner=idMap.get(link.owner);else delete c.attachments[key]}});cloneLayerGroups(clones);items.push(...clones);selectedIds=new Set(clones.map(c=>c.id));selected=clones.at(-1)?.id||null;selectedPoint=null;selectedPoints.clear();render();document.getElementById('status').textContent=`已貼上 ${clones.length} 個物件（向右下位移 20）`}
 function reversePointKinds(kinds,length){const out={};for(const [raw,kind] of Object.entries(kinds||{}))out[length-1-Number(raw)]=kind;return out}
@@ -567,6 +568,7 @@ initializeSelectionControls();
 initializeLayerControls();
 initializeClipboardControls();
 initializeWebPptClient();
+initializeWorkspaceActions();
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./service-worker.js').catch(error=>console.info('Offline install unavailable.',error));
 initializeWorkspace().then(stabilizeTypography);
 </script>

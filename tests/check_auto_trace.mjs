@@ -24,11 +24,25 @@ const gap=image();line(gap,{x:10,y:50},{x:45,y:50});line(gap,{x:51,y:50},{x:90,y
 const circle=image();for(let a=0;a<Math.PI*2;a+=.02)line(circle,{x:50+30*Math.cos(a),y:50+30*Math.sin(a)},{x:50+30*Math.cos(a+.02),y:50+30*Math.sin(a+.02)},3);
 const c=trace.run(circle);assert.equal(c.items.length,1);assert.equal(c.items[0].closed,true);assert.ok(c.items[0].points.length>=3);assert.ok(c.items[0].points.length<45);
 assert.equal(trace.run(image()).items.length,0);
-const opaque=image();opaque.data.fill(0);for(let i=3;i<opaque.data.length;i+=4)opaque.data[i]=255;assert.throws(()=>trace.run(opaque),/深色面積/);
+const opaque=image();opaque.data.fill(0);for(let i=3;i<opaque.data.length;i+=4)opaque.data[i]=255;
+const solid=trace.run(opaque);assert.equal(solid.stats.mode,'contour');assert.equal(solid.items.length,1);assert.equal(solid.items[0].points.length,4,'Solid square uses four editable corner anchors');
+assert.throws(()=>trace.run({...opaque,options:{mode:'line'}}),/Logo 輪廓/,'Forced centerline mode explains how to trace solid artwork');
 const transparent=image();transparent.data.fill(0);assert.equal(trace.run(transparent).items.length,0);
 const edge=image();line(edge,{x:0,y:20},{x:90,y:20});assert.equal(trace.run(edge).items.length,1,'Image edge remains traceable');
 for(const it of [...result.items,...c.items]){assert.ok(it.points.every(p=>Number.isFinite(p.x+p.y)));assert.equal(it.endHead,false);assert.equal(it.fillOpacity,0);assert.ok(Object.values(it.pointHandleAngles).every(h=>h.inLength<=600&&h.outLength<=600))}
 console.log(`Auto trace synthetic tests OK: T, cross, disconnected gap, circle, blank/transparent/dense images and boundary pixels.`);
+assert.equal(result.stats.mode,'line','Automatic mode retains the existing centerline/T algorithm');
+function paint(im,predicate){for(let y=0;y<im.height;y++)for(let x=0;x<im.width;x++)if(predicate(x,y)){const i=(y*im.width+x)*4;im.data[i]=im.data[i+1]=im.data[i+2]=0;im.data[i+3]=255}return im}
+const logo=paint(image(),(x,y)=>x>=10&&x<90&&y>=10&&y<90&&!(x>=30&&x<70&&y>=30&&y<70));
+const logoResult=trace.run(logo);assert.equal(logoResult.stats.mode,'contour');assert.equal(logoResult.items.length,2,'Logo keeps both outer boundary and inner cutout');
+assert.ok(logoResult.items.every(it=>it.closed&&it.points.length===4&&Object.keys(it.pointJunctions).length===0));
+const smallLogo=paint(image(200,200),(x,y)=>x>=80&&x<110&&y>=80&&y<110);assert.equal(trace.run(smallLogo).stats.mode,'contour','Low coverage solid Logo is still automatically detected');
+const alphaLogo=paint(transparent,(x,y)=>x>=20&&x<80&&y>=20&&y<80);assert.equal(trace.run(alphaLogo).items.length,1,'Transparent pixels never become black background');
+const diagonalLogo=paint(image(),(x,y)=>x>=10&&x<30&&y>=10&&y<30||x>=30&&x<50&&y>=30&&y<50);assert.equal(trace.run({...diagonalLogo,options:{mode:'contour'}}).items.length,2,'Diagonal contact must not create a self-crossing outline');
+const disc=paint(image(),(x,y)=>Math.hypot(x+.5-50,y+.5-50)<30),discResult=trace.run(disc);assert.equal(discResult.items.length,1);assert.ok(discResult.items[0].points.length<=12,'A round filled Logo is a few long arcs');
+const fineLogo=trace.run({...logo,options:{mode:'contour',accuracy:.3,simplify:0}});assert.ok(fineLogo.items.every(it=>it.points.length===4),'Tight fitting does not add pixel-step anchors to a rectangle');
+workerScope.onmessage({data:logo});assert.equal(JSON.stringify(workerMessages.at(-1).result),JSON.stringify(logoResult),'Blob worker includes contour mode');
+console.log('Logo contour tests OK: auto/manual modes, holes, sparse corners, round arcs, transparency, border closure and diagonal islands.');
 
 const bend=[];for(let y=0;y<=35;y++)bend.push({x:0,y});for(let x=1;x<=35;x++)bend.push({x,y:35});
 const cornerCurves=trace.fit(bend,{x:0,y:1},{x:-1,y:0},5);
@@ -49,6 +63,22 @@ const sparseReview=trace.simplifyItem(reviewArc,denseCurves,1.5),reviewIndex=Num
 const closedCurves=ellipseCurves(80,0,Math.PI*2),denseClosed=trace.toItem({start:0,end:0,closed:true},closedCurves,'#123f8c',2.5,new Set([0]));
 const sparseClosed=trace.simplifyItem(denseClosed,closedCurves,1.5);assert.ok(sparseClosed.closed&&sparseClosed.points.length>=3&&sparseClosed.points.length<=7);assert.equal(sparseClosed.pointJunctions[0],'j0');
 function itemCurves(it){return it.points.slice(0,it.closed?it.points.length:-1).map((p,i)=>{const j=(i+1)%it.points.length,q=it.points[j],a=it.pointHandleAngles[i],b=it.pointHandleAngles[j];return{p0:p,c1:{x:p.x+Math.cos(a.out*Math.PI/180)*a.outLength,y:p.y+Math.sin(a.out*Math.PI/180)*a.outLength},c2:{x:q.x+Math.cos(b.in*Math.PI/180)*b.inLength,y:q.y+Math.sin(b.in*Math.PI/180)*b.inLength},p3:q}})}
+function checkContourFidelity(im,output,tolerance=2){
+  const {width:w,height:h,data}=im,boundary=[];
+  const dark=(x,y)=>{if(x<0||y<0||x>=w||y>=h)return false;const i=(y*w+x)*4,a=data[i+3]/255;return(.2126*data[i]+.7152*data[i+1]+.0722*data[i+2])*a+255*(1-a)<150};
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(dark(x,y)){
+    if(!dark(x,y-1))boundary.push({x:x+.5,y});if(!dark(x+1,y))boundary.push({x:x+1,y:y+.5});
+    if(!dark(x,y+1))boundary.push({x:x+.5,y:y+1});if(!dark(x-1,y))boundary.push({x,y:y+.5});
+  }
+  const samples=output.items.flatMap(it=>itemCurves(it).flatMap(c=>{const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),steps=Math.ceil((d(c.p0,c.c1)+d(c.c1,c.c2)+d(c.c2,c.p3))*2);return Array.from({length:steps+1},(_,i)=>trace.at(c,i/steps))}));
+  let worst=0;
+  for(const [from,to] of [[boundary,samples],[samples,boundary]]){
+    const buckets=new Map();for(const p of to){const key=`${Math.floor(p.x/tolerance)},${Math.floor(p.y/tolerance)}`;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(p)}
+    for(const p of from){let nearest=Infinity;const x=Math.floor(p.x/tolerance),y=Math.floor(p.y/tolerance);for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)for(const q of buckets.get(`${x+dx},${y+dy}`)||[])nearest=Math.min(nearest,Math.hypot(p.x-q.x,p.y-q.y));worst=Math.max(worst,nearest);assert.ok(nearest<tolerance,`Contour deviates from boundary or loses a feature at ${p.x},${p.y}: ${nearest}px`)}
+  }
+  return worst;
+}
+for(const [im,output] of [[logo,logoResult],[disc,discResult],[opaque,solid]])checkContourFidelity(im,output);
 const referenceSamples=denseCurves.flatMap(c=>Array.from({length:11},(_,i)=>trace.at(c,i/10))),sparseSamples=itemCurves(sparseArc).flatMap(c=>Array.from({length:401},(_,i)=>trace.at(c,i/400)));
 for(const [a,b] of [[referenceSamples,sparseSamples],[sparseSamples,referenceSamples]])for(const p of a)assert.ok(Math.min(...b.map(q=>Math.hypot(p.x-q.x,p.y-q.y)))<1.6,'Simplified arc stays within tolerance in both directions');
 console.log(`Sparse editable arc OK: ${denseArc.points.length} -> ${sparseArc.points.length} anchors; exact endpoints, interior T, review and closure preserved.`);
@@ -87,7 +117,7 @@ assert.equal(joined.pointHandleAngles[joined.points.length-1].inLength,b.pointHa
 const review=context.transformAutoTraceItems({...result,issues:[{...result.items[0].points[0],message:'review'}]},{x:0,y:0,w:100,h:100,r:0},100,100,'review',()=>`review-${seq++}`);
 assert.ok(review.some(it=>Object.values(it.autoTraceReview||{}).includes('review')),'Review marks survive Apply and serialization');
 
-const nativeItems=context.transformAutoTraceItems({items:[...result.items,...c.items,sparseArc,sparseClosed]}, {x:0,y:0,w:100,h:100,r:0},100,100,'native',()=>`native-${seq++}`);
+const nativeItems=context.transformAutoTraceItems({items:[...result.items,...c.items,sparseArc,sparseClosed,...logoResult.items,...discResult.items]}, {x:0,y:0,w:100,h:100,r:0},100,100,'native',()=>`native-${seq++}`);
 assert.ok(nativeItems.every(it=>it.layerGroup?.id==='trace-native'&&it.layerGroup.collapsed),'Apply puts every predicted curve into one collapsed editable folder');
 const nativeCode='import sys,json;sys.path.insert(0,"app");import bridge;print(json.dumps([bridge.freeform_node_points(it) for it in json.load(sys.stdin)]))';
 const native=spawnSync(process.env.PYTHON||'python',['-X','utf8','-c',nativeCode],{cwd:root,input:JSON.stringify(nativeItems),encoding:'utf8'});assert.equal(native.status,0,native.stderr);
@@ -99,6 +129,7 @@ console.log('Auto trace editor tests OK: shared-node movement, detach, save/relo
 assert.ok(!ui.includes('auto-trace-preview'),'No regenerate button or dependency remains');
 const elements=new Map(),timers=new Map(),workers=[];let timerId=0;
 const defaults={'auto-trace-threshold':['150',40,220],'auto-trace-accuracy':['2.5',.3,6],'auto-trace-simplify':['90',0,100],'auto-trace-min-length':['3',0,30]};
+for(const id of Object.keys(defaults))assert.match(ui,new RegExp(`id="${id}"[^>]*type="range"`),'Every tuning control is a slider');
 function element(id){if(!elements.has(id)){const [value='',min=-Infinity,max=Infinity]=defaults[id]||[];elements.set(id,{value,innerHTML:'',textContent:'',disabled:false,open:false,attributes:{},style:{},insertAdjacentHTML(){},addEventListener(){},showModal(){this.open=true},close(){this.open=false},setAttribute(k,v){this.attributes[k]=v},checkValidity(){return this.value!==''&&Number.isFinite(Number(this.value))&&Number(this.value)>=min&&Number(this.value)<=max}})}return elements.get(id)}
 const reference={id:'ref',type:'image',referenceOnly:true,preserveFull:true,src:'data:image/png;base64,fixture',x:0,y:0,w:100,h:100,r:0};
 const controller=vm.createContext({console,URL,Blob,AutoTrace:trace,Uint8Array,Map,Number,Math,JSON,selected:'ref',items:[reference],traceDraft:null,activeProjectId:'project',activePageId:'page',deepCopy:context.deepCopy,esc:String,byId:id=>id==='ref'?reference:null,
@@ -112,6 +143,7 @@ const flush=async()=>{for(const [id,fn] of [...timers]){timers.delete(id);fn()}a
 const reply=(worker,data)=>worker.onmessage({data});
 await controller.actions.open();assert.equal(workers.length,1,'Opening predicts immediately');
 assert.equal(workers[0].payload.options.accuracy,2.5);assert.equal(workers[0].payload.options.simplify,90);
+assert.equal(workers[0].payload.options.mode,'auto');assert.equal(element('auto-trace-simplify-value').textContent,'90%');
 reply(workers[0],{type:'result',result});
 assert.equal((element('auto-trace-anchors').innerHTML.match(/data-preview-anchor=/g)||[]).length,result.stats.anchors,'Preview displays every actual editable anchor');
 assert.equal(context.transformAutoTraceItems(result,{x:0,y:0,w:100,h:100},100,100,'count',()=>`count-${seq++}`).reduce((n,it)=>n+it.points.length,0),result.stats.anchors,'Apply cannot add hidden anchors');
@@ -131,6 +163,9 @@ assert.equal(element('auto-trace-lines').innerHTML,'');assert.equal(element('aut
 controller.actions.change();await flush();const pending=workers.at(-1);controller.actions.cancel();reply(pending,{type:'result',result});
 assert.ok(pending.terminated);assert.equal(element('auto-trace-dialog').open,false);assert.equal(element('auto-trace-lines').innerHTML,'','Canceled reply cannot resurrect lines');
 await controller.actions.open();controller.actions.change();controller.actions.cancel();assert.equal(timers.size,0,'Cancel stops a scheduled prediction');
+await controller.actions.open();element('auto-trace-mode').value='contour';controller.actions.change();await flush();assert.equal(workers.at(-1).payload.options.mode,'contour');
+reply(workers.at(-1),{type:'result',result:logoResult});assert.match(element('auto-trace-summary').textContent,/Logo 輪廓/);
+element('auto-trace-threshold').value='220';element('auto-trace-reset').onclick();await flush();assert.equal(workers.at(-1).payload.options.mode,'auto');assert.equal(workers.at(-1).payload.options.threshold,150);controller.actions.cancel();
 assert.equal(controller.items.length,1,'Preview and cancel never create canvas objects');
 console.log('Auto trace live preview OK: immediate pen lines, broad defaults, automatic input updates, stale results, validation, errors and cancellation.');
 
@@ -159,6 +194,7 @@ if(process.argv[2]){
   assert.equal(read.status,0,read.stderr?.toString());const w=read.stdout.readUInt32LE(0),h=read.stdout.readUInt32LE(4),data=new Uint8Array(read.stdout.subarray(8));
   const start=performance.now(),output=trace.run({width:w,height:h,data});
   console.log(JSON.stringify({...output.stats,seconds:(performance.now()-start)/1000}));
+  if(output.stats.mode==='contour')console.log(`Bidirectional contour fidelity: ${checkContourFidelity({width:w,height:h,data},output).toFixed(3)}px max`);
   const distances=[];
   for(const it of output.items)for(let i=0;i<(it.closed?it.points.length:it.points.length-1);i++){
     const j=(i+1)%it.points.length,p=it.points[i],q=it.points[j],a=it.pointHandleAngles[i],b=it.pointHandleAngles[j];

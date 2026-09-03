@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v23-incremental';
+const CACHE_NAME = 'skechu-ppt-v25-workspace';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,7 +7,8 @@ const APP_SHELL = [
   './paint-layers.js?v=22-visibility-web-native',
   './paint-tools.js?v=22-visibility-web-native',
   './pan-tool.js',
-  './selection-controls.js?v=22-visibility-web-native',
+  './selection-controls.js?v=25-workspace',
+  './workspace-actions.js?v=25-workspace',
   './layer-controls.js?v=22-visibility-web-native',
   './layer-controls.css?v=22-visibility-web-native',
   './clipboard-controls.js?v=23-incremental',
@@ -17,10 +18,10 @@ const APP_SHELL = [
   './web-ppt.html',
   './clipboard-controls.css?v=17-file-worker-r2',
   './paint-tools.css?v=22-visibility-web-native',
-  './auto-trace.js?v=17-file-worker',
-  './auto-trace-ui.js?v=20-layer-groups',
+  './auto-trace.js?v=24-logo-sliders',
+  './auto-trace-ui.js?v=24-logo-sliders',
   './auto-trace-worker.js',
-  './auto-trace.css',
+  './auto-trace.css?v=24-logo-sliders',
   './manifest.webmanifest',
   './skechu-mark.svg',
   './skechu-icon.png',

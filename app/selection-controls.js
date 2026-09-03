@@ -20,6 +20,26 @@ function clearSelectionState(refresh = true) {
   if (refresh) { refreshSelectionUI(); document.getElementById('status').textContent = '已取消全部選取'; }
 }
 function selectableOnCanvas(it) { return !!it && !it.locked && !it.hidden; }
+function multiSelectionMarkup() {
+  const shared = new Set(), primary = byId(selected);
+  const targets = [primary, ...[...selectedIds].filter(id => id !== selected).map(byId)].filter(it => it && selectedIds.has(it.id) && !it.hidden);
+  return targets.map(it => {
+    if (!it.locked && ['arrow', 'polygon'].includes(it.type) && it.points?.length) {
+      return it.points.map((p, index) => {
+        // Do not confuse explicit cubic handles with anchors; draw a shared
+        // T junction only once, preferring the currently active branch.
+        if (it.explicitBezier && !it.closed && index % 3 !== 0) return '';
+        const junction = it.pointJunctions?.[index], key = junction == null ? null : `${junction}:${p.x}:${p.y}`;
+        if (key && shared.has(key)) return '';
+        if (key) shared.add(key);
+        const active = it.id === selected && selectedPoints.has(index), kind = it.type === 'arrow' ? 'arrow-point' : 'poly-point';
+        return `<circle class="endpoint-hit group-anchor-hit" data-handle="${kind}" data-anchor-owner="${esc(it.id)}" data-point="${index}" cx="${p.x}" cy="${p.y}" r="12"><title>錨點 ${index + 1}：點選或拖曳精修這條線</title></circle><circle class="endpoint group-anchor ${active ? 'active' : ''}" cx="${p.x}" cy="${p.y}" r="7"/>`;
+      }).join('');
+    }
+    const b = itemBounds(it);
+    return `<rect class="group-outline" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>`;
+  }).join('');
+}
 function imageSelectionMarkup(it) {
   const corners = [['tl', it.x, it.y], ['tr', it.x + it.w, it.y], ['bl', it.x, it.y + it.h], ['br', it.x + it.w, it.y + it.h]];
   const handles = it.locked ? '' : corners.map(([key, x, y]) => `<circle class="handle image-resize-hit" data-handle="${key}" cx="${x}" cy="${y}" r="18"/><circle class="handle image-resize-dot" cx="${x}" cy="${y}" r="7"/>`).join('');
@@ -43,7 +63,7 @@ function beginBackgroundSelection(event, capture = svg) {
   if (!event.shiftKey) document.getElementById('status').textContent = '已取消全部選取；按住右鍵拖曳可框選';
 }
 function selectionContextTarget(event) {
-  return event.target.closest('[data-id]')?.dataset.id ||
+  return event.target.closest('[data-anchor-owner]')?.dataset.anchorOwner || event.target.closest('[data-id]')?.dataset.id ||
     (event.target.closest('[data-handle],[data-segment],[data-action]') ? selected : null);
 }
 function showSelectionContextMenu(id, x, y) {
@@ -80,7 +100,12 @@ function beginSelectionPointerDown(event, {action, h, g, before}) {
     else if (a === 'remove-poly-point') removeNodeFromSelected(3);
     return;
   } else if (h) {
-    const it = byId(selected); if (!selectableOnCanvas(it)) return;
+    const owner = h.dataset.anchorOwner || selected, it = byId(owner);
+    if (!selectableOnCanvas(it)) return;
+    if (h.dataset.anchorOwner && (owner !== selected || selectedIds.size > 1)) {
+      selected = owner; selectedIds = new Set([owner]);
+      selectedPoint = selectedSegment = null; selectedPoints.clear(); editPoints = true;
+    }
     selectedSegment = null;
     const hasPoint = h.dataset.point != null, index = hasPoint ? Number(h.dataset.point) : null;
     const anchor = ['arrow-point', 'poly-point'].includes(h.dataset.handle);

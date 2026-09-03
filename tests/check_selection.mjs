@@ -28,7 +28,7 @@ const ctx=vm.createContext({
   selectedIds:new Set(),selectedPoints:new Set(),editPoints:false,drag:null,marqueeRect:null,
   history:[],future:[],snapLines:[],snapAnchors:[],hotAnchor:null,traceSnapTarget:null,
   tracePenOn:false,traceDraft:null,traceJoinMode:false,paintTool:null,zoom:1,
-  deepCopy:plain,snap:v=>v,svgPt:e=>({x:e.clientX,y:e.clientY}),
+  deepCopy:plain,esc:String,snap:v=>v,svgPt:e=>({x:e.clientX,y:e.clientY}),
   render(){sceneRenders++},renderSelection(){},renderLayers(){},syncControls(){},syncSplitHandleLengthControls(){},syncArrowAttachments(){},
   closestSelectionHandle:(e,h)=>h,ctrlSnapPoint:p=>p,magneticEdgeSnap:p=>p,
   itemBounds:it=>it.points ? {x:Math.min(...it.points.map(p=>p.x)),y:Math.min(...it.points.map(p=>p.y)),w:Math.max(...it.points.map(p=>p.x))-Math.min(...it.points.map(p=>p.x)),h:Math.max(...it.points.map(p=>p.y))-Math.min(...it.points.map(p=>p.y))} : it,
@@ -190,11 +190,34 @@ assert.match(html,/data-outline-only=/);assert.match(html,/items\.filter\(select
 assert.ok(!html.includes('左鍵拖空白可框選'),'Help text must match right-button marquee');
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
 for(const asset of ['paint-layers.js','paint-tools.js','paint-tools.css','selection-controls.js']) {
-  const versioned=asset+'?v=22-visibility-web-native';
+  const versioned=asset+(asset==='selection-controls.js'?'?v=25-workspace':'?v=22-visibility-web-native');
   assert.ok(html.includes('"'+versioned+'"'),'Changed runtime asset must bypass stale HTTP caches: '+asset);
   assert.ok(worker.includes("'./"+versioned+"'"),'Offline cache must use the same asset version: '+asset);
 }
 console.log('Selection audit OK: blank/checkerboard clicks, Shift toggles, group/anchor drag, marquee, locked reference, jitter, undo/redo, cancellation and mode isolation.');
+
+reset(['line','other']);ctx.items.push({...plain(arrow),id:'other',points:arrow.points.map(p=>({x:p.x+100,y:p.y-100}))});
+let multi=ctx.multiSelectionMarkup();
+assert.equal((multi.match(/group-anchor-hit/g)||[]).length,6);assert.ok(!multi.includes('group-outline'),'Multiple curves use anchors, not bounding rectangles');
+assert.ok(!multi.includes('point-tool')&&!multi.includes('control-guide'),'Multi-selection does not cover the artwork with tangent/polygon guides');
+const groupBefore=ctx.state(),groupSelection=ctx.selectionSnapshot();
+const ownHandle={dataset:{handle:'arrow-point',point:'1',anchorOwner:'line'},getAttribute:()=>0};
+ctx.beginSelectionPointerDown(event(330,420),{h:ownHandle,before:groupSelection});
+assert.equal(ctx.selected,'line');assert.deepEqual([...ctx.selectedIds],['line']);assert.equal(ctx.selectedPoint,1,'Clicking a secondary anchor selects the correct path/index');
+move(event(350,435));up(event(350,435));assert.equal(ctx.byId('line').points[1].x,350);assert.equal(ctx.byId('other').points[1].x,430,'Anchor drag does not edit a different owner');
+assert.equal(ctx.history[0],groupBefore);
+ctx.items=JSON.parse(groupBefore);ctx.restoreSelectionSnapshot(groupSelection);ctx.history=[];ctx.future=['redo'];
+ctx.beginSelectionPointerDown(event(330,420),{h:ownHandle,before:ctx.selectionSnapshot()});move(event(350,435));ctx.finishSelectionGesture(null,true);
+assert.equal(ctx.state(),groupBefore);assert.deepEqual([...ctx.selectedIds],['line','other'],'Cancel restores the full multi-selection');
+ctx.byId('line').pointJunctions={0:'shared'};ctx.byId('other').pointJunctions={0:'shared'};ctx.byId('other').points[0]={...ctx.byId('line').points[0]};
+assert.equal((ctx.multiSelectionMarkup().match(/group-anchor-hit/g)||[]).length,5,'Shared T junction is drawn once');
+ctx.byId('other').hidden=true;assert.equal((ctx.multiSelectionMarkup().match(/group-anchor-hit/g)||[]).length,3);
+ctx.byId('line').locked=true;assert.ok(!ctx.multiSelectionMarkup().includes('data-handle='),'Locked/hidden members expose no editable anchors');
+reset(['line','b']);assert.match(ctx.multiSelectionMarkup(),/group-outline/,'Mixed non-path objects still have visible selection bounds');
+const renderContext=vm.createContext({...ctx,selection:{innerHTML:'',insertAdjacentHTML(where,text){this.innerHTML+=text}},snapOverlay:()=>'',scaleSelectionOverlay:()=>{}});
+const renderer=html.slice(html.indexOf('function renderSelection('),html.indexOf('function renderLayers('));vm.runInContext(renderer,renderContext);
+renderContext.renderSelection();assert.match(renderContext.selection.innerHTML,/group-anchor-hit/,'Production renderSelection uses the multi-anchor overlay');
+console.log('Multi-selection anchors OK: per-owner drag/cancel, shared nodes, hidden/locked safety and mixed object bounds.');
 
 if(process.argv.includes('--fixture')) {
   const dir=fileURLToPath(new URL('../app/.codex-tmp/selection-qa/',import.meta.url));fs.mkdirSync(dir,{recursive:true});

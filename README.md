@@ -30,10 +30,14 @@ Want it to feel like a normal app? The web edition can be added to your desktop,
 ## Make your first trace
 
 1. Open Skechu-PPT and choose **Import image to start tracing**.
-2. Choose **自動描圖 (Auto trace)** to generate editable curves from a line-art reference, or use the tracing pen to follow visible boundaries by placing anchors yourself.
+2. Choose **自動描圖 (Auto trace)** to generate editable curves from a line-art reference or a solid Logo, or use the tracing pen to follow visible boundaries by placing anchors yourself.
 3. Download the result as an editable **SVG**, or save the whole workspace as a portable **`.skc` project**.
 
 On the Windows edition, select your vectors and choose **Copy to PPT** to paste them into PowerPoint as separately editable native shapes.
+
+Right-click a **page thumbnail** for page copy/paste, duplication, rename, blank-page insertion, reordering and deletion. Page copies preserve the canvas size and remain independently editable. To add an ordinary image layer, choose **Copy image** on a web image, return to the canvas and press **Ctrl+V** (not Copy image address). The pasted image keeps its proportions, is unlocked, and supports Undo; text fields retain normal paste. Multi-selected curves display their anchors instead of individual bounding rectangles: drag a stroke to move the group, or click an anchor to edit that path.
+
+**Auto trace without guessing parameters:** leave **自動判斷** selected. Thin drawings use centerlines with shared T-junctions; solid black/white Logos use closed outlines around dark regions and their cutouts. You can override this with **細線稿** or **Logo 輪廓**. The result is editable pen curves, not automatically recolored artwork. All four controls are live sliders: **深淺辨識** (dark only → include lighter detail), **曲線柔順** (closer fit → smoother), **錨點精簡** (more → fewer control points), and **細節清理** (keep tiny details → remove small fragments). Start with the recommended defaults; move the first slider right for missing detail or left for unwanted shading. **恢復推薦設定** resets everything. Preview is isolated until **套用線圖**, and applying creates one undoable layer group without changing the reference image.
 
 The toolbar also has **全選並複製** (select all and copy). Both editions keep the PPT button visible, with a persistent success/error message. **The web editor can copy directly to native editable PowerPoint shapes on Windows**: install/start Skechu-PPT **v0.1.2 or later**, click **複製到 PPT** (or Ctrl+C), and approve the local connection window with **允許連接**. Keep that small window open, wait for **複製成功**, then press Ctrl+V in desktop PowerPoint. You keep drawing on the website—no `.skc` transfer is needed. See the [connection guide](docs/install.md#copy-from-open-web-directly-to-powerpoint).
 

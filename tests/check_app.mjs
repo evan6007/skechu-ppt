@@ -8,7 +8,7 @@ for (const [, source] of scripts) {
   if (source.trim()) new Function(source);
 }
 const smoothing=fs.readFileSync(new URL('../app/local-smoothing.js',import.meta.url),'utf8');
-for(const file of ['auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css','paint-layers.js','paint-tools.js','paint-tools.css','pan-tool.js','selection-controls.js','layer-controls.js','layer-controls.css','clipboard-controls.js','web-ppt-client.js','web-ppt-helper.js','web-ppt.html','ppt-preparation.js','clipboard-controls.css']){
+for(const file of ['auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css','paint-layers.js','paint-tools.js','paint-tools.css','pan-tool.js','selection-controls.js','workspace-actions.js','layer-controls.js','layer-controls.css','clipboard-controls.js','web-ppt-client.js','web-ppt-helper.js','web-ppt.html','ppt-preparation.js','clipboard-controls.css']){
   const asset=fs.readFileSync(new URL('../app/'+file,import.meta.url),'utf8');
   if(file.endsWith('.js'))new Function(asset);
   if(!fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes('./'+file))throw new Error('Missing offline asset '+file);

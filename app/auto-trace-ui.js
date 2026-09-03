@@ -16,11 +16,13 @@ document.querySelector('.tool-group[aria-label="工具模式"]').insertAdjacentH
 document.body.insertAdjacentHTML('beforeend',`
 <dialog id="auto-trace-dialog" aria-labelledby="auto-trace-title">
  <div class="auto-trace-heading"><div><h2 id="auto-trace-title">自動描圖</h2><p>直接預測並畫出描圖筆曲線；調整設定會自動更新。套用後可刪點、拉切線精修。</p></div><button id="auto-trace-cancel" type="button" aria-label="取消自動描圖">✕</button></div>
+ <div class="auto-trace-mode-row"><label for="auto-trace-mode">描圖方式</label><select id="auto-trace-mode"><option value="auto">自動判斷（推薦）</option><option value="line">細線稿 · 沿線中心描</option><option value="contour">Logo 輪廓 · 沿色塊邊緣描</option></select><button id="auto-trace-reset" type="button">恢復推薦設定</button></div>
+ <p id="auto-trace-mode-hint" class="auto-trace-mode-hint">不用先猜參數：細線稿保留分岔，實心 Logo 描出外框與內部留白。</p>
  <div class="auto-trace-options">
-  <label>辨識門檻 <input id="auto-trace-threshold" type="number" min="40" max="220" step="5" value="150"><small>提高可抓較淡的線；太高會抓到填色</small></label>
-  <label>貼線誤差（原圖 px）<input id="auto-trace-accuracy" type="number" min="0.3" max="6" step="0.1" value="2.5"><small>預設大跨步；降低可更貼線，提高可拉更長的弧</small></label>
-  <label>跨步幅度 <input id="auto-trace-simplify" type="range" min="0" max="100" step="5" value="90"><small>越高越少錨點，以較長的圓滑曲線描繪</small></label>
-  <label>忽略碎線（原圖 px）<input id="auto-trace-min-length" type="number" min="0" max="30" step="1" value="3"><small>保留接點間的短支線，不任意補斷口</small></label>
+  <label><span class="auto-trace-option-title">深淺辨識 <output id="auto-trace-threshold-value" for="auto-trace-threshold"></output></span><input id="auto-trace-threshold" aria-label="深淺辨識" type="range" min="40" max="220" step="5" value="150"><span class="auto-trace-range-ends"><span>只抓深色</span><span>包含淺色</span></span><small>漏線往右；抓到多餘的底色往左。</small></label>
+  <label><span class="auto-trace-option-title">曲線柔順 <output id="auto-trace-accuracy-value" for="auto-trace-accuracy"></output></span><input id="auto-trace-accuracy" aria-label="曲線柔順" type="range" min="0.3" max="6" step="0.1" value="2.5"><span class="auto-trace-range-ends"><span>更貼原圖</span><span>更圓滑</span></span><small>往右容許小幅偏離，減少細碎彎折。</small></label>
+  <label><span class="auto-trace-option-title">錨點精簡 <output id="auto-trace-simplify-value" for="auto-trace-simplify"></output></span><input id="auto-trace-simplify" aria-label="錨點精簡" type="range" min="0" max="100" step="5" value="90"><span class="auto-trace-range-ends"><span>更多控制點</span><span>更少控制點</span></span><small>往右以較長的弧線描圖，方便精修。</small></label>
+  <label><span class="auto-trace-option-title">細節清理 <output id="auto-trace-min-length-value" for="auto-trace-min-length"></output></span><input id="auto-trace-min-length" aria-label="細節清理" type="range" min="0" max="30" step="1" value="3"><span class="auto-trace-range-ends"><span>保留小細節</span><span>去掉小碎片</span></span><small>小圖示先靠左；往右會移除短線或小輪廓。</small></label>
  </div>
  <div class="auto-trace-actions"><span class="auto-trace-legend">藍線＝描線</span><label><input id="auto-trace-show-image" type="checkbox" checked> 顯示底圖</label><label><input id="auto-trace-show-anchors" type="checkbox" checked> 實際錨點（青色）</label><label><input id="auto-trace-show-issues" type="checkbox" checked> 待確認（紅圈，非錨點）</label><span id="auto-trace-summary" role="status" aria-live="polite"></span></div>
  <div class="auto-trace-canvas"><svg id="auto-trace-svg" xmlns="http://www.w3.org/2000/svg" aria-label="預測描圖筆線條"><g id="auto-trace-image"></g><g id="auto-trace-lines"></g><g id="auto-trace-anchors" pointer-events="none"></g><g id="auto-trace-issues" pointer-events="none"></g></svg></div>
@@ -30,6 +32,7 @@ const autoTraceDialog=document.getElementById('auto-trace-dialog');
 function cancelAutoTrace(){clearTimeout(autoTraceTimer);autoTraceTimer=null;autoTraceSerial++;autoTraceJob?.terminate();autoTraceJob=null;autoTraceResult=null;autoTraceSource=null;setAutoTraceBusy(false);autoTraceDialog.close()}
 function setAutoTraceBusy(busy){document.getElementById('auto-trace-svg').setAttribute('aria-busy',String(busy));document.getElementById('auto-trace-anchors').innerHTML='';autoTracePreviewSelection=null;document.getElementById('auto-trace-anchor-info').textContent='青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。'}
 function invalidateAutoTrace(){
+ updateAutoTraceSettings();
  clearTimeout(autoTraceTimer);autoTraceTimer=null;autoTraceSerial++;autoTraceJob?.terminate();autoTraceJob=null;autoTraceResult=null;document.getElementById('auto-trace-apply').disabled=true;
  if(!autoTraceDialog.open||!autoTraceSource)return;
  if(!validAutoTraceOptions()){setAutoTraceBusy(false);document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';document.getElementById('auto-trace-summary').textContent='請輸入範圍內的數值，填好後會自動預測';return}
@@ -39,7 +42,21 @@ function invalidateAutoTrace(){
 }
 function validAutoTraceOptions(){return ['auto-trace-threshold','auto-trace-accuracy','auto-trace-simplify','auto-trace-min-length'].every(id=>{const input=document.getElementById(id);return input.value.trim()!==''&&input.checkValidity()})}
 function autoTraceSignature(ref){return JSON.stringify([activeProjectId,activePageId,ref.id,ref.src,ref.x,ref.y,ref.w,ref.h,ref.r])}
-function autoTraceOptions(){return{threshold:Number(document.getElementById('auto-trace-threshold').value),accuracy:Number(document.getElementById('auto-trace-accuracy').value),simplify:Number(document.getElementById('auto-trace-simplify').value),minLength:Number(document.getElementById('auto-trace-min-length').value)}}
+function autoTraceOptions(){return{mode:document.getElementById('auto-trace-mode').value||'auto',threshold:Number(document.getElementById('auto-trace-threshold').value),accuracy:Number(document.getElementById('auto-trace-accuracy').value),simplify:Number(document.getElementById('auto-trace-simplify').value),minLength:Number(document.getElementById('auto-trace-min-length').value)}}
+function updateAutoTraceSettings(){
+ for(const [name,min,max] of [['threshold',40,220],['accuracy',.3,6],['simplify',0,100],['min-length',0,30]]){
+  const input=document.getElementById('auto-trace-'+name),percent=Math.round((Number(input.value)-min)/(max-min)*100);
+  document.getElementById('auto-trace-'+name+'-value').textContent=`${percent}%`;
+  input.setAttribute('aria-valuetext',`${percent}%`);
+ }
+ const mode=autoTraceOptions().mode;
+ document.getElementById('auto-trace-mode-hint').textContent=mode==='contour'?'Logo 輪廓：描出色塊外框與內部留白，不把實心區域縮成骨架。':mode==='line'?'細線稿：沿筆畫中心描圖，保留 T 型分岔；適合大腦線稿。':'不用先猜參數：細線稿保留分岔，實心 Logo 描出外框與內部留白。';
+}
+function resetAutoTraceSettings(){
+ document.getElementById('auto-trace-mode').value='auto';
+ for(const [name,value] of [['threshold',150],['accuracy',2.5],['simplify',90],['min-length',3]])document.getElementById('auto-trace-'+name).value=String(value);
+ invalidateAutoTrace();
+}
 function autoTraceCurvePath(it){let d=`M${it.points[0].x} ${it.points[0].y}`;for(let i=0;i<(it.closed?it.points.length:it.points.length-1);i++){const j=(i+1)%it.points.length,p=it.points[i],q=it.points[j],a=it.pointHandleAngles[i],b=it.pointHandleAngles[j];d+=` C${p.x+Math.cos(a.out*Math.PI/180)*a.outLength} ${p.y+Math.sin(a.out*Math.PI/180)*a.outLength} ${q.x+Math.cos(b.in*Math.PI/180)*b.inLength} ${q.y+Math.sin(b.in*Math.PI/180)*b.inLength} ${q.x} ${q.y}`}return d+(it.closed?' Z':'')}
 function renderAutoTracePreview(){
  const result=autoTraceResult;if(!result)return;
@@ -47,7 +64,9 @@ function renderAutoTracePreview(){
  document.getElementById('auto-trace-lines').innerHTML=result.items.map((it,i)=>`<path class="auto-trace-predicted-line" data-auto-curve="${i}" tabindex="0" role="button" aria-label="描線 ${i+1}：${it.points.length} 個錨點" d="${autoTraceCurvePath(it)}" fill="none" stroke="${autoTracePreviewSelection===i?'#7c3aed':pen.color}" stroke-width="${autoTracePreviewSelection===i?3.5:pen.width}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`).join('');
  document.getElementById('auto-trace-anchors').innerHTML=result.items.flatMap((it,i)=>it.points.map(p=>`<circle data-preview-anchor="${i}" cx="${p.x}" cy="${p.y}" r="${autoTracePreviewSelection===i?7:3.5}" fill="white" stroke="#0891b2" stroke-width="${autoTracePreviewSelection===i?2:1}" vector-effect="non-scaling-stroke"/>`)).join('');
  document.getElementById('auto-trace-issues').innerHTML=result.issues.map(it=>`<circle cx="${it.x}" cy="${it.y}" r="7" fill="none" stroke="#ff2438" stroke-width="2" vector-effect="non-scaling-stroke"><title>${esc(it.message)}</title></circle>`).join('');
- const s=result.stats;document.getElementById('auto-trace-summary').textContent=s.paths?`${s.paths} 條曲線 · ${s.anchors} 個錨點 · ${s.junctions} 個分岔 · ${s.reviewCount} 處待確認`:'沒有找到線條；提高辨識門檻會自動更新';
+ const s=result.stats,mode=s.mode==='contour'?'Logo 輪廓':'細線稿';
+ document.getElementById('auto-trace-summary').textContent=s.paths?`${mode} · ${s.paths} 條曲線 · ${s.anchors} 個錨點${s.mode==='contour'?'':` · ${s.junctions} 個分岔 · ${s.reviewCount} 處待確認`}`:'沒有找到線條；把「深淺辨識」往右拉試試';
+ if(autoTraceOptions().mode==='auto')document.getElementById('auto-trace-mode-hint').textContent=`自動選用「${mode}」${s.mode==='contour'?'：沿色塊邊緣描，不會再擋掉大面積黑色。':'：沿筆畫中心描，保留 T 型分岔。'}不符合預期可手動切換。`;
  document.getElementById('auto-trace-apply').disabled=!result.items.length;
 }
 function inspectAutoTraceCurve(event){const path=event.target.closest('[data-auto-curve]');if(!path||!autoTraceResult)return;autoTracePreviewSelection=Number(path.getAttribute('data-auto-curve'));const it=autoTraceResult.items[autoTracePreviewSelection];renderAutoTracePreview();document.getElementById('auto-trace-anchor-info').textContent=`這段描線：${it.points.length} 個實際錨點。套用後點數相同；紅圈不代表錨點。`}
@@ -148,6 +167,9 @@ document.getElementById('auto-trace-apply').onclick=applyAutoTrace;
 document.getElementById('auto-trace-cancel').onclick=cancelAutoTrace;
 autoTraceDialog.addEventListener('cancel',e=>{e.preventDefault();cancelAutoTrace()});
 for(const id of ['auto-trace-threshold','auto-trace-accuracy','auto-trace-simplify','auto-trace-min-length'])document.getElementById(id).addEventListener('input',invalidateAutoTrace);
+document.getElementById('auto-trace-mode').addEventListener('change',invalidateAutoTrace);
+document.getElementById('auto-trace-reset').onclick=resetAutoTraceSettings;
+updateAutoTraceSettings();
 document.getElementById('auto-trace-show-image').onchange=e=>{document.getElementById('auto-trace-image').style.display=e.target.checked?'':'none'};
 document.getElementById('auto-trace-show-anchors').onchange=e=>{document.getElementById('auto-trace-anchors').style.display=e.target.checked?'':'none'};
 document.getElementById('auto-trace-lines').onclick=inspectAutoTraceCurve;

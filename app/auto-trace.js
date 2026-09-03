@@ -1,4 +1,4 @@
-/* Local line-art vectorization. No network or raster data is retained in output.
+/* Local line-art and silhouette vectorization. No raster data is retained in output.
  * Binary thinning follows the published Zhang-Suen deletion conditions:
  * https://docs.opencv.org/3.4.12/df/d2d/group__ximgproc.html
  * Junction graph extraction and constrained cubic fitting are implemented here.
@@ -157,13 +157,109 @@ const AutoTrace = (function createAutoTrace() {
     const links={};if(junctions.has(path.start))links[0]=`j${path.start}`;if(junctions.has(path.end))links[path.closed?0:points.length-1]=`j${path.end}`;
     return {type:'arrow',name:'自動描圖線',points,pointHandleAngles:handles,pointJunctions:links,curved:true,explicitBezier:false,closed:path.closed,color,width,startHead:false,endHead:false,style:'solid',fill:'#dbeafe',fillOpacity:0,autoTrace:true};
   }
+  function hasSolidAreas(mask,w,h,ink){
+    // Look for substantial stroke interiors, not just global image coverage:
+    // a small solid logo on a large blank page needs contours too.
+    let core=0;
+    for(let y=3;y<h-3;y++)for(let x=3;x<w-3;x++){
+      const i=y*w+x;if(!mask[i])continue;
+      if(mask[i-3]&&mask[i+3]&&mask[i-3*w]&&mask[i+3*w]&&mask[i-3*w-3]&&mask[i-3*w+3]&&mask[i+3*w-3]&&mask[i+3*w+3])core++;
+    }
+    return ink>w*h*.32||core>ink*.18;
+  }
+  function contours(mask,w,h){
+    // Oriented pixel-cell edges keep holes and image-border outlines closed.
+    // At diagonal contacts turn right: touching islands are not merged into a
+    // self-crossing figure eight. The dark region stays on the right.
+    const stride=w+1,edges=new Set(),delta=[1,stride,-1,-stride],loops=[];
+    const add=(x,y,d)=>{edges.add((y*stride+x)*4+d);if(edges.size>300000)throw new Error('輪廓細節太多；請減少淺色辨識或縮小底圖後重試。')};
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(mask[y*w+x]){
+      const i=y*w+x;
+      if(!y||!mask[i-w])add(x,y,0);
+      if(x===w-1||!mask[i+1])add(x+1,y,1);
+      if(y===h-1||!mask[i+w])add(x+1,y+1,2);
+      if(!x||!mask[i-1])add(x,y+1,3);
+    }
+    while(edges.size){
+      const first=edges.values().next().value,start=Math.floor(first/4),points=[];let key=first;
+      while(true){
+        const vertex=Math.floor(key/4),d=key%4;edges.delete(key);
+        points.push({x:vertex%stride,y:Math.floor(vertex/stride)});
+        const next=vertex+delta[d];if(next===start)break;
+        const turn=[(d+1)%4,d,(d+3)%4,(d+2)%4].find(dir=>edges.has(next*4+dir));
+        if(turn===undefined)throw new Error('輪廓未能封閉，請調整深淺辨識後重試。');
+        key=next*4+turn;
+      }
+      loops.push(points);
+    }
+    return loops;
+  }
+  function fitContour(points,error){
+    const n=points.length,cyclic=i=>points[(i+n)%n],corners=[];
+    // Detect corners around the entire ring, including its seam. Only two
+    // genuinely straight legs qualify; raster stairs and round caps do not.
+    for(let i=0;i<n;i++){
+      let l=1,r=1;while(l<n/2&&dist(cyclic(i),cyclic(i-l))<6)l++;while(r<n/2&&dist(cyclic(i),cyclic(i+r))<6)r++;
+      const a=cyclic(i-l),b=cyclic(i),c=cyclic(i+r),left=sub(b,a),right=sub(c,b),dl=dist(a,b),dr=dist(b,c),score=dot(unit(left),unit(right));
+      if(dl<5||dr<5||score>.65)continue;
+      let deviation=0;
+      for(let j=1;j<l;j++){const v=sub(cyclic(i-l+j),a);deviation=Math.max(deviation,Math.abs(v.x*left.y-v.y*left.x)/dl)}
+      for(let j=1;j<r;j++){const v=sub(cyclic(i+j),b);deviation=Math.max(deviation,Math.abs(v.x*right.y-v.y*right.x)/dr)}
+      if(deviation>.65)continue;
+      const last=corners.at(-1);
+      if(last&&dist(points[last.i],b)<6){if(score<last.score)corners[corners.length-1]={i,score}}else corners.push({i,score});
+    }
+    if(corners.length>1&&dist(points[corners[0].i],points[corners.at(-1).i])<6){if(corners[0].score<=corners.at(-1).score)corners.pop();else corners.shift()}
+    const protectedPoints=new Set(corners.map(c=>c.i)),straightStarts=new Map(),straightEnds=new Map();
+    // Keep long horizontal/vertical Logo edges truly straight. Fitting the
+    // whole rounded rectangle at once can otherwise bow its long sides.
+    const direction=i=>{const a=cyclic(i),b=cyclic(i+1);return b.x>a.x?0:b.y>a.y?1:b.x<a.x?2:3};
+    for(let i=0;i<n;i++)if(direction(i)!==direction((i+n-1)%n)){
+      let span=1;while(span<n&&direction((i+span)%n)===direction(i))span++;
+      if(span<30)continue;
+      const end=(i+span)%n;straightStarts.set(i,end);straightEnds.set(end,i);protectedPoints.add(i);protectedPoints.add(end);
+    }
+    const filtered=points.map((b,i)=>protectedPoints.has(i)?b:{x:(cyclic(i-1).x+2*b.x+cyclic(i+1).x)/4,y:(cyclic(i-1).y+2*b.y+cyclic(i+1).y)/4});
+    if(protectedPoints.size){
+      const boundaries=[...protectedPoints].sort((a,b)=>a-b),sharp=new Set(corners.map(c=>c.i));
+      const segments=[];
+      for(let k=0;k<boundaries.length;k++){
+        const start=boundaries[k],end=boundaries[(k+1)%boundaries.length],span=(end-start+n)%n||n,part=Array.from({length:span+1},(_,j)=>filtered[(start+j)%n]);
+        if(straightStarts.get(start)===end){const a=points[start],b=points[end];segments.push({p0:a,c1:mix(a,b,1/3),c2:mix(a,b,2/3),p3:b});continue}
+        const left=!sharp.has(start)&&straightEnds.has(start)?unit(sub(points[start],points[straightEnds.get(start)])):tangent(part);
+        const right=!sharp.has(end)&&straightStarts.has(end)?unit(sub(points[end],points[straightStarts.get(end)])):tangent(part,false);
+        segments.push(...fit(part,left,right,error));
+      }
+      return segments;
+    }
+    const mid=Math.floor(n/2),part=filtered.concat([filtered[0]]),span=Math.min(3,Math.floor(n/4)),seam=unit(sub(filtered[span],filtered[n-span])),t=unit(sub(filtered[mid+span],filtered[mid-span]));
+    return fit(part.slice(0,mid+1),seam,neg(t),error).concat(fit(part.slice(mid),t,neg(seam),error));
+  }
+  function traceContours(mask,w,h,ink,accuracy,simplify,minLength,progress){
+    progress(25,'沿 Logo 外框與內部留白描圖');
+    const loops=contours(mask,w,h),items=[];let boundaryPixels=0;
+    for(let k=0;k<loops.length;k++){
+      const points=loops[k];boundaryPixels+=points.length;
+      if(points.length<Math.max(4,minLength))continue;
+      // Logo features may be only 2–3px wide; use a tighter fitting budget
+      // than centerlines so the nib slit/holes survive the default setting.
+      const segments=fitContour(points,accuracy*(.4+.006*simplify)*.4),item=toItem({closed:true},segments,'#123f8c',2.5,new Set());
+      if(item){item.autoTraceMode='contour';items.push(item)}
+      if(items.length>2500)throw new Error('產生太多小輪廓；請增加「細節清理」或減少淺色辨識。');
+      if(k%20===0)progress(50+Math.round(k/loops.length*45),'將輪廓擬合成可編輯曲線');
+    }
+    progress(100,'預覽完成');
+    return {items,issues:[],stats:{mode:'contour',inkPixels:ink,boundaryPixels,skeletonPixels:0,paths:items.length,anchors:items.reduce((sum,it)=>sum+it.points.length,0),junctions:0,reviewCount:0}};
+  }
   function run({width:w,height:h,data,options={}},progress=()=>{}){
     if(!Number.isInteger(w)||!Number.isInteger(h)||w<3||h<3||w*h>5e6||data.length!==w*h*4)throw new Error('圖片尺寸或像素資料不正確（最多 500 萬像素）。');
     const threshold=clamp(Number(options.threshold)||150,40,220),accuracy=clamp(Number(options.accuracy)||2.5,.3,6),simplify=clamp(Number.isFinite(Number(options.simplify))?Number(options.simplify):90,0,100),minLength=clamp(Number.isFinite(Number(options.minLength))?Number(options.minLength):3,0,30);
     const mask=new Uint8Array(w*h);let ink=0;
     for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,j=i*4,a=data[j+3]/255,lum=(.2126*data[j]+.7152*data[j+1]+.0722*data[j+2])*a+255*(1-a);if(lum<threshold){mask[i]=1;ink++}}
-    if(!ink)return {items:[],issues:[],stats:{inkPixels:0,paths:0,anchors:0,junctions:0}};
-    if(ink>w*h*.32)throw new Error('偵測到太多深色面積，可能把填色當成線條；請降低「辨識門檻」。');
+    const requested=['line','contour'].includes(options.mode)?options.mode:'auto',mode=requested==='auto'?(hasSolidAreas(mask,w,h,ink)?'contour':'line'):requested;
+    if(!ink)return {items:[],issues:[],stats:{mode,inkPixels:0,paths:0,anchors:0,junctions:0,reviewCount:0}};
+    if(mode==='contour')return traceContours(mask,w,h,ink,accuracy,simplify,minLength,progress);
+    if(ink>w*h*.32)throw new Error('這張圖有大面積實心色塊，請切換「自動判斷」或「Logo 輪廓」。');
     progress(12,'辨識深色筆畫');
     // Pad with white so outlines touching the image boundary are not cut off.
     const pw=w+2,ph=h+2,padded=new Uint8Array(pw*ph);
@@ -210,7 +306,7 @@ const AutoTrace = (function createAutoTrace() {
     }
     if(result.length>2500)throw new Error('產生太多碎線；請提高忽略碎線或降低辨識門檻。');
     progress(100,'預覽完成');
-    return {items:result,issues:issues.slice(0,300),stats:{inkPixels:ink,skeletonPixels:pixels.length,paths:result.length,anchors:result.reduce((sum,it)=>sum+it.points.length,0),junctions:junctions.size,reviewCount:issues.length}};
+    return {items:result,issues:issues.slice(0,300),stats:{mode,inkPixels:ink,skeletonPixels:pixels.length,paths:result.length,anchors:result.reduce((sum,it)=>sum+it.points.length,0),junctions:junctions.size,reviewCount:issues.length}};
   }
   function simplifyItem(source,curves,error=1.5){
     if(!source?.points?.length||curves.length!==(source.closed?source.points.length:source.points.length-1))throw new Error('這條線的曲線結構不適合直接精簡');
