@@ -22,6 +22,7 @@ for(const name of featureGifs){
 }
 assert.ok(!readme.includes('editor-workflow.gif'),'The obsolete combined montage must not replace four focused demos');
 assert.ok(gifBuilder.includes('fixed_view')&&gifBuilder.includes('trace_view')&&gifBuilder.includes('aero_arrow.cur')&&gifBuilder.includes('ppt_all_selected')&&gifBuilder.includes('ppt_explode'),'Feature demos must use fixed views, a normal system cursor, real magnetic snapping, full PowerPoint selection and independently editable objects');
+assert.ok(browserCapture.includes("ppt-00-unselected.png")&&browserCapture.includes("ppt-01-selected.png")&&gifBuilder.includes('ppt_unselected'),'PowerPoint demo must start unselected, then show Ctrl+A before copying');
 assert.ok(pptCapture.includes('return fills + foreground'),'PowerPoint showcase must keep fills behind the original line art');
 assert.ok(pptCapture.includes('rank_by_index')&&pptCapture.includes('for step in range(49)')&&pptCapture.includes('scribble_targets')&&pptCapture.includes('len(strokes) != 10')&&pptCapture.includes('all_names'),'PowerPoint color regions must fill ten diagonal strokes, then finish with every native object selected');
 assert.ok(browserCapture.includes('window.__brainCanvas=canvasSize()')&&browserCapture.includes('page.canvasHeight=window.__brainCanvas.height'),'Brain demos must restore the project canvas before showing the full artwork');

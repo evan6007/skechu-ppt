@@ -33,7 +33,7 @@
   </tr>
   <tr>
     <td width="50%"><img src="docs/media/feature-rainbow-fill.gif" alt="Enclosed regions formed by the brain line art are filled while T-junction boundaries remain intact"><br><strong>Connected-region fill</strong> — fill enclosed areas formed by your line art, including regions closed by T-junctions.</td>
-    <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="The brain is pasted into PowerPoint, its independent colored regions fill the slide in ten loose diagonal strokes, then Ctrl+A selects every editable object"><br><strong>Native PowerPoint objects</strong> — paste the brain, spread its regions across the slide, and select every editable object.</td>
+    <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="A complex traced brain is selected, copied into PowerPoint, spread across ten loose diagonal strokes, then every editable object is selected"><br><strong>Native PowerPoint objects</strong> — copy any traced artwork into PowerPoint and edit every line, fill, and region independently.</td>
   </tr>
 </table>
 

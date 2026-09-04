@@ -143,11 +143,12 @@ fill_frames += [card("線稿區域填色", "T 字接線也能填色", fill_sourc
 fill_frames += [card("線稿區域填色", "原始線稿完整保留", frame, "#22c55e") for frame in tween(fill_sources[-1], fill_sources[0], 6)]
 save_gif("feature-rainbow-fill.gif", fill_frames)
 
-# 4. Select the rainbow brain, copy, switch to the real PowerPoint window, and paste.
+# 4. Show the untouched brain, select it, copy it, then switch to PowerPoint.
 ppt_browser_bounds = (0.0, 0.0, 1.0, 0.96)
-ppt_selected = fixed_view(open_frame("ppt-00-selected.png"), ppt_browser_bounds)
-ppt_copying = fixed_view(open_frame("ppt-01-copying.png"), ppt_browser_bounds)
-ppt_success = fixed_view(open_frame("ppt-02-success.png"), ppt_browser_bounds)
+ppt_unselected = fixed_view(open_frame("ppt-00-unselected.png"), ppt_browser_bounds)
+ppt_selected = fixed_view(open_frame("ppt-01-selected.png"), ppt_browser_bounds)
+ppt_copying = fixed_view(open_frame("ppt-02-copying.png"), ppt_browser_bounds)
+ppt_success = fixed_view(open_frame("ppt-03-success.png"), ppt_browser_bounds)
 ppt_empty = fixed_view(open_frame("ppt-native-00-empty.png"))
 ppt_pasted = fixed_view(open_frame("ppt-native-01-pasted.png"))
 ppt_all_selected = fixed_view(open_frame("ppt-native-02-all-selected.png"))
@@ -157,8 +158,11 @@ ppt_cursor_path = [
     (430 + (655 - 430) * step / 11, 220 + (18 - 220) * step / 11)
     for step in range(12)
 ]
-ppt_frames = [
-    card("貼到 PowerPoint", "Ctrl+A 全選腦袋", ppt_selected, "#f97316", point, step == 11)
+ppt_frames = [card("貼到 PowerPoint", "彩色腦袋尚未選取", ppt_unselected, "#f97316") for _ in range(8)]
+ppt_frames += [card("貼到 PowerPoint", "Ctrl+A 全選腦袋", frame, "#f97316") for frame in tween(ppt_unselected, ppt_selected, 5)]
+ppt_frames += [card("貼到 PowerPoint", "全部 anchors 已選取", ppt_selected, "#f97316") for _ in range(6)]
+ppt_frames += [
+    card("貼到 PowerPoint", "按下複製到 PPT", ppt_selected, "#f97316", point, step == 11)
     for step, point in enumerate(ppt_cursor_path)
 ]
 ppt_frames += [card("貼到 PowerPoint", "複製可編輯物件", frame, "#f97316") for frame in tween(ppt_selected, ppt_copying, 6)]

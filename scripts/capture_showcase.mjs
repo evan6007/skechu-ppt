@@ -160,13 +160,16 @@ try {
     await capture(`fill-${String(step).padStart(2, '0')}.png`);
   }
 
-  // 4. Select the rainbow brain, copy it, then the companion script pastes the same objects into PowerPoint.
+  // 4. Start from the untouched rainbow brain, visibly select everything,
+  // then copy it before the companion script continues in PowerPoint.
+  await evaluate(`clearSelectionState();render()`);
+  await capture('ppt-00-unselected.png');
   await evaluate(`document.getElementById('select-all').click();document.getElementById('status').textContent='Ctrl+A 全選整顆腦袋'`);
-  await capture('ppt-00-selected.png');
+  await capture('ppt-01-selected.png');
   await evaluate(`setClipboardBusy(true);const bar=document.getElementById('ppt-progress');bar.hidden=false;bar.value=48;clipboardFeedback('正在複製到 PowerPoint','建立可編輯腦袋物件（48%）')`);
-  await capture('ppt-01-copying.png');
+  await capture('ppt-02-copying.png');
   await evaluate(`document.getElementById('ppt-progress').value=100;setClipboardBusy(false);document.getElementById('ppt-progress').hidden=true;clipboardFeedback('複製成功：可編輯 PPT 物件','切到 PowerPoint，按 Ctrl+V 貼上整顆腦袋。','success')`);
-  await capture('ppt-02-success.png');
+  await capture('ppt-03-success.png');
 
   await writeFile(path.join(outputDir, 'showcase-metadata.json'), JSON.stringify(metadata, null, 2));
   console.log(path.resolve(outputDir));
