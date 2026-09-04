@@ -24,28 +24,34 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 PALETTE = ["#ff3b30", "#ff9500", "#ffd60a", "#34c759", "#00c7be", "#0a84ff", "#af52de"]
 
 
-def s_curve_targets(count):
-    """Return equal-distance points on a full-slide S from top-left to bottom-right."""
-    dense = []
-    for step in range(1201):
-        t = step / 1200
-        dense.append((480 - 402 * math.cos(3 * math.pi * t), 54 + 432 * t))
-    cumulative = [0.0]
-    for previous, current in zip(dense, dense[1:]):
-        cumulative.append(cumulative[-1] + math.dist(previous, current))
-
+def scribble_targets(count):
+    """Return loose diagonal brush strokes inspired by the supplied sketch."""
+    strokes = [
+        ((58, 55), (30, 145), (155, 72), (242, 25), 4),
+        ((66, 310), (120, 258), (300, 145), (420, 45), 7),
+        ((178, 508), (390, 420), (650, 278), (878, 32), 10),
+        ((508, 478), (610, 425), (730, 338), (820, 245), 6),
+        ((708, 418), (785, 392), (862, 325), (908, 272), 5),
+        ((850, 458), (886, 430), (930, 390), (948, 440), 5),
+    ]
     points = []
-    cursor = 1
-    for index in range(count):
-        wanted = cumulative[-1] * index / max(1, count - 1)
-        while cursor < len(cumulative) - 1 and cumulative[cursor] < wanted:
-            cursor += 1
-        before = cumulative[cursor - 1]
-        after = cumulative[cursor]
-        mix = 0 if after == before else (wanted - before) / (after - before)
-        x = dense[cursor - 1][0] + (dense[cursor][0] - dense[cursor - 1][0]) * mix
-        y = dense[cursor - 1][1] + (dense[cursor][1] - dense[cursor - 1][1]) * mix
-        points.append((x, y))
+    for p0, p1, p2, p3, amount in strokes:
+        for index in range(amount):
+            t = index / max(1, amount - 1)
+            one_minus = 1 - t
+            x = (one_minus ** 3 * p0[0] + 3 * one_minus ** 2 * t * p1[0]
+                 + 3 * one_minus * t ** 2 * p2[0] + t ** 3 * p3[0])
+            y = (one_minus ** 3 * p0[1] + 3 * one_minus ** 2 * t * p1[1]
+                 + 3 * one_minus * t ** 2 * p2[1] + t ** 3 * p3[1])
+            dx = (3 * one_minus ** 2 * (p1[0] - p0[0])
+                  + 6 * one_minus * t * (p2[0] - p1[0])
+                  + 3 * t ** 2 * (p3[0] - p2[0]))
+            dy = (3 * one_minus ** 2 * (p1[1] - p0[1])
+                  + 6 * one_minus * t * (p2[1] - p1[1])
+                  + 3 * t ** 2 * (p3[1] - p2[1]))
+            points.append((x, y, math.degrees(math.atan2(dy, dx))))
+    if len(points) != count:
+        raise RuntimeError(f"Scribble layout has {len(points)} slots for {count} fills")
     return points
 
 
@@ -159,15 +165,15 @@ try:
     time.sleep(0.5)
     capture(hwnd, "ppt-native-02-all-selected.png")
 
-    # Pull the independent colored regions into a deliberately composed
-    # exploded-view ring. Keep the original line art as a smaller focal point
-    # in the middle instead of leaving a full-size drawing behind the pieces.
+    # Pull the independent colored regions into loose diagonal brush strokes.
+    # Keep the original line art as a small focal point while the larger pieces
+    # fill the slide with controlled variation in size, offset, and rotation.
     fill_names = [ungrouped.Item(index).Name for index in range(1, fill_count + 1)]
     line_names = [ungrouped.Item(index).Name for index in range(fill_count + 1, ungrouped.Count + 1)]
     line_group = slide.Shapes.Range(tuple(line_names)).Group()
     line_group.LockAspectRatio = -1
     line_start = (line_group.Left, line_group.Top, line_group.Width, line_group.Height)
-    line_scale = min(320 / line_group.Width, 225 / line_group.Height)
+    line_scale = min(280 / line_group.Width, 195 / line_group.Height)
     line_target = (
         (960 - line_group.Width * line_scale) / 2,
         (540 - line_group.Height * line_scale) / 2,
@@ -186,20 +192,20 @@ try:
     )
     rank_by_index = {shape_index: rank for rank, shape_index in enumerate(clockwise)}
     targets = []
-    s_positions = s_curve_targets(fill_count)
+    scribble_positions = scribble_targets(fill_count)
     for index, shape in enumerate(fill_shapes):
         rank = rank_by_index[index]
-        target_max_dimension = 62
+        target_max_dimension = 72 + ((rank * 17) % 19)
         display_scale = target_max_dimension / max(shape.Width, shape.Height)
         target_width, target_height = shape.Width * display_scale, shape.Height * display_scale
-        target_center = s_positions[rank]
-        target_left = target_center[0] - target_width / 2
-        target_top = target_center[1] - target_height / 2
+        target_center = scribble_positions[rank]
+        jitter_x = math.sin((rank + 1) * 2.17) * 15
+        jitter_y = math.cos((rank + 1) * 1.73) * 13
+        target_left = target_center[0] + jitter_x - target_width / 2
+        target_top = target_center[1] + jitter_y - target_height / 2
         target_left = max(10, min(950 - target_width, target_left))
         target_top = max(10, min(530 - target_height, target_top))
-        before = s_positions[max(0, rank - 1)]
-        after = s_positions[min(fill_count - 1, rank + 1)]
-        tangent_rotation = math.degrees(math.atan2(after[1] - before[1], after[0] - before[0]))
+        tangent_rotation = target_center[2] + math.sin((rank + 1) * 1.91) * 28
         targets.append((target_left, target_top,
                         tangent_rotation,
                         target_width, target_height))
