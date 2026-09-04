@@ -28,12 +28,12 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="A source image becomes editable traced curves in the auto-trace preview"><br><strong>Auto trace</strong> — turn the source image into visible, editable anchors and tune the result live.</td>
-    <td width="50%"><img src="docs/media/feature-anchor-editing.gif" alt="Dragging one anchor visibly reshapes the curve"><br><strong>Anchor editing</strong> — drag a real anchor and see the curve update immediately.</td>
+    <td width="50%"><img src="docs/media/feature-magnetic-trace.gif" alt="A normal pointer approaches a brain boundary and an orange trace point snaps to the edge"><br><strong>Magnetic tracing</strong> — move toward a brain boundary; the orange point snaps to the real edge.</td>
+    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="The brain image is auto-traced and Ctrl+A reveals every editable anchor"><br><strong>Auto trace</strong> — trace the same brain, apply it, and press Ctrl+A to reveal every anchor.</td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/feature-smart-fill.gif" alt="Dragging a swatch fills only one enclosed region while keeping the boundary"><br><strong>Smart fill</strong> — drop a swatch into an enclosed region; the original boundary stays intact.</td>
-    <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="Copied shapes are selected and moved independently in the real PowerPoint interface"><br><strong>Native PowerPoint objects</strong> — paste real Office shapes, then select and move each object independently.</td>
+    <td width="50%"><img src="docs/media/feature-rainbow-fill.gif" alt="Precomputed enclosed regions fill the same brain with seven colors in one sweep"><br><strong>Rainbow speed fill</strong> — precompute enclosed regions and color the same brain in seven colors instantly.</td>
+    <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="The selected brain is copied from Skechu-PPT and pasted as editable objects into the real PowerPoint interface"><br><strong>Native PowerPoint paste</strong> — select the brain, copy, switch to PowerPoint, and paste editable Office objects.</td>
   </tr>
 </table>
 

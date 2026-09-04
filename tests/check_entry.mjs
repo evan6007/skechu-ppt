@@ -13,7 +13,7 @@ assert.match(svg,/<title[^>]*>Open Web/);
 assert.match(svg,/No installation/);
 assert.ok(!/<script|foreignObject|(?:href|src)=/i.test(svg),'The entry card is a self-contained static SVG');
 assert.ok(readme.includes('Copy to PPT is Windows-only'),'Platform limitations remain explicit');
-const featureGifs=['feature-auto-trace.gif','feature-anchor-editing.gif','feature-smart-fill.gif','feature-powerpoint.gif'];
+const featureGifs=['feature-magnetic-trace.gif','feature-auto-trace.gif','feature-rainbow-fill.gif','feature-powerpoint.gif'];
 for(const name of featureGifs){
   const path=`docs/media/${name}`,data=fs.readFileSync(new URL('../'+path,import.meta.url));
   assert.ok(readme.includes(path),`README must display ${name}`);
@@ -21,6 +21,6 @@ for(const name of featureGifs){
   assert.ok(data.length>50000,`${name} must contain a meaningful UI recording`);
 }
 assert.ok(!readme.includes('editor-workflow.gif'),'The obsolete combined montage must not replace four focused demos');
-assert.ok(gifBuilder.includes('fixed_view')&&gifBuilder.includes('anchor_sources')&&gifBuilder.includes('ppt_native'),'Feature demos must keep a fixed camera and show real anchor and PowerPoint state changes');
+assert.ok(gifBuilder.includes('fixed_view')&&gifBuilder.includes('trace_view')&&gifBuilder.includes('aero_arrow.cur')&&gifBuilder.includes('ppt_pasted'),'Feature demos must use fixed views, a normal system cursor, real magnetic snapping and real PowerPoint state changes');
 assert.ok(!gifBuilder.includes('moving_view'),'Feature demos must not hide the action behind camera pans or zooms');
-console.log('Web-first entry OK: primary launch card, four action-focused feature GIFs and secondary Windows installer.');
+console.log('Web-first entry OK: primary launch card, four brain-based action GIFs and secondary Windows installer.');

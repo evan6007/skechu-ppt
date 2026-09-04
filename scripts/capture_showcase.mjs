@@ -13,12 +13,13 @@ const chrome = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Ap
 const port = 9300 + Math.floor(Math.random() * 500);
 const profile = await mkdtemp(path.join(os.tmpdir(), 'skechu-showcase-'));
 await mkdir(outputDir, { recursive: true });
+const metadata = {};
 
 const browser = spawn(chrome, [
   '--headless=new', '--disable-gpu', '--disable-background-networking', '--disable-component-update',
   '--force-device-scale-factor=1', '--window-size=1920,1080', `--remote-debugging-port=${port}`,
   '--remote-allow-origins=*', `--user-data-dir=${profile}`,
-  'http://127.0.0.1:8766/?capture=showcase-v2',
+  'http://127.0.0.1:8766/?capture=brain-showcase-v1',
 ], { stdio: 'ignore' });
 const browserExited = new Promise(resolve => browser.once('exit', resolve));
 
@@ -60,19 +61,6 @@ async function capture(name) {
   const result = await command('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false });
   await writeFile(path.join(outputDir, name), Buffer.from(result.data, 'base64'));
 }
-async function setDemoScene(itemsSource, selectedId = null, selectedPointIndex = null) {
-  await evaluate(`(() => {
-    clearTimeout(pptPrepareTimer); pptPrepareTimer = null; queueNativePrepare = () => {};
-    const page = activePage(); page.canvasWidth = 1200; page.canvasHeight = 675;
-    items = ${itemsSource}; selected = ${JSON.stringify(selectedId)};
-    selectedIds = new Set(${selectedId ? `[${JSON.stringify(selectedId)}]` : '[]'});
-    selectedPoint = ${selectedPointIndex == null ? 'null' : selectedPointIndex};
-    selectedPoints = new Set(${selectedPointIndex == null ? '[]' : `[${selectedPointIndex}]`});
-    selectedSegment = null; editPoints = ${selectedPointIndex == null ? 'false' : 'true'};
-    gridOn = false; resetPaintTools(); applyCanvasSize(); render(); fitView();
-  })()`);
-  await delay(250);
-}
 
 try {
   const debuggerUrl = await waitForTarget();
@@ -88,7 +76,7 @@ try {
   });
   await command('Page.enable'); await command('Runtime.enable'); await command('DOM.enable');
   await waitFor('document.readyState === "complete"');
-  await evaluate(`queueNativePrepare = () => {}; clearTimeout(pptPrepareTimer); pptPrepareTimer = null`);
+  await evaluate(`pptAutoPrepareDisabled=true;clearTimeout(pptPrepareTimer);pptPrepareTimer=null`);
 
   const { root } = await command('DOM.getDocument', { depth: -1, pierce: true });
   const { nodeId } = await command('DOM.querySelector', { nodeId: root.nodeId, selector: '#load-json' });
@@ -97,67 +85,92 @@ try {
   await waitFor(`document.querySelectorAll('#workspace-pages [data-page-id]').length >= 2`);
   await evaluate(`document.querySelectorAll('#workspace-pages [data-page-id]')[1].click()`);
   await waitFor(`document.querySelectorAll('#workspace-pages [data-page-id]')[1].classList.contains('active')`);
-  await evaluate(`document.getElementById('fit-view').click();clearSelectionState();document.querySelector('.export-menu').open=false;
-    items.forEach(item=>{if(!item.referenceOnly)item.hidden=true});
-    const reference=items.find(item=>item.referenceOnly);if(reference)Object.assign(reference,{x:300,y:95,w:900,h:600,opacity:1});
-    render();fitView()`);
-  await delay(500);
+  await evaluate(`window.__brainItems=deepCopy(items);pptAutoPrepareDisabled=true;clearTimeout(pptPrepareTimer);pptPrepareTimer=null;
+    const reference=deepCopy(items.find(item=>item.referenceOnly));
+    Object.assign(reference,{x:275,y:65,w:950,h:675,opacity:1,hidden:false});
+    const page=activePage();page.canvasWidth=1500;page.canvasHeight=850;items=[reference];
+    clearSelectionState();applyCanvasSize();render();fitView();setTracePen(true);prepareReferenceEdges()`);
+  await waitFor(`(() => {const r=items.find(x=>x.referenceOnly),c=r&&referenceEdgeCache.get(r.id);return !!c?.edges&&!c.loading})()`, 30000);
 
-  // Auto trace: source, click, busy preview, computed preview, and a visibly different setting.
+  // 1. Magnetic trace: zoomed close-up, normal cursor approaches, orange point snaps to a real edge.
+  const traceSetup = await evaluate(`(() => {
+    const ref=items.find(item=>item.referenceOnly),cache=referenceEdgeCache.get(ref.id);
+    let best=null;
+    for(let y=Math.floor(cache.h*.06);y<Math.floor(cache.h*.38);y++)for(let x=Math.floor(cache.w*.38);x<Math.floor(cache.w*.70);x++){
+      const i=y*cache.w+x;if(!cache.edges[i])continue;
+      const score=y+Math.abs(x-cache.w*.54)*.08-(cache.strengths[i]||0)*.025;
+      if(!best||score<best.score)best={x,y,score};
+    }
+    if(!best)throw new Error('No showcase edge found');
+    const edge={x:ref.x+(best.x+.5)/cache.w*ref.w,y:ref.y+(best.y+.5)/cache.h*ref.h};
+    const matrix=svg.getScreenCTM(),screen=p=>({x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f});
+    return{edge,edgeScreen:screen(edge),viewport:{width:innerWidth,height:innerHeight}};
+  })()`);
+  metadata.trace = {...traceSetup, frames: []};
+  for (let step = 0; step <= 24; step += 1) {
+    const point = await evaluate(`(() => {
+      const edge=${JSON.stringify(traceSetup.edge)},distance=72*(1-${step}/24),raw={x:edge.x-distance*.30,y:edge.y-distance};
+      magneticEdgeSnap(raw);traceRouteValid=true;renderSelection();
+      document.getElementById('status').textContent=traceSnapTarget?'橘色點已吸住腦溝邊界':'游標靠近邊界即可磁吸';
+      const matrix=svg.getScreenCTM(),screen=p=>({x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f});
+      return{cursor:screen(raw),snap:traceSnapTarget?screen(traceSnapTarget):null};
+    })()`);
+    metadata.trace.frames.push(point);
+    await capture(`trace-${String(step).padStart(2, '0')}.png`);
+  }
+
+  // 2. Auto trace: same brain image, real preview, apply, then Ctrl+A shows every anchor.
+  await evaluate(`traceSnapTarget=null;setTracePen(false);items=[deepCopy(items.find(item=>item.referenceOnly))];clearSelectionState();render();fitView()`);
+  await delay(250);
   await capture('auto-00-source.png');
   await evaluate(`document.getElementById('auto-trace').click()`);
   await waitFor(`document.getElementById('auto-trace-dialog').open`);
   await capture('auto-01-opening.png');
   await waitFor(`document.getElementById('auto-trace-svg').getAttribute('aria-busy')==='false'&&!document.getElementById('auto-trace-apply').disabled`, 45000);
-  await capture('auto-02-result.png');
-  await evaluate(`const input=document.getElementById('auto-trace-simplify');input.value='35';input.dispatchEvent(new Event('input',{bubbles:true}))`);
-  await delay(900);
-  await capture('auto-03-updating.png');
-  await waitFor(`document.getElementById('auto-trace-svg').getAttribute('aria-busy')==='false'&&!document.getElementById('auto-trace-apply').disabled`, 45000);
-  await capture('auto-04-detailed.png');
-  await evaluate(`cancelAutoTrace()`);
+  await capture('auto-02-preview.png');
+  await evaluate(`document.getElementById('auto-trace-apply').click()`);
+  await waitFor(`!document.getElementById('auto-trace-dialog').open`);
+  await delay(250);
+  await capture('auto-03-applied.png');
+  const anchorCount = await evaluate(`document.getElementById('select-all').click();items.filter(item=>item.points&&!item.referenceOnly).reduce((sum,item)=>sum+item.points.length,0)`);
+  metadata.autoTraceAnchors = anchorCount;
+  await delay(250);
+  await capture('auto-04-all-anchors.png');
 
-  // Anchor editing: the viewport stays fixed while one real anchor and its curve move.
-  const anchorScene = `[
-    {id:'guide',type:'arrow',name:'修改前',points:[{x:170,y:455},{x:360,y:235},{x:600,y:410},{x:820,y:225},{x:1030,y:445}],color:'#64748b',width:5,curved:true,closed:false,startHead:false,endHead:false,style:'dash',fillOpacity:0,locked:true},
-    {id:'edit-curve',type:'arrow',name:'可編輯曲線',points:[{x:170,y:455},{x:360,y:235},{x:600,y:410},{x:820,y:225},{x:1030,y:445}],color:'#8b5cf6',width:10,curved:true,closed:false,startHead:false,endHead:false,style:'solid',fillOpacity:0,pointSmoothness:{2:100}}
-  ]`;
-  await setDemoScene(anchorScene, 'edit-curve', 2);
-  for (let step = 0; step <= 20; step += 1) {
-    const y = Math.round(410 - 215 * (step / 20));
-    await evaluate(`byId('edit-curve').points[2].y=${y};selected='edit-curve';selectedIds=new Set(['edit-curve']);selectedPoint=2;selectedPoints=new Set([2]);editPoints=true;render();document.getElementById('status').textContent='拖曳錨點，曲線立即跟著改變'`);
-    await capture(`anchor-${String(step).padStart(2, '0')}.png`);
+  // 3. Rainbow speed fill: reveal precomputed brain regions in a fast sweep.
+  const fillInfo = await evaluate(`(() => {
+    items=deepCopy(window.__brainItems);const palette=['#ef4444','#f97316','#facc15','#22c55e','#14b8a6','#3b82f6','#8b5cf6'];
+    items.filter(item=>item.referenceOnly).forEach(item=>item.hidden=true);
+    const fills=items.filter(item=>item.regionFill&&item.points?.length);
+    const xs=fills.flatMap(item=>item.points.map(point=>point.x)),minX=Math.min(...xs),maxX=Math.max(...xs);
+    fills.forEach(item=>{const cx=item.points.reduce((sum,p)=>sum+p.x,0)/item.points.length;
+      const cy=item.points.reduce((sum,p)=>sum+p.y,0)/item.points.length;
+      const stripe=Math.max(0,Math.min(6,Math.floor((cx-minX)/(maxX-minX||1)*7)));
+      item.fill=palette[(stripe+Math.floor(cy/150))%palette.length];item.fillOpacity=1;item.hidden=true;});
+    window.__rainbowFillIds=fills.sort((a,b)=>{
+      const ax=a.points.reduce((s,p)=>s+p.x,0)/a.points.length, bx=b.points.reduce((s,p)=>s+p.x,0)/b.points.length;
+      return ax-bx;
+    }).map(item=>item.id);
+    clearSelectionState();render();fitView();return{count:fills.length,colors:palette};
+  })()`);
+  metadata.rainbow = fillInfo;
+  await capture('fill-00.png');
+  for (let step = 1; step <= 20; step += 1) {
+    await evaluate(`(() => {const ids=window.__rainbowFillIds,limit=Math.ceil(ids.length*${step}/20),visible=new Set(ids.slice(0,limit));
+      items.filter(item=>item.regionFill).forEach(item=>item.hidden=!visible.has(item.id));render();
+      document.getElementById('status').textContent='七彩區域填色 '+Math.round(${step}/20*100)+'%';})()`);
+    await capture(`fill-${String(step).padStart(2, '0')}.png`);
   }
 
-  // Smart fill: a real face computed from an outer boundary plus a divider.
-  const fillScene = `[
-    {id:'outer',type:'box',name:'外框',x:245,y:155,w:720,h:390,r:0,radius:52,fill:'#f8fafc',stroke:'#334155',strokeWidth:9,opacity:1},
-    {id:'divider',type:'arrow',name:'分隔線',points:[{x:605,y:155},{x:605,y:545}],color:'#334155',width:9,curved:false,closed:false,startHead:false,endHead:false,style:'solid',fillOpacity:0}
-  ]`;
-  await setDemoScene(fillScene);
-  await evaluate(`activePaletteColor='#22c55e';renderPalette();document.getElementById('status').textContent='把色票拖進線條圍住的區域'`);
-  await capture('fill-00-before.png');
-  await evaluate(`pendingRegionFace=RegionFill.find(fillNetworkFaces(),{x:420,y:350});setFillHover('network-region-preview');document.getElementById('status').textContent='放開即可填滿這個封閉區域'`);
-  await capture('fill-01-hover.png');
-  await evaluate(`const target={id:'network-region-preview',name:'接線圍出的區域',regionFace:pendingRegionFace};const filled=materializeFillTarget(target);applyColorToItem(filled,'#22c55e',true);selected=filled.id;selectedIds=new Set([filled.id]);selectedPoint=null;selectedPoints.clear();setFillHover(null);render();document.getElementById('status').textContent='填色完成：色塊可獨立編輯，原線條保留'`);
-  await capture('fill-02-after.png');
-
-  // Browser half of the PowerPoint story: selection, foreground copy progress, success.
-  const pptScene = `[
-    {id:'ppt-box',type:'box',name:'標題卡',x:215,y:175,w:330,h:190,r:-4,radius:28,fill:'#ede9fe',stroke:'#7c3aed',strokeWidth:6,opacity:1},
-    {id:'ppt-circle',type:'ellipse',name:'圓形',x:675,y:165,w:210,h:210,r:0,fill:'#ccfbf1',stroke:'#0f766e',strokeWidth:6,opacity:1},
-    {id:'ppt-arrow',type:'arrow',name:'箭頭',points:[{x:330,y:485},{x:590,y:390},{x:870,y:485}],color:'#f97316',width:10,curved:true,closed:false,startHead:false,endHead:true,head:18,headShape:'triangle',style:'solid',fillOpacity:0}
-  ]`;
-  await setDemoScene(pptScene);
-  await evaluate(`selectedIds=new Set(items.map(it=>it.id));selected='ppt-arrow';selectedPoint=null;selectedPoints.clear();render();document.getElementById('status').textContent='3 個物件已選取，準備複製到 PowerPoint'`);
+  // 4. Select the rainbow brain, copy it, then the companion script pastes the same objects into PowerPoint.
+  await evaluate(`document.getElementById('select-all').click();document.getElementById('status').textContent='Ctrl+A 全選整顆腦袋'`);
   await capture('ppt-00-selected.png');
-  await evaluate(`setClipboardBusy(true);const bar=document.getElementById('ppt-progress');bar.hidden=false;bar.value=38;clipboardFeedback('正在複製到 PowerPoint','建立可編輯物件 1/3（38%）')`);
+  await evaluate(`setClipboardBusy(true);const bar=document.getElementById('ppt-progress');bar.hidden=false;bar.value=48;clipboardFeedback('正在複製到 PowerPoint','建立可編輯腦袋物件（48%）')`);
   await capture('ppt-01-copying.png');
-  await evaluate(`document.getElementById('ppt-progress').value=76;clipboardFeedback('正在複製到 PowerPoint','建立可編輯物件 3/3（76%）')`);
-  await capture('ppt-02-copying.png');
-  await evaluate(`setClipboardBusy(false);document.getElementById('ppt-progress').hidden=true;clipboardFeedback('複製成功：可編輯 PPT 物件','貼到 PowerPoint 後，可分別選取與移動。','success')`);
-  await capture('ppt-03-success.png');
+  await evaluate(`document.getElementById('ppt-progress').value=100;setClipboardBusy(false);document.getElementById('ppt-progress').hidden=true;clipboardFeedback('複製成功：可編輯 PPT 物件','切到 PowerPoint，按 Ctrl+V 貼上整顆腦袋。','success')`);
+  await capture('ppt-02-success.png');
 
+  await writeFile(path.join(outputDir, 'showcase-metadata.json'), JSON.stringify(metadata, null, 2));
   console.log(path.resolve(outputDir));
 } finally {
   try { if (socket?.readyState === WebSocket.OPEN) await command('Browser.close'); } catch {}

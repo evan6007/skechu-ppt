@@ -1,24 +1,26 @@
-"""Capture a real PowerPoint edit view for the README feature demo."""
+"""Copy the rainbow brain as native shapes, paste it into PowerPoint, and capture the edit view."""
 
 from pathlib import Path
+import ctypes
+import json
 import sys
 import time
 
 from PIL import Image
 import pythoncom
 import win32com.client
-import win32con
 import win32gui
 import win32ui
-import ctypes
 
 
-OUTPUT = Path(sys.argv[1] if len(sys.argv) > 1 else "docs/media/showcase-frames").resolve()
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "app"))
+import bridge  # noqa: E402
+
+PROJECT = Path(sys.argv[1] if len(sys.argv) > 1 else r"C:\Users\evan6\Downloads\未命名專案 2.skc")
+OUTPUT = Path(sys.argv[2] if len(sys.argv) > 2 else "docs/media/showcase-frames").resolve()
 OUTPUT.mkdir(parents=True, exist_ok=True)
-
-
-def rgb(red, green, blue):
-    return red | (green << 8) | (blue << 16)
+PALETTE = ["#ef4444", "#f97316", "#facc15", "#22c55e", "#14b8a6", "#3b82f6", "#8b5cf6"]
 
 
 def capture(hwnd, name):
@@ -33,8 +35,7 @@ def capture(hwnd, name):
     if not ctypes.windll.user32.PrintWindow(hwnd, memory_dc.GetSafeHdc(), 2):
         raise RuntimeError("PowerPoint window capture failed")
     info = bitmap.GetInfo()
-    bits = bitmap.GetBitmapBits(True)
-    image = Image.frombuffer("RGB", (info["bmWidth"], info["bmHeight"]), bits, "raw", "BGRX", 0, 1)
+    image = Image.frombuffer("RGB", (info["bmWidth"], info["bmHeight"]), bitmap.GetBitmapBits(True), "raw", "BGRX", 0, 1)
     image.save(OUTPUT / name)
     win32gui.DeleteObject(bitmap.GetHandle())
     memory_dc.DeleteDC()
@@ -42,55 +43,40 @@ def capture(hwnd, name):
     win32gui.ReleaseDC(hwnd, window_dc)
 
 
+def rainbow_items():
+    raw = json.loads(PROJECT.read_text(encoding="utf-8"))
+    pages = raw["project"]["pages"]
+    page = pages[1] if len(pages) > 1 else pages[0]
+    items = [item for item in page["items"] if not item.get("referenceOnly") and not item.get("hidden")]
+    fills = [item for item in items if item.get("regionFill") and item.get("points")]
+    xs = [point["x"] for item in fills for point in item["points"]]
+    minimum, maximum = min(xs), max(xs)
+    for item in fills:
+        center_x = sum(point["x"] for point in item["points"]) / len(item["points"])
+        center_y = sum(point["y"] for point in item["points"]) / len(item["points"])
+        stripe = max(0, min(6, int((center_x - minimum) / (maximum - minimum or 1) * 7)))
+        item["fill"] = PALETTE[(stripe + int(center_y / 150)) % len(PALETTE)]
+        item["fillOpacity"] = 1
+    return items
+
+
 pythoncom.CoInitialize()
 app = win32com.client.DispatchEx("PowerPoint.Application")
-presentation = None
+target = None
+scratch = None
 try:
     app.Visible = True
     app.WindowState = 3
-    presentation = app.Presentations.Add()
-    presentation.PageSetup.SlideWidth = 960
-    presentation.PageSetup.SlideHeight = 540
-    slide = presentation.Slides.Add(1, 12)
-
-    title = slide.Shapes.AddTextbox(1, 72, 40, 816, 48)
-    title.TextFrame.TextRange.Text = "每個物件都能在 PowerPoint 單獨編輯"
-    title.TextFrame.TextRange.Font.Name = "Microsoft JhengHei"
-    title.TextFrame.TextRange.Font.Size = 25
-    title.TextFrame.TextRange.Font.Bold = True
-    title.TextFrame.TextRange.Font.Color.RGB = rgb(30, 41, 59)
-
-    subtitle = slide.Shapes.AddTextbox(1, 74, 88, 800, 30)
-    subtitle.TextFrame.TextRange.Text = "選取其中一個物件，直接拖曳位置"
-    subtitle.TextFrame.TextRange.Font.Name = "Microsoft JhengHei"
-    subtitle.TextFrame.TextRange.Font.Size = 14
-    subtitle.TextFrame.TextRange.Font.Color.RGB = rgb(100, 116, 139)
-
-    card = slide.Shapes.AddShape(5, 115, 190, 250, 145)
-    card.Fill.ForeColor.RGB = rgb(237, 233, 254)
-    card.Line.ForeColor.RGB = rgb(124, 58, 237)
-    card.Line.Weight = 4
-    card.Rotation = -4
-
-    circle = slide.Shapes.AddShape(9, 520, 175, 160, 160)
-    circle.Fill.ForeColor.RGB = rgb(204, 251, 241)
-    circle.Line.ForeColor.RGB = rgb(15, 118, 110)
-    circle.Line.Weight = 4
-
-    builder = slide.Shapes.BuildFreeform(0, 210, 420)
-    builder.AddNodes(1, 0, 405, 350)
-    builder.AddNodes(1, 0, 705, 420)
-    arrow = builder.ConvertToShape()
-    arrow.Line.ForeColor.RGB = rgb(249, 115, 22)
-    arrow.Line.Weight = 7
-    arrow.Line.EndArrowheadStyle = 3
-    arrow.Fill.Visible = False
-
+    target = app.Presentations.Add()
+    target.PageSetup.SlideWidth = 960
+    target.PageSetup.SlideHeight = 540
+    slide = target.Slides.Add(1, 12)
+    target.Windows(1).Activate()
     app.ActiveWindow.View.GotoSlide(1)
-    app.ActiveWindow.View.Zoom = 86
-    circle.Select()
+    app.ActiveWindow.View.Zoom = 82
     app.Activate()
-    time.sleep(1.2)
+    time.sleep(0.8)
+
     windows = []
     win32gui.EnumWindows(
         lambda handle, found: found.append(handle)
@@ -99,20 +85,49 @@ try:
         windows,
     )
     if len(windows) != 1:
-        raise RuntimeError(f"Expected one PowerPoint window, found {len(windows)}")
+        raise RuntimeError(f"Expected one PowerPoint window before paste, found {len(windows)}")
     hwnd = windows[0]
-    capture(hwnd, "ppt-native-00.png")
+    capture(hwnd, "ppt-native-00-empty.png")
 
-    start = circle.Left
-    for step in range(1, 21):
-        circle.Left = start + 92 * step / 20
-        circle.Select()
-        time.sleep(0.035)
-        capture(hwnd, f"ppt-native-{step:02d}.png")
+    bridge.STATE["app"] = app
+    bridge.copy_native({"items": rainbow_items(), "scale": 0.75}, copy_clipboard=True)
+    scratch = bridge.STATE.get("presentation")
+    target.Windows(1).Activate()
+    app.ActiveWindow.View.GotoSlide(1)
+    pasted = slide.Shapes.Paste()
+    brain = pasted.Item(1)
+    brain.LockAspectRatio = -1
+    if brain.Height > 430:
+        brain.Height = 430
+    if brain.Width > 800:
+        brain.Width = 800
+    brain.Left = (960 - brain.Width) / 2
+    brain.Top = (540 - brain.Height) / 2
+    brain.Select()
+    app.Activate()
+    time.sleep(1.0)
+    capture(hwnd, "ppt-native-01-pasted.png")
+
+    # Enter the group once to expose the native child shapes and their anchors.
+    try:
+        child = brain.GroupItems.Item(1)
+        child.Select()
+        time.sleep(0.4)
+        capture(hwnd, "ppt-native-02-child-selected.png")
+    except Exception:
+        capture(hwnd, "ppt-native-02-child-selected.png")
 finally:
-    if presentation is not None:
-        presentation.Close()
+    if scratch is not None:
+        try:
+            scratch.Saved = True
+            scratch.Close()
+        except Exception:
+            pass
+    if target is not None:
+        target.Saved = True
+        target.Close()
     app.Quit()
+    bridge.STATE.update(app=None, presentation=None, cached_group=None, cache_key=None)
     pythoncom.CoUninitialize()
 
 print(OUTPUT)
