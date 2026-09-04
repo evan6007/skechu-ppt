@@ -24,6 +24,31 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 PALETTE = ["#ff3b30", "#ff9500", "#ffd60a", "#34c759", "#00c7be", "#0a84ff", "#af52de"]
 
 
+def s_curve_targets(count):
+    """Return equal-distance points on a full-slide S from top-left to bottom-right."""
+    dense = []
+    for step in range(1201):
+        t = step / 1200
+        dense.append((480 - 402 * math.cos(3 * math.pi * t), 54 + 432 * t))
+    cumulative = [0.0]
+    for previous, current in zip(dense, dense[1:]):
+        cumulative.append(cumulative[-1] + math.dist(previous, current))
+
+    points = []
+    cursor = 1
+    for index in range(count):
+        wanted = cumulative[-1] * index / max(1, count - 1)
+        while cursor < len(cumulative) - 1 and cumulative[cursor] < wanted:
+            cursor += 1
+        before = cumulative[cursor - 1]
+        after = cumulative[cursor]
+        mix = 0 if after == before else (wanted - before) / (after - before)
+        x = dense[cursor - 1][0] + (dense[cursor][0] - dense[cursor - 1][0]) * mix
+        y = dense[cursor - 1][1] + (dense[cursor][1] - dense[cursor - 1][1]) * mix
+        points.append((x, y))
+    return points
+
+
 def capture(hwnd, name):
     left, top, right, bottom = win32gui.GetWindowRect(hwnd)
     width, height = right - left, bottom - top
@@ -142,7 +167,7 @@ try:
     line_group = slide.Shapes.Range(tuple(line_names)).Group()
     line_group.LockAspectRatio = -1
     line_start = (line_group.Left, line_group.Top, line_group.Width, line_group.Height)
-    line_scale = min(390 / line_group.Width, 270 / line_group.Height)
+    line_scale = min(320 / line_group.Width, 225 / line_group.Height)
     line_target = (
         (960 - line_group.Width * line_scale) / 2,
         (540 - line_group.Height * line_scale) / 2,
@@ -161,24 +186,20 @@ try:
     )
     rank_by_index = {shape_index: rank for rank, shape_index in enumerate(clockwise)}
     targets = []
-    ring_radius_x = 418
-    ring_radius_y = 228
-    angular_step = math.tau / fill_count
+    s_positions = s_curve_targets(fill_count)
     for index, shape in enumerate(fill_shapes):
         rank = rank_by_index[index]
-        angle = -math.pi / 2 + (rank + 2) * angular_step
-        local_spacing = math.hypot(
-            ring_radius_x * math.sin(angle) * angular_step,
-            ring_radius_y * math.cos(angle) * angular_step,
-        )
-        target_max_dimension = max(38, min(58, local_spacing * .78))
+        target_max_dimension = 62
         display_scale = target_max_dimension / max(shape.Width, shape.Height)
         target_width, target_height = shape.Width * display_scale, shape.Height * display_scale
-        target_left = 480 + math.cos(angle) * ring_radius_x - target_width / 2
-        target_top = 270 + math.sin(angle) * ring_radius_y - target_height / 2
+        target_center = s_positions[rank]
+        target_left = target_center[0] - target_width / 2
+        target_top = target_center[1] - target_height / 2
         target_left = max(10, min(950 - target_width, target_left))
         target_top = max(10, min(530 - target_height, target_top))
-        tangent_rotation = ((math.degrees(angle) + 90 + 180) % 360) - 180
+        before = s_positions[max(0, rank - 1)]
+        after = s_positions[min(fill_count - 1, rank + 1)]
+        tangent_rotation = math.degrees(math.atan2(after[1] - before[1], after[0] - before[0]))
         targets.append((target_left, target_top,
                         tangent_rotation,
                         target_width, target_height))
