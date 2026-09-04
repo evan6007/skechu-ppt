@@ -3,6 +3,7 @@
 from pathlib import Path
 import ctypes
 import json
+import math
 import sys
 import time
 
@@ -95,8 +96,10 @@ try:
     hwnd = windows[0]
     capture(hwnd, "ppt-native-00-empty.png")
 
+    native_items = rainbow_items()
+    fill_count = sum(bool(item.get("regionFill")) for item in native_items)
     bridge.STATE["app"] = app
-    bridge.copy_native({"items": rainbow_items(), "scale": 0.75}, copy_clipboard=True)
+    bridge.copy_native({"items": native_items, "scale": 0.75}, copy_clipboard=True)
     scratch = bridge.STATE.get("presentation")
     target.Windows(1).Activate()
     app.ActiveWindow.View.GotoSlide(1)
@@ -109,19 +112,43 @@ try:
         brain.Width = 800
     brain.Left = (960 - brain.Width) / 2
     brain.Top = (540 - brain.Height) / 2
+    brain_center = (brain.Left + brain.Width / 2, brain.Top + brain.Height / 2)
     brain.Select()
     app.Activate()
     time.sleep(1.0)
     capture(hwnd, "ppt-native-01-pasted.png")
 
-    # Enter the group once to expose the native child shapes and their anchors.
-    try:
-        child = brain.GroupItems.Item(1)
-        child.Select()
-        time.sleep(0.4)
-        capture(hwnd, "ppt-native-02-child-selected.png")
-    except Exception:
-        capture(hwnd, "ppt-native-02-child-selected.png")
+    # Ctrl+A-style selection after ungrouping exposes every native object.
+    ungrouped = brain.Ungroup()
+    ungrouped.Select()
+    time.sleep(0.5)
+    capture(hwnd, "ppt-native-02-all-selected.png")
+
+    # Pull the independent colored regions away from the line-art center.
+    fill_shapes = [ungrouped.Item(index) for index in range(1, fill_count + 1)]
+    starts = [(shape.Left, shape.Top, shape.Rotation) for shape in fill_shapes]
+    app.ActiveWindow.Selection.Unselect()
+    for step in range(21):
+        amount = step / 20
+        eased = 1 - (1 - amount) ** 3
+        for index, (shape, start) in enumerate(zip(fill_shapes, starts)):
+            center_x = start[0] + shape.Width / 2
+            center_y = start[1] + shape.Height / 2
+            dx, dy = center_x - brain_center[0], center_y - brain_center[1]
+            length = math.hypot(dx, dy)
+            if length < 12:
+                angle = index / max(1, fill_count) * math.tau
+                dx, dy, length = math.cos(angle), math.sin(angle), 1
+            distance = 72 + (index % 5) * 7
+            shape.Left = start[0] + dx / length * distance * eased
+            shape.Top = start[1] + dy / length * distance * .72 * eased
+            shape.Rotation = start[2] + ((index % 7) - 3) * 1.8 * eased
+        capture(hwnd, f"ppt-native-explode-{step:02d}.png")
+    largest_fill = max(fill_shapes, key=lambda shape: shape.Width * shape.Height)
+    largest_fill.Select()
+    app.Activate()
+    time.sleep(0.5)
+    capture(hwnd, "ppt-native-explode-selected.png")
 finally:
     if scratch is not None:
         try:

@@ -85,7 +85,7 @@ try {
   await waitFor(`document.querySelectorAll('#workspace-pages [data-page-id]').length >= 2`);
   await evaluate(`document.querySelectorAll('#workspace-pages [data-page-id]')[1].click()`);
   await waitFor(`document.querySelectorAll('#workspace-pages [data-page-id]')[1].classList.contains('active')`);
-  await evaluate(`window.__brainItems=deepCopy(items);pptAutoPrepareDisabled=true;clearTimeout(pptPrepareTimer);pptPrepareTimer=null;
+  await evaluate(`window.__brainItems=deepCopy(items);window.__brainCanvas=canvasSize();pptAutoPrepareDisabled=true;clearTimeout(pptPrepareTimer);pptPrepareTimer=null;
     const reference=deepCopy(items.find(item=>item.referenceOnly));
     Object.assign(reference,{x:275,y:65,w:950,h:675,opacity:1,hidden:false});
     const page=activePage();page.canvasWidth=1500;page.canvasHeight=850;items=[reference];
@@ -140,6 +140,7 @@ try {
   // 3. Rainbow speed fill: reveal precomputed brain regions in a fast sweep.
   const fillInfo = await evaluate(`(() => {
     items=deepCopy(window.__brainItems);const palette=['#ef4444','#f97316','#facc15','#22c55e','#14b8a6','#3b82f6','#8b5cf6'];
+    const page=activePage();page.canvasWidth=window.__brainCanvas.width;page.canvasHeight=window.__brainCanvas.height;
     items.filter(item=>item.referenceOnly).forEach(item=>item.hidden=true);
     const fills=items.filter(item=>item.regionFill&&item.points?.length);
     const xs=fills.flatMap(item=>item.points.map(point=>point.x)),minX=Math.min(...xs),maxX=Math.max(...xs);
@@ -151,7 +152,7 @@ try {
       const ax=a.points.reduce((s,p)=>s+p.x,0)/a.points.length, bx=b.points.reduce((s,p)=>s+p.x,0)/b.points.length;
       return ax-bx;
     }).map(item=>item.id);
-    clearSelectionState();render();fitView();return{count:fills.length,colors:palette};
+    clearSelectionState();applyCanvasSize();render();fitView();return{count:fills.length,colors:palette};
   })()`);
   metadata.rainbow = fillInfo;
   await capture('fill-00.png');

@@ -134,7 +134,7 @@ auto_frames += [card("自動描圖", "重新播放", frame, "#38bdf8") for frame
 save_gif("feature-auto-trace.gif", auto_frames)
 
 # 3. Precomputed regions fill the same brain with seven colors in under one second.
-fill_bounds = (0.0, 0.12, 0.78, 0.81)
+fill_bounds = (0.084, 0.10, 0.917, 0.912)
 fill_sources = [fixed_view(open_frame(f"fill-{step:02d}.png"), fill_bounds) for step in range(21)]
 fill_frames = [card("線稿區域填色", "線稿形成封閉區域", fill_sources[0], "#22c55e") for _ in range(5)]
 for step, content in enumerate(fill_sources[1:], 1):
@@ -144,13 +144,15 @@ fill_frames += [card("線稿區域填色", "原始線稿完整保留", frame, "#
 save_gif("feature-rainbow-fill.gif", fill_frames)
 
 # 4. Select the rainbow brain, copy, switch to the real PowerPoint window, and paste.
-ppt_browser_bounds = (0.0, 0.0, 1.0, 0.91)
+ppt_browser_bounds = (0.0, 0.0, 1.0, 0.96)
 ppt_selected = fixed_view(open_frame("ppt-00-selected.png"), ppt_browser_bounds)
 ppt_copying = fixed_view(open_frame("ppt-01-copying.png"), ppt_browser_bounds)
 ppt_success = fixed_view(open_frame("ppt-02-success.png"), ppt_browser_bounds)
 ppt_empty = fixed_view(open_frame("ppt-native-00-empty.png"))
 ppt_pasted = fixed_view(open_frame("ppt-native-01-pasted.png"))
-ppt_child = fixed_view(open_frame("ppt-native-02-child-selected.png"))
+ppt_all_selected = fixed_view(open_frame("ppt-native-02-all-selected.png"))
+ppt_explode = [fixed_view(open_frame(f"ppt-native-explode-{step:02d}.png")) for step in range(21)]
+ppt_explode_selected = fixed_view(open_frame("ppt-native-explode-selected.png"))
 ppt_cursor_path = [
     (430 + (655 - 430) * step / 11, 220 + (18 - 220) * step / 11)
     for step in range(12)
@@ -164,8 +166,9 @@ ppt_frames += [card("貼到 PowerPoint", "複製完成", frame, "#f97316") for f
 ppt_frames += [card("貼到 PowerPoint", "切換到 PowerPoint", ppt_empty, "#f97316") for _ in range(6)]
 ppt_frames += [card("貼到 PowerPoint", "Ctrl+V 貼上", ppt_pasted, "#f97316", (330, 190), i == 2) for i in range(6)]
 ppt_frames += [card("貼到 PowerPoint", "整顆腦袋已貼上", ppt_pasted, "#f97316") for _ in range(10)]
-ppt_frames += [card("貼到 PowerPoint", "仍是原生可編輯物件", frame, "#f97316") for frame in tween(ppt_pasted, ppt_child, 6)]
-ppt_frames += [card("貼到 PowerPoint", "可單獨選取", ppt_child, "#f97316") for _ in range(8)]
+ppt_frames += [card("貼到 PowerPoint", "Ctrl+A 全選可編輯物件", ppt_all_selected, "#f97316") for _ in range(8)]
+ppt_frames += [card("貼到 PowerPoint", "每一塊都能獨立編輯", frame, "#f97316") for frame in ppt_explode]
+ppt_frames += [card("貼到 PowerPoint", "任一色塊都可單獨選取", ppt_explode_selected, "#f97316") for _ in range(10)]
 save_gif("feature-powerpoint.gif", ppt_frames)
 
 for path in sorted(OUTPUT_DIR.glob("feature-*.gif")):
