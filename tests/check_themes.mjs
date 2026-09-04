@@ -14,7 +14,7 @@ assert.equal(document.documentElement.dataset.theme,'linen');assert.equal(button
 events.get('click')({target:{closest:()=>buttons[1]}});assert.equal(stored.get('skechu-ui-theme'),'mist');assert.equal(meta.content,'#eceef1');assert.equal(buttons[1].active,true);
 ctx.applySkechuTheme('invalid');assert.equal(document.documentElement.dataset.theme,'graphite','Unknown themes safely fall back to graphite');
 for(const theme of ['graphite','mist','linen']){assert.ok(css.includes(`[data-theme="${theme}"]`));assert.ok(html.includes(`data-ui-theme="${theme}"`))}
-for(const marker of ['--surface','--canvas-desk','--glass-surface','--range-track','.stage-shell{position:relative','data-ui-theme="graphite"','theme-controls.js?v=46-canvas-shapes','theme-controls.css?v=46-canvas-shapes','fill-opacity:.3','.action-menu-popover{position:fixed','input[type="range"]::-webkit-slider-runnable-track','grid-template-rows:48px minmax(0,1fr) 62px'])assert.ok(css.includes(marker)||html.includes(marker),'Missing theme marker '+marker);
+for(const marker of ['--surface','--canvas-desk','--glass-surface','--range-track','.stage-shell{position:relative','data-ui-theme="graphite"','theme-controls.js?v=46-canvas-shapes','theme-controls.css?v=47-grid-sync','fill-opacity:.3','.action-menu-popover{position:fixed','input[type="range"]::-webkit-slider-runnable-track','grid-template-rows:48px minmax(0,1fr) 62px'])assert.ok(css.includes(marker)||html.includes(marker),'Missing theme marker '+marker);
 for(const marker of ['class="sr-only">複製到 PPT','class="action-menu export-menu"','class="action-menu workspace-menu"','class="tool-icon magnet-icon"','opacity:.3,locked:true,referenceOnly:true','preserveAspectRatio="xMidYMid meet"','function renderCanvasGrid()'])assert.ok(html.includes(marker),'Missing compact interface marker '+marker);
 assert.ok(html.includes('class="page-settings-icon"'),'Workspace menu must use a page settings icon, not a sun-like gear');
 assert.ok(html.includes('class="project-files-icon"'),'Export menu must use a project files icon, not a hamburger');
@@ -24,6 +24,8 @@ assert.ok(!html.includes('M12 3.5v2M12 18.5v2'),'Sun-like workspace menu icon mu
 assert.ok(!html.includes('M5 7h14M5 12h14M5 17h14'),'Hamburger export icon must be removed');
 assert.ok(!css.includes('repeating-linear-gradient'),'Canvas glass must not use diagonal line bands');
 assert.ok(!css.includes('radial-gradient(circle at 1px 1px'),'Canvas surface must not use a dotted texture');
+assert.ok(html.includes('const CANVAS_GRID_STEP=20')&&html.includes("stageWrap.style.setProperty('--checker-cell'")&&css.includes('--checker-tile:24px'),'The checkerboard must share the SVG grid step and canvas origin');
+assert.ok(css.includes('background-attachment:local,local,local,local'),'The checkerboard must remain aligned while the canvas scrolls');
 assert.ok(css.includes('.stage-shell{position:relative;isolation:isolate;overflow:visible'),'Objects outside the canvas must not be clipped by the glass shell');
 assert.ok(html.includes('.stage{width:100%;height:auto;display:block;overflow:visible'),'SVG overflow must stay visible and interactive');
 assert.ok(!html.includes('描圖筆：點一下放錨點'),'The inspector must not contain a permanent shortcut manual');

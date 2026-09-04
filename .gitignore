@@ -13,5 +13,6 @@ dist-installer/
 *.pptx
 *.mp4
 docs/media/video-contact-sheet.jpg
+docs/media/showcase-frames/
 Thumbs.db
 Desktop.ini

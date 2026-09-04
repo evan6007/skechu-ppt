@@ -53,9 +53,11 @@ const count=ctx.project.pages.length;ctx.runPageAction('duplicate',{projectId:'w
 assert.equal(ctx.pageActionDisabled('delete',{pages:[pasted]},pasted),true,'Cannot delete the final page');
 assert.ok(autosaves>0);
 ctx.project.pages=[{id:'p1',name:'第一頁',items:plain(seed)},{id:'p2',name:'第二頁',items:[]},pasted];ctx.activePageId='p1';ctx.items=plain(seed);
-const pageCard=(id,top=0)=>({dataset:{pageId:id},style:{value:'',writes:0,get transform(){return this.value},set transform(value){this.value=value;this.writes++}},classList:{add(){}},closest(selector){return selector==='[data-page-id]'?this:null},getBoundingClientRect(){return{left:10,top,width:190,height:80}},removeAttribute(name){delete this.dataset[name]},cloneNode(){return{dataset:{},style:{},classList:{add(){}},removeAttribute(){},setAttribute(){},remove(){this.removed=true}}}});
+const pageCard=(id,top=0)=>({dataset:{pageId:id},style:{value:'',writes:0,get transform(){return this.value},set transform(value){this.value=value;this.writes++}},classList:{add(){}},closest(selector){return selector==='[data-page-id]'?this:null},getBoundingClientRect(){return{left:10,top,width:190,height:80}},setPointerCapture(pointerId){this.capturedPointer=pointerId},hasPointerCapture(pointerId){return this.capturedPointer===pointerId},releasePointerCapture(pointerId){if(this.capturedPointer===pointerId)this.capturedPointer=null},removeAttribute(name){delete this.dataset[name]},cloneNode(){return{dataset:{},style:{},classList:{add(){}},removeAttribute(){},setAttribute(){},remove(){this.removed=true}}}});
 const pageRows=[pageCard('p1',0),pageCard('p2',80),pageCard(pasted.id,160)];node('workspace-pages').querySelectorAll=selector=>selector==='[data-page-id]'?pageRows:[];
 const pageEvent=(y,target=pageRows[0],extra={})=>({button:0,pointerId:7,clientX:40,clientY:y,target,preventDefault(){this.prevented=true},stopImmediatePropagation(){this.stopped=true},...extra});
+events.get('workspace-pages:pointerdown:false')(pageEvent(20));assert.equal(pageRows[0].capturedPointer,7,'Pointer capture stays on the actual page card so a normal click keeps its page id');events.get('workspace-pages:pointerup:false')(pageEvent(20));
+const normalClick=pageEvent(20);events.get('workspace-pages:click:true')(normalClick);assert.ok(!normalClick.prevented&&!normalClick.stopped,'A click without dragging must reach the page-opening handler');
 events.get('workspace-pages:pointerdown:false')(pageEvent(20));hoveredPage=pageCard('p2',80);events.get('workspace-pages:pointermove:false')(pageEvent(30));
 assert.equal(pageRows[1].style.transform,'','A small page drag follows the pointer without prematurely jumping to another slot');
 events.get('workspace-pages:pointermove:false')(pageEvent(70));
@@ -67,6 +69,7 @@ assert.deepEqual(ctx.project.pages.map(page=>page.id),['p2','p1',pasted.id],'Dra
 assert.equal(bodyChildren.length,1);assert.equal(bodyChildren[0].removed,true,'Page drag uses a floating preview that fades after drop');
 assert.equal(pageRows[1].style.transform,'');assert.equal(pageRows[0].dataset.dragSource,undefined,'Page rows clear their animated drag state');
 assert.ok(source.includes('pageDropAt')&&!source.includes('document.elementFromPoint(event.clientX,event.clientY)'),'Animated page cards cannot change their own drop target');
+assert.ok(source.includes('card.setPointerCapture?.(event.pointerId)')&&!source.includes('pages.setPointerCapture(event.pointerId)'),'The page list itself must not capture clicks away from page cards');
 const swallowed=pageEvent(130);events.get('workspace-pages:click:true')(swallowed);assert.ok(swallowed.prevented&&swallowed.stopped,'The click following a drag cannot accidentally open a page');
 ctx.items=[];ctx.activePage().items=[];ctx.history=[];
 console.log('Page actions OK: fresh copy, dimensions, independent identities, links/fill/junctions, ordering, rename, delete confirmation and project isolation.');
@@ -94,4 +97,4 @@ ctx.noteInternalCopy();e=press();key(e);assert.ok(e.prevented);assert.equal(inte
 const html=fs.readFileSync(new URL('../app/index.html',import.meta.url),'utf8');assert.ok(html.includes('initializeWorkspaceActions();')&&html.includes('noteInternalCopy();'));
 console.log('Image/file import OK: clipboard images, SVG/JPG/PNG drops, Skechu JSON projects, placement, Undo and draft safety.');
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
-assert.ok(html.includes('workspace-page-ghost')&&html.includes('workspace-actions.js?v=35-stable-motion'));assert.ok(worker.includes('workspace-actions.js?v=35-stable-motion'));
+assert.ok(html.includes('workspace-page-ghost')&&html.includes('workspace-actions.js?v=36-page-click'));assert.ok(worker.includes('workspace-actions.js?v=36-page-click'));

@@ -119,7 +119,7 @@ function clearPageDragVisual(gesture,settle=false){
 function finishPagePointer(event,cancel=false) {
   const gesture=pagePointerDrag;if(!gesture||event&&event.pointerId!==gesture.pointerId)return;
   pagePointerDrag=null;const pages=document.getElementById('workspace-pages');pages.querySelectorAll('[data-drop]').forEach(card=>card.removeAttribute('data-drop'));
-  if(pages.hasPointerCapture(gesture.pointerId))pages.releasePointerCapture(gesture.pointerId);
+  const captureOwner=gesture.card;if(captureOwner?.hasPointerCapture?.(gesture.pointerId))captureOwner.releasePointerCapture(gesture.pointerId);
   suppressPageClick=!cancel&&gesture.moved;
   const moved=!cancel&&gesture.moved&&gesture.target&&movePageByPointer(gesture.source,gesture.target,gesture.position);clearPageDragVisual(gesture,!!moved);
 }
@@ -232,7 +232,7 @@ function initializeWorkspaceActions() {
   const menu = document.getElementById('page-context-menu'), pages = document.getElementById('workspace-pages');
   pages.addEventListener('click',event=>{if(!suppressPageClick)return;suppressPageClick=false;event.preventDefault();event.stopImmediatePropagation()},true);
   pages.addEventListener('pointerdown',event=>{const card=event.target.closest('[data-page-id]');if(event.button!==0||!card||pagePointerDrag)return;
-    pagePointerDrag={pointerId:event.pointerId,source:card.dataset.pageId,x:event.clientX,y:event.clientY,moved:false,target:null,card};pages.setPointerCapture(event.pointerId)});
+    pagePointerDrag={pointerId:event.pointerId,source:card.dataset.pageId,x:event.clientX,y:event.clientY,moved:false,target:null,card};card.setPointerCapture?.(event.pointerId)});
   pages.addEventListener('pointermove',event=>{const gesture=pagePointerDrag;if(!gesture||gesture.pointerId!==event.pointerId)return;
     if(!gesture.moved&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<8)return;
     event.preventDefault();gesture.moved=true;if(!gesture.ghost)beginPageDragVisual(gesture,event);const bounds=pages.getBoundingClientRect();if(event.clientY<bounds.top+30)pages.scrollTop-=18;else if(event.clientY>bounds.bottom-30)pages.scrollTop+=18;

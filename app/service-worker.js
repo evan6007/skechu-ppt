@@ -1,16 +1,16 @@
-const CACHE_NAME = 'skechu-ppt-v46-canvas-shapes';
+const CACHE_NAME = 'skechu-ppt-v47-page-grid';
 const APP_SHELL = [
   './',
   './index.html',
   './theme-controls.js?v=46-canvas-shapes',
-  './theme-controls.css?v=46-canvas-shapes',
+  './theme-controls.css?v=47-grid-sync',
   './local-smoothing.js',
   './region-fill.js',
   './paint-layers.js?v=22-visibility-web-native',
   './paint-tools.js?v=41-liquid-paper',
   './pan-tool.js',
   './selection-controls.js?v=26-left-marquee',
-  './workspace-actions.js?v=35-stable-motion',
+  './workspace-actions.js?v=36-page-click',
   './layer-controls.js?v=35-stable-motion',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=35-stable-motion',

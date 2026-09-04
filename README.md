@@ -26,6 +26,12 @@
 
 ## See it at a glance
 
+<p align="center">
+  <img src="docs/media/editor-workflow.gif" width="960" alt="A clean recording of Skechu-PPT showing the finished vector, aligned grid, editable anchors, and shape menu">
+</p>
+
+<p align="center"><sub>Actual browser UI: finished vector → aligned grid → Ctrl+A anchor editing → shape picker.</sub></p>
+
 | ✦ **Auto trace** | 🧲 **Magnetic pen** | ◉ **Anchor editing** | 🪣 **Paint bucket** |
 | :---: | :---: | :---: | :---: |
 | Image → editable paths | Follow visible boundaries | Refine every curve | Fill closed regions |

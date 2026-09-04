@@ -51,7 +51,7 @@
   .workspace-page{transition-duration:180ms,140ms,180ms;transition-timing-function:cubic-bezier(.2,.8,.2,1),ease,ease}
   .workspace-page-ghost.settling{transition:opacity 100ms ease,transform 100ms ease;transform:scale(.99)}
 </style>
-<link rel="stylesheet" href="theme-controls.css?v=46-canvas-shapes">
+<link rel="stylesheet" href="theme-controls.css?v=47-grid-sync">
 <script>try{const savedTheme=localStorage.getItem('skechu-ui-theme');if(['graphite','mist','linen'].includes(savedTheme))document.documentElement.dataset.theme=savedTheme}catch{}</script>
 </head>
 <body>
@@ -147,7 +147,7 @@
 <script src="paint-tools.js?v=41-liquid-paper"></script>
 <script src="pan-tool.js"></script>
 <script src="selection-controls.js?v=26-left-marquee"></script>
-<script src="workspace-actions.js?v=35-stable-motion"></script>
+<script src="workspace-actions.js?v=36-page-click"></script>
 <script src="layer-controls.js?v=35-stable-motion"></script>
 <script src="panel-layout.js?v=1-resizable"></script>
 <script src="clipboard-controls.js?v=30-copy-priority"></script>
@@ -178,9 +178,11 @@ function overlayUnit(){const m=svg.getScreenCTM();return m?1/(Math.hypot(m.a,m.b
 // When enlarged hit circles overlap, choose the closest visible center.
 function closestSelectionHandle(event,fallback){if(!fallback)return null;let best=fallback,distance=Infinity;for(const el of selection.querySelectorAll('circle[data-handle]')){const r=el.getBoundingClientRect(),d=Math.hypot(event.clientX-r.x-r.width/2,event.clientY-r.y-r.height/2);if(d<=Math.min(r.width,r.height)/2&&d<distance){best=el;distance=d}}return best}
 function scaleSelectionOverlay(){const unit=overlayUnit();selection.querySelectorAll('circle').forEach(el=>el.setAttribute('r',Number(el.getAttribute('r'))*unit));selection.querySelectorAll('.point-tool').forEach(el=>el.setAttribute('transform',el.getAttribute('transform')+' scale('+unit+')'));selection.querySelectorAll('.trace-join-label').forEach(el=>{const x=Number(el.getAttribute('x')),y=Number(el.getAttribute('y'));el.setAttribute('x',x-12+12*unit);el.setAttribute('y',y+12-12*unit);el.style.fontSize=13*unit+'px'})}
-new ResizeObserver(()=>renderSelection()).observe(stageShell);
-function fitView(){resetCanvasPan();zoom=1;baseStageWidth=Math.min(1200,Math.max(320,stageWrap.clientWidth-36));stageShell.style.width=baseStageWidth+'px';stageWrap.scrollLeft=0;stageWrap.scrollTop=0;document.getElementById('zoom-label').textContent='100%';renderSelection()}
-function applyZoom(next,cx=stageWrap.clientWidth/2,cy=stageWrap.clientHeight/2){const old=zoom;zoom=clamp(next,.35,5);const ratio=zoom/old;const targetLeft=(stageWrap.scrollLeft+cx-canvasPan.x)*ratio-cx+canvasPan.x,targetTop=(stageWrap.scrollTop+cy-canvasPan.y)*ratio-cy+canvasPan.y;stageShell.style.width=(baseStageWidth*zoom)+'px';requestAnimationFrame(()=>{stageWrap.scrollLeft=targetLeft;stageWrap.scrollTop=targetTop});document.getElementById('zoom-label').textContent=Math.round(zoom*100)+'%';renderSelection()}
+const CANVAS_GRID_STEP=20;
+function syncCheckerGrid(){const size=canvasSize(),canvasRect=svg.getBoundingClientRect(),wrapRect=stageWrap.getBoundingClientRect();if(!canvasRect.width||!size.width)return;const cell=canvasRect.width/size.width*CANVAS_GRID_STEP,x=canvasRect.left-wrapRect.left+stageWrap.scrollLeft,y=canvasRect.top-wrapRect.top+stageWrap.scrollTop;stageWrap.style.setProperty('--checker-cell',`${cell}px`);stageWrap.style.setProperty('--checker-tile',`${cell*2}px`);stageWrap.style.setProperty('--checker-x',`${x}px`);stageWrap.style.setProperty('--checker-y',`${y}px`)}
+new ResizeObserver(()=>{renderSelection();syncCheckerGrid()}).observe(stageShell);
+function fitView(){resetCanvasPan();zoom=1;baseStageWidth=Math.min(1200,Math.max(320,stageWrap.clientWidth-36));stageShell.style.width=baseStageWidth+'px';stageWrap.scrollLeft=0;stageWrap.scrollTop=0;document.getElementById('zoom-label').textContent='100%';renderSelection();syncCheckerGrid()}
+function applyZoom(next,cx=stageWrap.clientWidth/2,cy=stageWrap.clientHeight/2){const old=zoom;zoom=clamp(next,.35,5);const ratio=zoom/old;const targetLeft=(stageWrap.scrollLeft+cx-canvasPan.x)*ratio-cx+canvasPan.x,targetTop=(stageWrap.scrollTop+cy-canvasPan.y)*ratio-cy+canvasPan.y;stageShell.style.width=(baseStageWidth*zoom)+'px';requestAnimationFrame(()=>{stageWrap.scrollLeft=targetLeft;stageWrap.scrollTop=targetTop;syncCheckerGrid()});document.getElementById('zoom-label').textContent=Math.round(zoom*100)+'%';renderSelection()}
 stageWrap.addEventListener('wheel',e=>{e.preventDefault();const rect=stageWrap.getBoundingClientRect();wheelCx=e.clientX-rect.left;wheelCy=e.clientY-rect.top;wheelFactor*=e.deltaY<0?1.12:.89;if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{applyZoom(zoom*wheelFactor,wheelCx,wheelCy);wheelFactor=1;wheelFrame=0})},{passive:false});
 document.getElementById('fit-view').onclick=fitView;
 function state(){return JSON.stringify(items)}
@@ -507,7 +509,7 @@ document.getElementById('select-tool').onclick=activateSelectTool;document.getEl
 document.getElementById('add-arrow-point').onclick=()=>addNodeToSelected(false);document.getElementById('remove-arrow-point').onclick=()=>removeNodeFromSelected(2);document.getElementById('add-poly-point').onclick=()=>addNodeToSelected(true);document.getElementById('remove-poly-point').onclick=()=>removeNodeFromSelected(3);
 document.getElementById('show-assets').onclick=()=>{workspace.classList.toggle('show-assets');workspace.classList.remove('show-inspector')};
 document.getElementById('show-inspector').onclick=()=>{workspace.classList.toggle('show-inspector');workspace.classList.remove('show-assets')};
-function renderCanvasGrid(){const size=canvasSize(),step=20;gridLayer.innerHTML=gridOn?Array.from({length:Math.floor(size.width/step)-1},(_,i)=>{const x=(i+1)*step;return`<line class="guide${x%100===0?' major':''}" x1="${x}" y1="0" x2="${x}" y2="${size.height}"/>`}).join('')+Array.from({length:Math.floor(size.height/step)-1},(_,i)=>{const y=(i+1)*step;return`<line class="guide${y%100===0?' major':''}" x1="0" y1="${y}" x2="${size.width}" y2="${y}"/>`}).join(''):''}
+function renderCanvasGrid(){const size=canvasSize(),step=CANVAS_GRID_STEP;gridLayer.innerHTML=gridOn?Array.from({length:Math.floor(size.width/step)-1},(_,i)=>{const x=(i+1)*step;return`<line class="guide${x%100===0?' major':''}" x1="${x}" y1="0" x2="${x}" y2="${size.height}"/>`}).join('')+Array.from({length:Math.floor(size.height/step)-1},(_,i)=>{const y=(i+1)*step;return`<line class="guide${y%100===0?' major':''}" x1="0" y1="${y}" x2="${size.width}" y2="${y}"/>`}).join(''):'';syncCheckerGrid()}
 document.getElementById('toggle-grid').onclick=()=>{gridOn=!gridOn;const button=document.getElementById('toggle-grid');button.classList.toggle('active',gridOn);button.setAttribute('aria-pressed',String(gridOn));renderCanvasGrid();document.getElementById('status').textContent=gridOn?'畫布格線已開啟':'畫布格線已關閉'};
 document.getElementById('delete').onclick=()=>{const ids=new Set(items.filter(it=>selectedIds.has(it.id)&&!it.locked).map(it=>it.id));if(!ids.size)return;commit();items=items.filter(x=>!ids.has(x.id));selected=null;selectedIds.clear();selectedPoints.clear();render()};
 document.getElementById('duplicate').onclick=()=>{if(copyInternalSelection())pasteInternalSelection()};
