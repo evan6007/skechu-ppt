@@ -32,7 +32,7 @@
     <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="The brain image is auto-traced and Ctrl+A reveals every editable anchor"><br><strong>Auto trace</strong> — trace the same brain, apply it, and press Ctrl+A to reveal every anchor.</td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/feature-rainbow-fill.gif" alt="Precomputed enclosed regions fill the same brain with seven colors in one sweep"><br><strong>Rainbow speed fill</strong> — precompute enclosed regions and color the same brain in seven colors instantly.</td>
+    <td width="50%"><img src="docs/media/feature-rainbow-fill.gif" alt="Enclosed regions formed by the brain line art are filled while T-junction boundaries remain intact"><br><strong>Connected-region fill</strong> — fill enclosed areas formed by your line art, including regions closed by T-junctions.</td>
     <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="The selected brain is copied from Skechu-PPT and pasted as editable objects into the real PowerPoint interface"><br><strong>Native PowerPoint paste</strong> — select the brain, copy, switch to PowerPoint, and paste editable Office objects.</td>
   </tr>
 </table>

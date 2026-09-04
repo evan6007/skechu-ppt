@@ -136,11 +136,11 @@ save_gif("feature-auto-trace.gif", auto_frames)
 # 3. Precomputed regions fill the same brain with seven colors in under one second.
 fill_bounds = (0.0, 0.12, 0.78, 0.81)
 fill_sources = [fixed_view(open_frame(f"fill-{step:02d}.png"), fill_bounds) for step in range(21)]
-fill_frames = [card("七彩速填", "七色色票已備妥", fill_sources[0], "#22c55e") for _ in range(5)]
+fill_frames = [card("線稿區域填色", "線稿形成封閉區域", fill_sources[0], "#22c55e") for _ in range(5)]
 for step, content in enumerate(fill_sources[1:], 1):
-    fill_frames.append(card("七彩速填", f"瞬間填色 {step * 5}%", content, "#22c55e"))
-fill_frames += [card("七彩速填", "整顆腦袋完成", fill_sources[-1], "#22c55e") for _ in range(12)]
-fill_frames += [card("七彩速填", "重新播放", frame, "#22c55e") for frame in tween(fill_sources[-1], fill_sources[0], 6)]
+    fill_frames.append(card("線稿區域填色", "辨識並填入封閉範圍", content, "#22c55e"))
+fill_frames += [card("線稿區域填色", "T 字接線也能填色", fill_sources[-1], "#22c55e") for _ in range(12)]
+fill_frames += [card("線稿區域填色", "原始線稿完整保留", frame, "#22c55e") for frame in tween(fill_sources[-1], fill_sources[0], 6)]
 save_gif("feature-rainbow-fill.gif", fill_frames)
 
 # 4. Select the rainbow brain, copy, switch to the real PowerPoint window, and paste.
