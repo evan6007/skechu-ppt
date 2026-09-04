@@ -28,12 +28,12 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="Auto trace with live preview and adjustable settings"><br><strong>Auto trace</strong> — detect the drawing, preview real anchors, and tune the result live.</td>
-    <td width="50%"><img src="docs/media/feature-anchor-editing.gif" alt="Aligned grid and Ctrl+A anchor editing"><br><strong>Anchor editing</strong> — align the grid, select everything instantly, and refine every curve.</td>
+    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="A source image becomes editable traced curves in the auto-trace preview"><br><strong>Auto trace</strong> — turn the source image into visible, editable anchors and tune the result live.</td>
+    <td width="50%"><img src="docs/media/feature-anchor-editing.gif" alt="Dragging one anchor visibly reshapes the curve"><br><strong>Anchor editing</strong> — drag a real anchor and see the curve update immediately.</td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/feature-pages-layers.gif" alt="Page context menu and layer management"><br><strong>Pages and layers</strong> — right-click pages; reorder, group, hide, and lock artwork.</td>
-    <td width="50%"><img src="docs/media/feature-shapes-export.gif" alt="Shape picker and PowerPoint, project, and SVG export"><br><strong>Shapes and export</strong> — add shapes, save projects, export SVG, or copy editable PowerPoint objects.</td>
+    <td width="50%"><img src="docs/media/feature-smart-fill.gif" alt="Dragging a swatch fills only one enclosed region while keeping the boundary"><br><strong>Smart fill</strong> — drop a swatch into an enclosed region; the original boundary stays intact.</td>
+    <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="Copied shapes are selected and moved independently in the real PowerPoint interface"><br><strong>Native PowerPoint objects</strong> — paste real Office shapes, then select and move each object independently.</td>
   </tr>
 </table>
 

@@ -1,3 +1,5 @@
+"""Build four fixed-camera feature GIFs from real application states."""
+
 from pathlib import Path
 import sys
 
@@ -8,6 +10,7 @@ FRAMES_DIR = Path(sys.argv[1] if len(sys.argv) > 1 else "docs/media/showcase-fra
 OUTPUT_DIR = Path(sys.argv[2] if len(sys.argv) > 2 else "docs/media")
 SIZE = (720, 405)
 CONTENT = (696, 351)
+FRAME_DURATION_MS = 45
 
 
 def font(size, bold=False):
@@ -19,33 +22,14 @@ def open_frame(name):
     return Image.open(FRAMES_DIR / name).convert("RGB")
 
 
-def crop(image, bounds):
+def fixed_view(image, bounds=(0, 0, 1, 1)):
     width, height = image.size
     left, top, right, bottom = bounds
-    return image.crop((int(left * width), int(top * height), int(right * width), int(bottom * height)))
+    cropped = image.crop((int(left * width), int(top * height), int(right * width), int(bottom * height)))
+    return ImageOps.fit(cropped, CONTENT, method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
 
 
-def cover(image, box=CONTENT):
-    return ImageOps.fit(image, box, method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
-
-
-def ease(value):
-    return value * value * (3 - 2 * value)
-
-
-def interpolate_bounds(start, end, amount):
-    return tuple(a + (b - a) * amount for a, b in zip(start, end))
-
-
-def moving_view(start, end, amount):
-    progress = ease(amount)
-    bounds = interpolate_bounds(start[1], end[1], progress)
-    first = cover(crop(start[0], bounds))
-    second = cover(crop(end[0], bounds))
-    return Image.blend(first, second, progress)
-
-
-def card(title, badge, content, accent):
+def card(title, badge, content, accent, cursor=None, pulse=False):
     frame = Image.new("RGBA", SIZE, "#0d0f12")
     draw = ImageDraw.Draw(frame)
     draw.rounded_rectangle((0, 0, SIZE[0] - 1, SIZE[1] - 1), 18, fill="#171a1f", outline="#3a4049", width=2)
@@ -59,84 +43,109 @@ def card(title, badge, content, accent):
     mask = Image.new("L", CONTENT, 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, CONTENT[0], CONTENT[1]), 12, fill=255)
     frame.paste(content, (12, 42), mask)
+    if cursor:
+        x, y = cursor[0] + 12, cursor[1] + 42
+        if pulse:
+            draw.ellipse((x - 17, y - 17, x + 17, y + 17), outline="#38bdf8", width=4)
+        pointer = [(x, y), (x + 3, y + 26), (x + 10, y + 19), (x + 16, y + 34),
+                   (x + 23, y + 30), (x + 16, y + 16), (x + 27, y + 14)]
+        draw.polygon(pointer, fill="#ffffff", outline="#111827")
+        draw.line(pointer + [pointer[0]], fill="#111827", width=2, joint="curve")
     return frame.convert("RGB")
 
 
-def save_motion_gif(name, title, accent, keyframes, frames_per_move=10, duration=60):
-    frames = []
-    for index, start in enumerate(keyframes):
-        end = keyframes[(index + 1) % len(keyframes)]
-        for step in range(frames_per_move):
-            amount = step / frames_per_move
-            badge = start[2] if amount < 0.55 else end[2]
-            frames.append(card(title, badge, moving_view(start, end, amount), accent))
-    palette_strip = Image.new("RGB", (180, 101 * len(frames[::3])))
-    for index, frame in enumerate(frames[::3]):
-        palette_strip.paste(frame.resize((180, 101), Image.Resampling.BILINEAR), (0, index * 101))
-    palette = palette_strip.quantize(colors=96, method=Image.Quantize.MEDIANCUT)
+def blend(first, second, amount):
+    return Image.blend(first, second, amount)
+
+
+def tween(first, second, count):
+    return [blend(first, second, (step + 1) / count) for step in range(count)]
+
+
+def save_gif(name, frames):
+    palette_sheet = Image.new("RGB", (180, 101 * len(frames[::4])))
+    for index, frame in enumerate(frames[::4]):
+        palette_sheet.paste(frame.resize((180, 101), Image.Resampling.BILINEAR), (0, index * 101))
+    palette = palette_sheet.quantize(colors=112, method=Image.Quantize.MEDIANCUT)
     encoded = [frame.quantize(palette=palette, dither=Image.Dither.NONE) for frame in frames]
     encoded[0].save(
         OUTPUT_DIR / name,
         save_all=True,
         append_images=encoded[1:],
-        duration=[duration] * len(frames),
+        duration=[FRAME_DURATION_MS] * len(encoded),
         loop=0,
         optimize=True,
         disposal=1,
     )
 
 
-base = open_frame("01-editor.png")
-grid = open_frame("02-grid.png")
-anchors = open_frame("03-anchors.png")
-shapes = open_frame("04-shapes.png")
-export = open_frame("05-export.png")
-pages = open_frame("06-pages.png")
-layers = open_frame("07-layers.png")
-auto = open_frame("08-auto-trace.png")
-auto_adjusted = open_frame("09-auto-trace-adjusted.png")
-
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-save_motion_gif(
-    "feature-auto-trace.gif",
-    "自動描圖",
-    "#2dd4bf",
-    [
-        (auto, (0.20, 0.00, 0.80, 0.67), "自動判斷"),
-        (auto, (0.25, 0.30, 0.75, 0.98), "323 條曲線・740 錨點"),
-        (auto_adjusted, (0.20, 0.00, 0.80, 0.67), "拖曳滑桿即時更新"),
-    ],
-)
-save_motion_gif(
-    "feature-anchor-editing.gif",
-    "錨點與格線",
-    "#60a5fa",
-    [
-        (base, (0.10, 0.02, 0.90, 1.00), "完成圖"),
-        (grid, (0.13, 0.04, 0.87, 0.97), "格線與棋盤同步"),
-        (anchors, (0.18, 0.08, 0.82, 0.94), "Ctrl+A 顯示錨點"),
-    ],
-)
-save_motion_gif(
-    "feature-pages-layers.gif",
-    "圖頁與圖層",
-    "#f59e0b",
-    [
-        (pages, (0.00, 0.28, 0.44, 1.00), "圖頁總覽"),
-        (pages, (0.00, 0.38, 0.32, 0.98), "右鍵複製・貼上・排序"),
-        (layers, (0.76, 0.36, 1.00, 1.00), "群組・顯示・鎖定"),
-    ],
-)
-save_motion_gif(
-    "feature-shapes-export.gif",
-    "形狀與匯出",
-    "#a78bfa",
-    [
-        (shapes, (0.22, 0.00, 0.78, 0.58), "形狀工具"),
-        (shapes, (0.34, 0.00, 0.66, 0.43), "矩形・圓形・多邊形"),
-        (export, (0.55, 0.00, 1.00, 0.52), "PPT・專案・SVG"),
-    ],
-)
+
+# 1. Auto trace: the camera never moves; the dialog and its computed result do.
+auto_bounds = (0.05, 0.02, 0.95, 0.83)
+auto_source = fixed_view(open_frame("auto-00-source.png"), auto_bounds)
+auto_opening = fixed_view(open_frame("auto-01-opening.png"), auto_bounds)
+auto_result = fixed_view(open_frame("auto-02-result.png"), auto_bounds)
+auto_updating = fixed_view(open_frame("auto-03-updating.png"), auto_bounds)
+auto_detailed = fixed_view(open_frame("auto-04-detailed.png"), auto_bounds)
+auto_frames = []
+auto_frames += [card("自動描圖", "原始圖片", auto_source, "#2dd4bf", (158, 8), i == 3) for i in range(6)]
+auto_frames += [card("自動描圖", "分析邊界", frame, "#2dd4bf") for frame in tween(auto_source, auto_opening, 8)]
+auto_frames += [card("自動描圖", "分析邊界", auto_opening, "#2dd4bf") for _ in range(3)]
+auto_frames += [card("自動描圖", "740 個真實錨點", frame, "#2dd4bf") for frame in tween(auto_opening, auto_result, 8)]
+auto_frames += [card("自動描圖", "740 個真實錨點", auto_result, "#2dd4bf") for _ in range(8)]
+auto_frames += [card("自動描圖", "拖滑桿即時重算", frame, "#2dd4bf", (443, 72)) for frame in tween(auto_result, auto_updating, 6)]
+auto_frames += [card("自動描圖", "828 個真實錨點", frame, "#2dd4bf") for frame in tween(auto_updating, auto_detailed, 8)]
+auto_frames += [card("自動描圖", "828 個真實錨點", auto_detailed, "#2dd4bf") for _ in range(8)]
+auto_frames += [card("自動描圖", "重新播放", frame, "#2dd4bf") for frame in tween(auto_detailed, auto_source, 8)]
+save_gif("feature-auto-trace.gif", auto_frames)
+
+# 2. Anchor editing: every source image is a real render of the changing curve.
+anchor_bounds = (0.12, 0.13, 0.88, 0.80)
+anchor_sources = [fixed_view(open_frame(f"anchor-{step:02d}.png"), anchor_bounds) for step in range(21)]
+anchor_frames = []
+for step, content in enumerate(anchor_sources):
+    y = int(238 - 120 * step / 20)
+    anchor_frames.append(card("錨點編輯", "拖曳第 3 個錨點", content, "#60a5fa", (348, y), step in (0, 14)))
+anchor_frames += [card("錨點編輯", "曲線立即更新", anchor_sources[-1], "#60a5fa", (348, 118)) for _ in range(7)]
+for step, content in enumerate(reversed(anchor_sources)):
+    y = int(118 + 120 * step / 20)
+    anchor_frames.append(card("錨點編輯", "放回原位", content, "#60a5fa", (348, y)))
+anchor_frames += [card("錨點編輯", "修改前後可直接比較", anchor_sources[0], "#60a5fa", (348, 238)) for _ in range(5)]
+save_gif("feature-anchor-editing.gif", anchor_frames)
+
+# 3. Smart fill: cursor movement explains the gesture; hover and fill are actual app states.
+fill_bounds = (0.005, 0.12, 0.735, 0.77)
+fill_before = fixed_view(open_frame("fill-00-before.png"), fill_bounds)
+fill_hover = fixed_view(open_frame("fill-01-hover.png"), fill_bounds)
+fill_after = fixed_view(open_frame("fill-02-after.png"), fill_bounds)
+fill_frames = [card("智慧區域填色", "選一個色票", fill_before, "#22c55e", (25, 92), i == 3) for i in range(6)]
+for step in range(18):
+    amount = (step + 1) / 18
+    cursor = (25 + (420 - 25) * amount, 92 + (190 - 92) * amount)
+    fill_frames.append(card("智慧區域填色", "拖進封閉區域", fill_before, "#22c55e", cursor))
+fill_frames += [card("智慧區域填色", "辨識到左半區", fill_hover, "#22c55e", (420, 190), i == 1) for i in range(5)]
+fill_frames += [card("智慧區域填色", "只填選中的區域", frame, "#22c55e", (420, 190)) for frame in tween(fill_hover, fill_after, 6)]
+fill_frames += [card("智慧區域填色", "原線條完整保留", fill_after, "#22c55e") for _ in range(10)]
+fill_frames += [card("智慧區域填色", "重新播放", frame, "#22c55e") for frame in tween(fill_after, fill_before, 6)]
+save_gif("feature-smart-fill.gif", fill_frames)
+
+# 4. PowerPoint: show the app copy, then the real PowerPoint selection moving.
+ppt_browser_bounds = (0.12, 0.12, 0.88, 0.80)
+ppt_selected = fixed_view(open_frame("ppt-00-selected.png"), ppt_browser_bounds)
+ppt_copying1 = fixed_view(open_frame("ppt-01-copying.png"), ppt_browser_bounds)
+ppt_copying2 = fixed_view(open_frame("ppt-02-copying.png"), ppt_browser_bounds)
+ppt_success = fixed_view(open_frame("ppt-03-success.png"), ppt_browser_bounds)
+ppt_native = [fixed_view(open_frame(f"ppt-native-{step:02d}.png")) for step in range(21)]
+ppt_frames = [card("原生 PowerPoint", "選取 3 個物件", ppt_selected, "#f97316", (655, 8), i == 2) for i in range(5)]
+ppt_frames += [card("原生 PowerPoint", "正在複製", frame, "#f97316") for frame in tween(ppt_selected, ppt_copying1, 5)]
+ppt_frames += [card("原生 PowerPoint", "3 個可編輯物件", frame, "#f97316") for frame in tween(ppt_copying1, ppt_copying2, 5)]
+ppt_frames += [card("原生 PowerPoint", "複製成功", frame, "#f97316") for frame in tween(ppt_copying2, ppt_success, 5)]
+ppt_frames += [card("原生 PowerPoint", "貼到 PowerPoint", ppt_success, "#f97316") for _ in range(5)]
+ppt_frames += [card("原生 PowerPoint", "選取單一物件", frame, "#f97316") for frame in tween(ppt_success, ppt_native[0], 7)]
+ppt_frames += [card("原生 PowerPoint", "單獨拖曳位置", frame, "#f97316") for frame in ppt_native]
+ppt_frames += [card("原生 PowerPoint", "仍是可編輯形狀", ppt_native[-1], "#f97316") for _ in range(7)]
+save_gif("feature-powerpoint.gif", ppt_frames)
 
 for path in sorted(OUTPUT_DIR.glob("feature-*.gif")):
     print(path.resolve())
