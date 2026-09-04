@@ -28,7 +28,7 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/media/feature-magnetic-trace.gif" alt="A pointer moves above an image boundary while an orange trace point stays snapped to the edge"><br><strong>Magnetic tracing</strong> — move near an image boundary and the orange point follows the real edge.</td>
+    <td width="50%"><img src="docs/media/feature-magnetic-trace.gif" alt="A close-up pointer moves slowly just above a curved line while an orange trace point stays snapped to it"><br><strong>Magnetic tracing</strong> — move near an image boundary and the orange point follows the real edge.</td>
     <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="A complex reference image is auto-traced and Ctrl+A reveals every editable anchor"><br><strong>Auto trace</strong> — trace a complex reference, apply the result, and press Ctrl+A to reveal every anchor.</td>
   </tr>
   <tr>

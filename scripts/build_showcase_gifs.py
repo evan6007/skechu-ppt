@@ -33,7 +33,7 @@ def fixed_view(image, bounds=(0, 0, 1, 1)):
 
 def trace_view(image, point=None, snap=None):
     edge = METADATA["trace"]["edgeScreen"]
-    crop_width = min(760, image.width)
+    crop_width = min(420, image.width)
     crop_height = round(crop_width * CONTENT[1] / CONTENT[0])
     left = max(0, min(image.width - crop_width, edge["x"] - crop_width / 2))
     top = max(0, min(image.height - crop_height, edge["y"] - crop_height * .35))
@@ -124,7 +124,7 @@ for step, trace_point in enumerate(METADATA["trace"]["frames"]):
     source = open_frame(f"trace-{step:02d}.png")
     content, cursor, anchor = trace_view(source, trace_point["cursor"], trace_point["snap"])
     snapped = trace_point["snap"] is not None
-    badge = "吸住邊緣來回滑動" if snapped and step >= 15 else ("橘點瞬間吸住" if snapped else "游標靠近邊界")
+    badge = "橘點吸住線條滑動" if snapped and step >= 15 else ("橘點瞬間吸住" if snapped else "游標靠近線條")
     trace_frames.append(card("磁吸描圖", badge, content, "#fb923c", cursor, anchor=anchor))
 trace_frames += [trace_frames[-1]] * 6
 save_gif("feature-magnetic-trace.gif", trace_frames)

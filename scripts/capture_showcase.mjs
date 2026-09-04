@@ -95,24 +95,20 @@ try {
   // 1. Magnetic trace: zoomed close-up, normal cursor approaches, orange point snaps to a real edge.
   const traceSetup = await evaluate(`(() => {
     const ref=items.find(item=>item.referenceOnly),cache=referenceEdgeCache.get(ref.id);
-    let best=null;
-    for(let y=Math.floor(cache.h*.06);y<Math.floor(cache.h*.38);y++)for(let x=Math.floor(cache.w*.38);x<Math.floor(cache.w*.70);x++){
-      const i=y*cache.w+x;if(!cache.edges[i])continue;
-      const score=y+Math.abs(x-cache.w*.54)*.08-(cache.strengths[i]||0)*.025;
-      if(!best||score<best.score)best={x,y,score};
-    }
-    if(!best)throw new Error('No showcase edge found');
+    const centralGuideY=x=>cache.h*(.34+1.15*((x/cache.w)-.50)**2);
     const track=[];
     for(let slot=0;slot<21;slot++){
-      const wantedX=best.x+(slot-10)*10.5;let candidate=null;
-      for(let x=Math.max(1,Math.round(wantedX)-3);x<=Math.min(cache.w-2,Math.round(wantedX)+3);x++){
-        for(let y=Math.floor(cache.h*.04);y<Math.floor(cache.h*.40);y++){
+      const wantedX=cache.w*(.30+slot*.018);let candidate=null;
+      for(let x=Math.max(1,Math.round(wantedX)-5);x<=Math.min(cache.w-2,Math.round(wantedX)+5);x++){
+        const wantedY=centralGuideY(x);
+        for(let y=Math.max(1,Math.floor(wantedY-cache.h*.065));y<=Math.min(cache.h-2,Math.ceil(wantedY+cache.h*.065));y++){
           const i=y*cache.w+x;if(!cache.edges[i])continue;
-          const score=Math.abs(x-wantedX)*8+y-(cache.strengths[i]||0)*.02;
+          const score=Math.abs(x-wantedX)*4+Math.abs(y-wantedY)*7-(cache.strengths[i]||0)*.02;
           if(!candidate||score<candidate.score)candidate={x,y,score};
         }
       }
-      const point=candidate||best;
+      if(!candidate)throw new Error('No central showcase edge found');
+      const point=candidate;
       track.push({x:ref.x+(point.x+.5)/cache.w*ref.w,y:ref.y+(point.y+.5)/cache.h*ref.h});
     }
     const edge=track[10];
@@ -131,15 +127,22 @@ try {
     metadata.trace.frames.push(point);
     await capture(`trace-${String(step).padStart(2, '0')}.png`);
   }
-  const motionOrder = [10,8,6,4,2,0,2,4,6,8,10,12,14,16,18,20,18,16,14,12,10,8,6,4,2,0,2,4,6,8,10];
+  const sweep = (from, to, frames) => Array.from({length:frames}, (_, index) =>
+    Math.round(from + (to - from) * index / (frames - 1)));
+  const motionOrder = [
+    ...sweep(10, 0, 17),
+    ...sweep(0, 20, 33).slice(1),
+    ...sweep(20, 0, 33).slice(1),
+    ...sweep(0, 10, 17).slice(1),
+  ];
   for (const trackIndex of motionOrder) {
     const frameIndex = metadata.trace.frames.length;
     const point = await evaluate(`(() => {
       const edge=${JSON.stringify(traceSetup.track)}[${trackIndex}],raw={x:edge.x,y:edge.y-10};
       magneticEdgeSnap(raw);traceRouteValid=true;renderSelection();
-      document.getElementById('status').textContent='橘色點沿著圖像邊界來回滑動';
+      document.getElementById('status').textContent='橘色點吸住中央曲線慢速滑動';
       const matrix=svg.getScreenCTM(),screen=p=>({x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f});
-      const cursorPoint=traceSnapTarget?{x:traceSnapTarget.x+20,y:traceSnapTarget.y-30}:raw;
+      const cursorPoint=traceSnapTarget?{x:traceSnapTarget.x+2,y:traceSnapTarget.y-18}:raw;
       return{cursor:screen(cursorPoint),snap:traceSnapTarget?screen(traceSnapTarget):null};
     })()`);
     metadata.trace.frames.push(point);
