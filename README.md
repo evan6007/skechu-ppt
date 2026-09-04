@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/editor-anchor-showcase.png" width="1200" alt="Skechu-PPT editing a detailed brain illustration with hundreds of visible vector anchor points">
+  <img src="docs/media/editor-anchor-showcase.png" width="1200" alt="Skechu-PPT editing a detailed illustration with hundreds of visible vector anchor points">
 </p>
 
 <p align="center"><sub>A real Skechu-PPT project: hundreds of editable anchors, pages, layers, fills, and the original reference image in one workspace.</sub></p>
@@ -28,12 +28,12 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/media/feature-magnetic-trace.gif" alt="A normal pointer approaches a brain boundary and an orange trace point snaps to the edge"><br><strong>Magnetic tracing</strong> — move toward a brain boundary; the orange point snaps to the real edge.</td>
-    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="The brain image is auto-traced and Ctrl+A reveals every editable anchor"><br><strong>Auto trace</strong> — trace the same brain, apply it, and press Ctrl+A to reveal every anchor.</td>
+    <td width="50%"><img src="docs/media/feature-magnetic-trace.gif" alt="A pointer moves above an image boundary while an orange trace point stays snapped to the edge"><br><strong>Magnetic tracing</strong> — move near an image boundary and the orange point follows the real edge.</td>
+    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="A complex reference image is auto-traced and Ctrl+A reveals every editable anchor"><br><strong>Auto trace</strong> — trace a complex reference, apply the result, and press Ctrl+A to reveal every anchor.</td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/feature-rainbow-fill.gif" alt="Enclosed regions formed by the brain line art are filled while T-junction boundaries remain intact"><br><strong>Connected-region fill</strong> — fill enclosed areas formed by your line art, including regions closed by T-junctions.</td>
-    <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="A complex traced brain is selected, copied into PowerPoint, spread across ten loose diagonal strokes, then every editable object is selected"><br><strong>Native PowerPoint objects</strong> — copy any traced artwork into PowerPoint and edit every line, fill, and region independently.</td>
+    <td width="50%"><img src="docs/media/feature-rainbow-fill.gif" alt="Enclosed regions formed by complex line art are filled while T-junction boundaries remain intact"><br><strong>Connected-region fill</strong> — fill enclosed areas formed by your line art, including regions closed by T-junctions.</td>
+    <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="Complex traced artwork is selected, copied into PowerPoint, spread across the slide, then every editable object is selected"><br><strong>Native PowerPoint objects</strong> — copy any traced artwork into PowerPoint and edit every line, fill, and region independently.</td>
   </tr>
 </table>
 

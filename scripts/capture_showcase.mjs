@@ -102,21 +102,48 @@ try {
       if(!best||score<best.score)best={x,y,score};
     }
     if(!best)throw new Error('No showcase edge found');
-    const edge={x:ref.x+(best.x+.5)/cache.w*ref.w,y:ref.y+(best.y+.5)/cache.h*ref.h};
+    const track=[];
+    for(let slot=0;slot<21;slot++){
+      const wantedX=best.x+(slot-10)*10.5;let candidate=null;
+      for(let x=Math.max(1,Math.round(wantedX)-3);x<=Math.min(cache.w-2,Math.round(wantedX)+3);x++){
+        for(let y=Math.floor(cache.h*.04);y<Math.floor(cache.h*.40);y++){
+          const i=y*cache.w+x;if(!cache.edges[i])continue;
+          const score=Math.abs(x-wantedX)*8+y-(cache.strengths[i]||0)*.02;
+          if(!candidate||score<candidate.score)candidate={x,y,score};
+        }
+      }
+      const point=candidate||best;
+      track.push({x:ref.x+(point.x+.5)/cache.w*ref.w,y:ref.y+(point.y+.5)/cache.h*ref.h});
+    }
+    const edge=track[10];
     const matrix=svg.getScreenCTM(),screen=p=>({x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f});
-    return{edge,edgeScreen:screen(edge),viewport:{width:innerWidth,height:innerHeight}};
+    return{edge,track,edgeScreen:screen(edge),viewport:{width:innerWidth,height:innerHeight}};
   })()`);
   metadata.trace = {...traceSetup, frames: []};
-  for (let step = 0; step <= 24; step += 1) {
+  for (let step = 0; step < 15; step += 1) {
     const point = await evaluate(`(() => {
-      const edge=${JSON.stringify(traceSetup.edge)},distance=72*(1-${step}/24),raw={x:edge.x-distance*.30,y:edge.y-distance};
+      const edge=${JSON.stringify(traceSetup.edge)},distance=78-(66*${step}/14),raw={x:edge.x-distance*.22,y:edge.y-distance};
       magneticEdgeSnap(raw);traceRouteValid=true;renderSelection();
-      document.getElementById('status').textContent=traceSnapTarget?'橘色點已吸住腦溝邊界':'游標靠近邊界即可磁吸';
+      document.getElementById('status').textContent=traceSnapTarget?'橘色點已吸住圖像邊界':'游標靠近邊界即可磁吸';
       const matrix=svg.getScreenCTM(),screen=p=>({x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f});
       return{cursor:screen(raw),snap:traceSnapTarget?screen(traceSnapTarget):null};
     })()`);
     metadata.trace.frames.push(point);
     await capture(`trace-${String(step).padStart(2, '0')}.png`);
+  }
+  const motionOrder = [10,8,6,4,2,0,2,4,6,8,10,12,14,16,18,20,18,16,14,12,10,8,6,4,2,0,2,4,6,8,10];
+  for (const trackIndex of motionOrder) {
+    const frameIndex = metadata.trace.frames.length;
+    const point = await evaluate(`(() => {
+      const edge=${JSON.stringify(traceSetup.track)}[${trackIndex}],raw={x:edge.x,y:edge.y-10};
+      magneticEdgeSnap(raw);traceRouteValid=true;renderSelection();
+      document.getElementById('status').textContent='橘色點沿著圖像邊界來回滑動';
+      const matrix=svg.getScreenCTM(),screen=p=>({x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f});
+      const cursorPoint=traceSnapTarget?{x:traceSnapTarget.x+20,y:traceSnapTarget.y-30}:raw;
+      return{cursor:screen(cursorPoint),snap:traceSnapTarget?screen(traceSnapTarget):null};
+    })()`);
+    metadata.trace.frames.push(point);
+    await capture(`trace-${String(frameIndex).padStart(2, '0')}.png`);
   }
 
   // 2. Auto trace: same brain image, real preview, apply, then Ctrl+A shows every anchor.
@@ -164,11 +191,11 @@ try {
   // then copy it before the companion script continues in PowerPoint.
   await evaluate(`clearSelectionState();render()`);
   await capture('ppt-00-unselected.png');
-  await evaluate(`document.getElementById('select-all').click();document.getElementById('status').textContent='Ctrl+A 全選整顆腦袋'`);
+  await evaluate(`document.getElementById('select-all').click();document.getElementById('status').textContent='Ctrl+A 全選所有物件'`);
   await capture('ppt-01-selected.png');
-  await evaluate(`setClipboardBusy(true);const bar=document.getElementById('ppt-progress');bar.hidden=false;bar.value=48;clipboardFeedback('正在複製到 PowerPoint','建立可編輯腦袋物件（48%）')`);
+  await evaluate(`setClipboardBusy(true);const bar=document.getElementById('ppt-progress');bar.hidden=false;bar.value=48;clipboardFeedback('正在複製到 PowerPoint','建立可編輯向量物件（48%）')`);
   await capture('ppt-02-copying.png');
-  await evaluate(`document.getElementById('ppt-progress').value=100;setClipboardBusy(false);document.getElementById('ppt-progress').hidden=true;clipboardFeedback('複製成功：可編輯 PPT 物件','切到 PowerPoint，按 Ctrl+V 貼上整顆腦袋。','success')`);
+  await evaluate(`document.getElementById('ppt-progress').value=100;setClipboardBusy(false);document.getElementById('ppt-progress').hidden=true;clipboardFeedback('複製成功：可編輯 PPT 物件','切到 PowerPoint，按 Ctrl+V 貼上完整作品。','success')`);
   await capture('ppt-03-success.png');
 
   await writeFile(path.join(outputDir, 'showcase-metadata.json'), JSON.stringify(metadata, null, 2));

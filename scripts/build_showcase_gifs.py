@@ -31,19 +31,20 @@ def fixed_view(image, bounds=(0, 0, 1, 1)):
     return ImageOps.fit(cropped, CONTENT, method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
 
 
-def trace_view(image, point=None):
+def trace_view(image, point=None, snap=None):
     edge = METADATA["trace"]["edgeScreen"]
-    crop_width = min(1080, image.width)
+    crop_width = min(760, image.width)
     crop_height = round(crop_width * CONTENT[1] / CONTENT[0])
     left = max(0, min(image.width - crop_width, edge["x"] - crop_width / 2))
-    top = max(0, min(image.height - crop_height, edge["y"] - crop_height * .55))
+    top = max(0, min(image.height - crop_height, edge["y"] - crop_height * .35))
     bounds = (round(left), round(top), round(left + crop_width), round(top + crop_height))
     view = image.crop(bounds).resize(CONTENT, Image.Resampling.LANCZOS)
-    if not point:
-        return view, None
-    mapped = ((point["x"] - bounds[0]) / crop_width * CONTENT[0],
-              (point["y"] - bounds[1]) / crop_height * CONTENT[1])
-    return view, mapped
+    def mapped(screen_point):
+        if not screen_point:
+            return None
+        return ((screen_point["x"] - bounds[0]) / crop_width * CONTENT[0],
+                (screen_point["y"] - bounds[1]) / crop_height * CONTENT[1])
+    return view, mapped(point), mapped(snap)
 
 
 def windows_cursor():
@@ -65,7 +66,7 @@ def windows_cursor():
 CURSOR = windows_cursor()
 
 
-def card(title, badge, content, accent, cursor=None, pulse=False):
+def card(title, badge, content, accent, cursor=None, pulse=False, anchor=None):
     frame = Image.new("RGBA", SIZE, "#0d0f12")
     draw = ImageDraw.Draw(frame)
     draw.rounded_rectangle((0, 0, SIZE[0] - 1, SIZE[1] - 1), 18, fill="#171a1f", outline="#3a4049", width=2)
@@ -79,6 +80,10 @@ def card(title, badge, content, accent, cursor=None, pulse=False):
     mask = Image.new("L", CONTENT, 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, CONTENT[0], CONTENT[1]), 12, fill=255)
     frame.paste(content, (12, 42), mask)
+    if anchor:
+        anchor_x, anchor_y = int(anchor[0] + 12), int(anchor[1] + 42)
+        draw.ellipse((anchor_x - 9, anchor_y - 9, anchor_x + 9, anchor_y + 9),
+                     fill="#fff7ed", outline="#f97316", width=4)
     if cursor:
         x, y = int(cursor[0] + 12), int(cursor[1] + 42)
         if pulse:
@@ -92,9 +97,17 @@ def tween(first, second, count):
 
 
 def save_gif(name, frames):
-    palette_sheet = Image.new("RGB", (180, 101 * len(frames[::4])))
-    for index, frame in enumerate(frames[::4]):
+    sampled = frames[::4]
+    palette_sheet = Image.new("RGB", (180, 101 * len(sampled) + 36))
+    for index, frame in enumerate(sampled):
         palette_sheet.paste(frame.resize((180, 101), Image.Resampling.BILINEAR), (0, index * 101))
+    swatches = ["#f97316", "#fb923c", "#fff7ed", "#0d0f12", "#f3f4f6", "#38bdf8", "#22c55e"]
+    swatch_top = 101 * len(sampled)
+    swatch_width = 180 // len(swatches)
+    palette_draw = ImageDraw.Draw(palette_sheet)
+    for index, color in enumerate(swatches):
+        palette_draw.rectangle((index * swatch_width, swatch_top,
+                                (index + 1) * swatch_width - 1, swatch_top + 35), fill=color)
     palette = palette_sheet.quantize(colors=112, method=Image.Quantize.MEDIANCUT)
     encoded = [frame.quantize(palette=palette, dither=Image.Dither.NONE) for frame in frames]
     encoded[0].save(
@@ -107,13 +120,13 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # 1. Zoomed magnetic tracing on the brain: the orange marker is rendered by the app.
 trace_frames = []
-for step in range(25):
+for step, trace_point in enumerate(METADATA["trace"]["frames"]):
     source = open_frame(f"trace-{step:02d}.png")
-    content, cursor = trace_view(source, METADATA["trace"]["frames"][step]["cursor"])
-    snapped = METADATA["trace"]["frames"][step]["snap"] is not None
-    trace_frames.append(card("磁吸描圖", "橘點瞬間吸住" if snapped else "游標靠近腦溝", content, "#fb923c", cursor, snapped and step == 19))
-trace_frames += [trace_frames[-1]] * 8
-trace_frames += list(reversed(trace_frames[8:20]))
+    content, cursor, anchor = trace_view(source, trace_point["cursor"], trace_point["snap"])
+    snapped = trace_point["snap"] is not None
+    badge = "吸住邊緣來回滑動" if snapped and step >= 15 else ("橘點瞬間吸住" if snapped else "游標靠近邊界")
+    trace_frames.append(card("磁吸描圖", badge, content, "#fb923c", cursor, anchor=anchor))
+trace_frames += [trace_frames[-1]] * 6
 save_gif("feature-magnetic-trace.gif", trace_frames)
 
 # 2. The same brain goes from source image to auto trace, then Ctrl+A reveals all anchors.
@@ -124,7 +137,7 @@ auto_preview = fixed_view(open_frame("auto-02-preview.png"), auto_bounds)
 auto_applied = fixed_view(open_frame("auto-03-applied.png"), auto_bounds)
 auto_anchors = fixed_view(open_frame("auto-04-all-anchors.png"), auto_bounds)
 anchor_count = METADATA["autoTraceAnchors"]
-auto_frames = [card("自動描圖", "腦袋原圖", auto_source, "#38bdf8", (162, 8), i == 2) for i in range(5)]
+auto_frames = [card("自動描圖", "複雜參考圖", auto_source, "#38bdf8", (162, 8), i == 2) for i in range(5)]
 auto_frames += [card("自動描圖", "開啟自動描圖", frame, "#38bdf8") for frame in tween(auto_source, auto_opening, 7)]
 auto_frames += [card("自動描圖", "預覽描圖線", frame, "#38bdf8") for frame in tween(auto_opening, auto_preview, 7)]
 auto_frames += [card("自動描圖", "套用線條", frame, "#38bdf8", (522, 327)) for frame in tween(auto_preview, auto_applied, 7)]
@@ -158,8 +171,8 @@ ppt_cursor_path = [
     (430 + (655 - 430) * step / 11, 220 + (18 - 220) * step / 11)
     for step in range(12)
 ]
-ppt_frames = [card("貼到 PowerPoint", "彩色腦袋尚未選取", ppt_unselected, "#f97316") for _ in range(8)]
-ppt_frames += [card("貼到 PowerPoint", "Ctrl+A 全選腦袋", frame, "#f97316") for frame in tween(ppt_unselected, ppt_selected, 5)]
+ppt_frames = [card("貼到 PowerPoint", "彩色作品尚未選取", ppt_unselected, "#f97316") for _ in range(8)]
+ppt_frames += [card("貼到 PowerPoint", "Ctrl+A 全選作品", frame, "#f97316") for frame in tween(ppt_unselected, ppt_selected, 5)]
 ppt_frames += [card("貼到 PowerPoint", "全部 anchors 已選取", ppt_selected, "#f97316") for _ in range(6)]
 ppt_frames += [
     card("貼到 PowerPoint", "按下複製到 PPT", ppt_selected, "#f97316", point, step == 11)
@@ -169,7 +182,7 @@ ppt_frames += [card("貼到 PowerPoint", "複製可編輯物件", frame, "#f9731
 ppt_frames += [card("貼到 PowerPoint", "複製完成", frame, "#f97316") for frame in tween(ppt_copying, ppt_success, 6)]
 ppt_frames += [card("貼到 PowerPoint", "切換到 PowerPoint", ppt_empty, "#f97316") for _ in range(6)]
 ppt_frames += [card("貼到 PowerPoint", "Ctrl+V 貼上", ppt_pasted, "#f97316", (330, 190), i == 2) for i in range(6)]
-ppt_frames += [card("貼到 PowerPoint", "整顆腦袋已貼上", ppt_pasted, "#f97316") for _ in range(10)]
+ppt_frames += [card("貼到 PowerPoint", "完整作品已貼上", ppt_pasted, "#f97316") for _ in range(10)]
 ppt_frames += [card("貼到 PowerPoint", "Ctrl+A 全選可編輯物件", ppt_all_selected, "#f97316") for _ in range(8)]
 ppt_frames += [card("貼到 PowerPoint", "色塊沿 10 道筆勢依序散開", frame, "#f97316") for frame in ppt_explode]
 ppt_frames += [card("貼到 PowerPoint", "Ctrl+A：每個物件都能編輯", ppt_explode_selected, "#f97316") for _ in range(10)]
