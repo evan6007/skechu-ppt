@@ -31,7 +31,7 @@ def fixed_view(image, bounds=(0, 0, 1, 1)):
     return ImageOps.fit(cropped, CONTENT, method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
 
 
-def trace_view(image, point=None, snap=None):
+def trace_view(image, point=None):
     edge = METADATA["trace"]["edgeScreen"]
     crop_width = min(420, image.width)
     crop_height = round(crop_width * CONTENT[1] / CONTENT[0])
@@ -44,7 +44,7 @@ def trace_view(image, point=None, snap=None):
             return None
         return ((screen_point["x"] - bounds[0]) / crop_width * CONTENT[0],
                 (screen_point["y"] - bounds[1]) / crop_height * CONTENT[1])
-    return view, mapped(point), mapped(snap)
+    return view, mapped(point)
 
 
 def windows_cursor():
@@ -66,7 +66,7 @@ def windows_cursor():
 CURSOR = windows_cursor()
 
 
-def card(title, badge, content, accent, cursor=None, pulse=False, anchor=None):
+def card(title, badge, content, accent, cursor=None, pulse=False):
     frame = Image.new("RGBA", SIZE, "#0d0f12")
     draw = ImageDraw.Draw(frame)
     draw.rounded_rectangle((0, 0, SIZE[0] - 1, SIZE[1] - 1), 18, fill="#171a1f", outline="#3a4049", width=2)
@@ -80,10 +80,6 @@ def card(title, badge, content, accent, cursor=None, pulse=False, anchor=None):
     mask = Image.new("L", CONTENT, 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, CONTENT[0], CONTENT[1]), 12, fill=255)
     frame.paste(content, (12, 42), mask)
-    if anchor:
-        anchor_x, anchor_y = int(anchor[0] + 12), int(anchor[1] + 42)
-        draw.ellipse((anchor_x - 9, anchor_y - 9, anchor_x + 9, anchor_y + 9),
-                     fill="#fff7ed", outline="#f97316", width=4)
     if cursor:
         x, y = int(cursor[0] + 12), int(cursor[1] + 42)
         if pulse:
@@ -122,10 +118,10 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 trace_frames = []
 for step, trace_point in enumerate(METADATA["trace"]["frames"]):
     source = open_frame(f"trace-{step:02d}.png")
-    content, cursor, anchor = trace_view(source, trace_point["cursor"], trace_point["snap"])
+    content, cursor = trace_view(source, trace_point["cursor"])
     snapped = trace_point["snap"] is not None
     badge = "橘點吸住線條滑動" if snapped and step >= 15 else ("橘點瞬間吸住" if snapped else "游標靠近線條")
-    trace_frames.append(card("磁吸描圖", badge, content, "#fb923c", cursor, anchor=anchor))
+    trace_frames.append(card("磁吸描圖", badge, content, "#fb923c", cursor))
 trace_frames += [trace_frames[-1]] * 6
 save_gif("feature-magnetic-trace.gif", trace_frames)
 
