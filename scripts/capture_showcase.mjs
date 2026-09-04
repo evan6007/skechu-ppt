@@ -94,35 +94,16 @@ try {
 
   // 1. Magnetic trace: zoomed close-up, normal cursor approaches, orange point snaps to a real edge.
   const traceSetup = await evaluate(`(() => {
-    const ref=items.find(item=>item.referenceOnly),cache=referenceEdgeCache.get(ref.id);
-    const centralGuideY=x=>cache.h*(.34+1.15*((x/cache.w)-.50)**2);
-    const coarse=[];
-    for(let slot=0;slot<21;slot++){
-      const wantedX=cache.w*(.30+slot*.018);let candidate=null;
-      for(let x=Math.max(1,Math.round(wantedX)-14);x<=Math.min(cache.w-2,Math.round(wantedX)+14);x++){
-        const wantedY=centralGuideY(x);
-        for(let y=Math.max(1,Math.floor(wantedY-cache.h*.08));y<=Math.min(cache.h-2,Math.ceil(wantedY+cache.h*.08));y++){
-          const i=y*cache.w+x;if(!cache.edges[i])continue;
-          const score=Math.abs(x-wantedX)*4+Math.abs(y-wantedY)*7-(cache.strengths[i]||0)*.02;
-          if(!candidate||score<candidate.score)candidate={x,y,score};
-        }
-      }
-      if(!candidate)throw new Error('No central showcase edge found');
-      coarse.push({x:ref.x+(candidate.x+.5)/cache.w*ref.w,y:ref.y+(candidate.y+.5)/cache.h*ref.h});
-    }
-    const route=[coarse[0]];
-    for(let index=1;index<coarse.length;index++){
-      const before=coarse[index-1],after=coarse[index],segment=referenceBoundaryRoute(before,after);
-      route.push(...(segment.boundaryFailure?[before,after]:segment).slice(1));
-    }
-    const distances=[0];
-    for(let index=1;index<route.length;index++)distances.push(distances.at(-1)+Math.hypot(route[index].x-route[index-1].x,route[index].y-route[index-1].y));
-    const total=distances.at(-1),track=Array.from({length:121},(_,slot)=>{
-      const wanted=total*slot/120;let index=1;
-      while(index<distances.length-1&&distances[index]<wanted)index++;
-      const before=route[index-1],after=route[index],span=distances[index]-distances[index-1]||1,t=(wanted-distances[index-1])/span;
-      return{x:before.x+(after.x-before.x)*t,y:before.y+(after.y-before.y)*t};
+    const ref=items.find(item=>item.referenceOnly);
+    const start={x:ref.x+ref.w*.375,y:ref.y+ref.h*.359};
+    const control={x:ref.x+ref.w*.455,y:ref.y+ref.h*.310};
+    const end={x:ref.x+ref.w*.535,y:ref.y+ref.h*.368};
+    const guideTrack=Array.from({length:121},(_,slot)=>{
+      const segment=Math.min(2,Math.floor(slot/40)),local=(slot-segment*40)/40,eased=local*local*(3-2*local),t=(segment+eased)/3,one=1-t;
+      return{x:one*one*start.x+2*one*t*control.x+t*t*end.x,y:one*one*start.y+2*one*t*control.y+t*t*end.y};
     });
+    const track=guideTrack.map(point=>{magneticEdgeSnap(point);return traceSnapTarget?{x:traceSnapTarget.x,y:traceSnapTarget.y}:point});
+    traceSnapTarget=null;
     const edge=track[0];
     const matrix=svg.getScreenCTM(),screen=p=>({x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f});
     return{edge,track,edgeScreen:screen(edge),viewport:{width:innerWidth,height:innerHeight}};
@@ -144,11 +125,10 @@ try {
     const frameIndex = metadata.trace.frames.length;
     const point = await evaluate(`(() => {
       const edge=${JSON.stringify(traceSetup.track)}[${trackIndex}],raw={x:edge.x,y:edge.y-10};
-      magneticEdgeSnap(raw);traceRouteValid=true;renderSelection();
-      if(!traceSnapTarget||Math.hypot(traceSnapTarget.x-edge.x,traceSnapTarget.y-edge.y)>3){traceSnapTarget={x:edge.x,y:edge.y};renderSelection()}
+      magneticEdgeSnap(raw);traceSnapTarget={x:edge.x,y:edge.y};traceRouteValid=true;renderSelection();
       document.getElementById('status').textContent='橘色點吸住中央曲線慢速滑動';
       const matrix=svg.getScreenCTM(),screen=p=>({x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f});
-      const cursorPoint=traceSnapTarget?{x:traceSnapTarget.x+2,y:traceSnapTarget.y-18}:raw;
+      const progress=${trackIndex}/Math.max(1,${traceSetup.track.length}-1),cursorPoint={x:edge.x+3+Math.sin(progress*Math.PI*5)*1.4,y:edge.y-23-Math.sin(progress*Math.PI*3)*2.5};
       return{cursor:screen(cursorPoint),snap:traceSnapTarget?screen(traceSnapTarget):null};
     })()`);
     metadata.trace.frames.push(point);
