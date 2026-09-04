@@ -168,7 +168,7 @@ ppt_frames += [card("貼到 PowerPoint", "Ctrl+V 貼上", ppt_pasted, "#f97316",
 ppt_frames += [card("貼到 PowerPoint", "整顆腦袋已貼上", ppt_pasted, "#f97316") for _ in range(10)]
 ppt_frames += [card("貼到 PowerPoint", "Ctrl+A 全選可編輯物件", ppt_all_selected, "#f97316") for _ in range(8)]
 ppt_frames += [card("貼到 PowerPoint", "色塊沿斜向筆勢依序散開", frame, "#f97316") for frame in ppt_explode]
-ppt_frames += [card("貼到 PowerPoint", "任一色塊都可單獨選取", ppt_explode_selected, "#f97316") for _ in range(10)]
+ppt_frames += [card("貼到 PowerPoint", "Ctrl+A：每個物件都能編輯", ppt_explode_selected, "#f97316") for _ in range(10)]
 save_gif("feature-powerpoint.gif", ppt_frames)
 
 for path in sorted(OUTPUT_DIR.glob("feature-*.gif")):

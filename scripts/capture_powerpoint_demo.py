@@ -195,7 +195,7 @@ try:
     scribble_positions = scribble_targets(fill_count)
     for index, shape in enumerate(fill_shapes):
         rank = rank_by_index[index]
-        target_max_dimension = 72 + ((rank * 17) % 19)
+        target_max_dimension = 98 + ((rank * 17) % 31)
         display_scale = target_max_dimension / max(shape.Width, shape.Height)
         target_width, target_height = shape.Width * display_scale, shape.Height * display_scale
         target_center = scribble_positions[rank]
@@ -229,8 +229,12 @@ try:
             shape.Top = start[1] + (move_target[1] - start[1]) * eased
             shape.Rotation = start[2] + (move_target[2] - start[2]) * eased
         capture(hwnd, f"ppt-native-explode-{step:02d}.png")
-    showcase_fill = max(fill_shapes, key=lambda shape: shape.Width * shape.Height)
-    showcase_fill.Select()
+    # Finish with the PowerPoint equivalent of Ctrl+A. Ungroup the centered
+    # line art again so the final selection exposes every editable object,
+    # rather than presenting the illustration as one opaque group.
+    line_group.Ungroup()
+    all_names = [slide.Shapes.Item(index).Name for index in range(1, slide.Shapes.Count + 1)]
+    slide.Shapes.Range(tuple(all_names)).Select()
     app.Activate()
     time.sleep(0.5)
     capture(hwnd, "ppt-native-explode-selected.png")
