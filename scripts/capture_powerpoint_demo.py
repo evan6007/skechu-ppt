@@ -57,7 +57,13 @@ def rainbow_items():
         stripe = max(0, min(6, int((center_x - minimum) / (maximum - minimum or 1) * 7)))
         item["fill"] = PALETTE[(stripe + int(center_y / 150)) % len(PALETTE)]
         item["fillOpacity"] = 1
-    return items
+        item["paintLayer"] = "fill"
+    # Match paintSceneItems(): PowerPoint must create every fill first, then
+    # place the original line art above it. Raw project order stores fills last.
+    foreground = [item for item in items if not item.get("regionFill")]
+    for item in foreground:
+        item["paintLayer"] = "line"
+    return fills + foreground
 
 
 pythoncom.CoInitialize()
