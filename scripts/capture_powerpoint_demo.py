@@ -21,7 +21,7 @@ import bridge  # noqa: E402
 PROJECT = Path(sys.argv[1] if len(sys.argv) > 1 else r"C:\Users\evan6\Downloads\未命名專案 2.skc")
 OUTPUT = Path(sys.argv[2] if len(sys.argv) > 2 else "docs/media/showcase-frames").resolve()
 OUTPUT.mkdir(parents=True, exist_ok=True)
-PALETTE = ["#ef4444", "#f97316", "#facc15", "#22c55e", "#14b8a6", "#3b82f6", "#8b5cf6"]
+PALETTE = ["#ff3b30", "#ff9500", "#ffd60a", "#34c759", "#00c7be", "#0a84ff", "#af52de"]
 
 
 def capture(hwnd, name):
@@ -50,13 +50,23 @@ def rainbow_items():
     page = pages[1] if len(pages) > 1 else pages[0]
     items = [item for item in page["items"] if not item.get("referenceOnly") and not item.get("hidden")]
     fills = [item for item in items if item.get("regionFill") and item.get("points")]
-    xs = [point["x"] for item in fills for point in item["points"]]
-    minimum, maximum = min(xs), max(xs)
-    for item in fills:
-        center_x = sum(point["x"] for point in item["points"]) / len(item["points"])
-        center_y = sum(point["y"] for point in item["points"]) / len(item["points"])
-        stripe = max(0, min(6, int((center_x - minimum) / (maximum - minimum or 1) * 7)))
-        item["fill"] = PALETTE[(stripe + int(center_y / 150)) % len(PALETTE)]
+    centers = [(
+        sum(point["x"] for point in item["points"]) / len(item["points"]),
+        sum(point["y"] for point in item["points"]) / len(item["points"]),
+    ) for item in fills]
+    scene_center = (
+        (min(center[0] for center in centers) + max(center[0] for center in centers)) / 2,
+        (min(center[1] for center in centers) + max(center[1] for center in centers)) / 2,
+    )
+    color_order = sorted(
+        range(len(fills)),
+        key=lambda index: math.atan2(
+            centers[index][0] - scene_center[0], -(centers[index][1] - scene_center[1])
+        ) % math.tau,
+    )
+    color_rank = {item_index: rank for rank, item_index in enumerate(color_order)}
+    for index, item in enumerate(fills):
+        item["fill"] = PALETTE[color_rank[index] % len(PALETTE)]
         item["fillOpacity"] = 1
         item["paintLayer"] = "fill"
     # Match paintSceneItems(): PowerPoint must create every fill first, then
@@ -126,7 +136,7 @@ try:
 
     # Pull the independent colored regions away from the line-art center.
     fill_shapes = [ungrouped.Item(index) for index in range(1, fill_count + 1)]
-    starts = [(shape.Left, shape.Top, shape.Rotation) for shape in fill_shapes]
+    starts = [(shape.Left, shape.Top, shape.Rotation, shape.Width, shape.Height) for shape in fill_shapes]
     clockwise = sorted(
         range(fill_count),
         key=lambda index: math.atan2(
@@ -138,16 +148,25 @@ try:
     targets = []
     for index, shape in enumerate(fill_shapes):
         rank = rank_by_index[index]
-        angle = -math.pi / 2 + rank / fill_count * math.tau
-        radius_x = max(60, 448 - shape.Width / 2)
-        radius_y = max(42, 248 - shape.Height / 2)
-        target_left = brain_center[0] + math.cos(angle) * radius_x - shape.Width / 2
-        target_top = brain_center[1] + math.sin(angle) * radius_y - shape.Height / 2
-        targets.append((
-            max(8, min(952 - shape.Width, target_left)),
-            max(8, min(532 - shape.Height, target_top)),
-            starts[index][2] + ((rank % 7) - 3) * 2.4,
-        ))
+        angle = -math.pi / 2 + (rank + 6) / fill_count * math.tau
+        area = shape.Width * shape.Height
+        display_scale = .56 if area > 60000 else (.76 if area > 26000 else 1)
+        target_width, target_height = shape.Width * display_scale, shape.Height * display_scale
+        radius_x = max(60, 448 - target_width / 2)
+        radius_y = max(42, 248 - target_height / 2)
+        target_left = brain_center[0] + math.cos(angle) * radius_x - target_width / 2
+        target_top = brain_center[1] + math.sin(angle) * radius_y - target_height / 2
+        target_left = max(8, min(952 - target_width, target_left))
+        target_top = max(8, min(532 - target_height, target_top))
+        if math.hypot(target_left - starts[index][0], target_top - starts[index][1]) < 110:
+            angle += math.pi
+            target_left = max(8, min(952 - target_width,
+                brain_center[0] + math.cos(angle) * radius_x - target_width / 2))
+            target_top = max(8, min(532 - target_height,
+                brain_center[1] + math.sin(angle) * radius_y - target_height / 2))
+        targets.append((target_left, target_top,
+                        starts[index][2] + ((rank % 7) - 3) * 2.4,
+                        target_width, target_height))
     app.ActiveWindow.Selection.Unselect()
     for step in range(49):
         amount = step / 48
@@ -156,6 +175,9 @@ try:
             begins = rank / max(1, fill_count - 1) * .62
             local = max(0, min(1, (amount - begins) / .38))
             eased = 1 - (1 - local) ** 3
+            shape.LockAspectRatio = 0
+            shape.Width = start[3] + (move_target[3] - start[3]) * eased
+            shape.Height = start[4] + (move_target[4] - start[4]) * eased
             shape.Left = start[0] + (move_target[0] - start[0]) * eased
             shape.Top = start[1] + (move_target[1] - start[1]) * eased
             shape.Rotation = start[2] + (move_target[2] - start[2]) * eased

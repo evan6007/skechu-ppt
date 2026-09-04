@@ -139,19 +139,16 @@ try {
 
   // 3. Rainbow speed fill: reveal precomputed brain regions in a fast sweep.
   const fillInfo = await evaluate(`(() => {
-    items=deepCopy(window.__brainItems);const palette=['#ef4444','#f97316','#facc15','#22c55e','#14b8a6','#3b82f6','#8b5cf6'];
+    items=deepCopy(window.__brainItems);const palette=['#ff3b30','#ff9500','#ffd60a','#34c759','#00c7be','#0a84ff','#af52de'];
     const page=activePage();page.canvasWidth=window.__brainCanvas.width;page.canvasHeight=window.__brainCanvas.height;
     items.filter(item=>item.referenceOnly).forEach(item=>item.hidden=true);
     const fills=items.filter(item=>item.regionFill&&item.points?.length);
-    const xs=fills.flatMap(item=>item.points.map(point=>point.x)),minX=Math.min(...xs),maxX=Math.max(...xs);
-    fills.forEach(item=>{const cx=item.points.reduce((sum,p)=>sum+p.x,0)/item.points.length;
-      const cy=item.points.reduce((sum,p)=>sum+p.y,0)/item.points.length;
-      const stripe=Math.max(0,Math.min(6,Math.floor((cx-minX)/(maxX-minX||1)*7)));
-      item.fill=palette[(stripe+Math.floor(cy/150))%palette.length];item.fillOpacity=1;item.hidden=true;});
-    window.__rainbowFillIds=fills.sort((a,b)=>{
-      const ax=a.points.reduce((s,p)=>s+p.x,0)/a.points.length, bx=b.points.reduce((s,p)=>s+p.x,0)/b.points.length;
-      return ax-bx;
-    }).map(item=>item.id);
+    const centers=new Map(fills.map(item=>[item.id,{x:item.points.reduce((s,p)=>s+p.x,0)/item.points.length,y:item.points.reduce((s,p)=>s+p.y,0)/item.points.length}]));
+    const all=[...centers.values()],center={x:(Math.min(...all.map(p=>p.x))+Math.max(...all.map(p=>p.x)))/2,y:(Math.min(...all.map(p=>p.y))+Math.max(...all.map(p=>p.y)))/2};
+    const ordered=[...fills].sort((a,b)=>{const pa=centers.get(a.id),pb=centers.get(b.id);
+      const aa=(Math.atan2(pa.x-center.x,-(pa.y-center.y))+Math.PI*2)%(Math.PI*2),ab=(Math.atan2(pb.x-center.x,-(pb.y-center.y))+Math.PI*2)%(Math.PI*2);return aa-ab;});
+    ordered.forEach((item,rank)=>{item.fill=palette[rank%palette.length];item.fillOpacity=1;item.hidden=true;});
+    window.__rainbowFillIds=ordered.map(item=>item.id);
     clearSelectionState();applyCanvasSize();render();fitView();return{count:fills.length,colors:palette};
   })()`);
   metadata.rainbow = fillInfo;
