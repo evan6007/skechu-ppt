@@ -151,7 +151,7 @@ ppt_success = fixed_view(open_frame("ppt-02-success.png"), ppt_browser_bounds)
 ppt_empty = fixed_view(open_frame("ppt-native-00-empty.png"))
 ppt_pasted = fixed_view(open_frame("ppt-native-01-pasted.png"))
 ppt_all_selected = fixed_view(open_frame("ppt-native-02-all-selected.png"))
-ppt_explode = [fixed_view(open_frame(f"ppt-native-explode-{step:02d}.png")) for step in range(21)]
+ppt_explode = [fixed_view(open_frame(f"ppt-native-explode-{step:02d}.png")) for step in range(49)]
 ppt_explode_selected = fixed_view(open_frame("ppt-native-explode-selected.png"))
 ppt_cursor_path = [
     (430 + (655 - 430) * step / 11, 220 + (18 - 220) * step / 11)
@@ -167,7 +167,7 @@ ppt_frames += [card("貼到 PowerPoint", "切換到 PowerPoint", ppt_empty, "#f9
 ppt_frames += [card("貼到 PowerPoint", "Ctrl+V 貼上", ppt_pasted, "#f97316", (330, 190), i == 2) for i in range(6)]
 ppt_frames += [card("貼到 PowerPoint", "整顆腦袋已貼上", ppt_pasted, "#f97316") for _ in range(10)]
 ppt_frames += [card("貼到 PowerPoint", "Ctrl+A 全選可編輯物件", ppt_all_selected, "#f97316") for _ in range(8)]
-ppt_frames += [card("貼到 PowerPoint", "每一塊都能獨立編輯", frame, "#f97316") for frame in ppt_explode]
+ppt_frames += [card("貼到 PowerPoint", "色塊沿外圈依序展開", frame, "#f97316") for frame in ppt_explode]
 ppt_frames += [card("貼到 PowerPoint", "任一色塊都可單獨選取", ppt_explode_selected, "#f97316") for _ in range(10)]
 save_gif("feature-powerpoint.gif", ppt_frames)
 

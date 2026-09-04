@@ -127,22 +127,38 @@ try:
     # Pull the independent colored regions away from the line-art center.
     fill_shapes = [ungrouped.Item(index) for index in range(1, fill_count + 1)]
     starts = [(shape.Left, shape.Top, shape.Rotation) for shape in fill_shapes]
+    clockwise = sorted(
+        range(fill_count),
+        key=lambda index: math.atan2(
+            starts[index][0] + fill_shapes[index].Width / 2 - brain_center[0],
+            -(starts[index][1] + fill_shapes[index].Height / 2 - brain_center[1]),
+        ) % math.tau,
+    )
+    rank_by_index = {shape_index: rank for rank, shape_index in enumerate(clockwise)}
+    targets = []
+    for index, shape in enumerate(fill_shapes):
+        rank = rank_by_index[index]
+        angle = -math.pi / 2 + rank / fill_count * math.tau
+        radius_x = max(60, 448 - shape.Width / 2)
+        radius_y = max(42, 248 - shape.Height / 2)
+        target_left = brain_center[0] + math.cos(angle) * radius_x - shape.Width / 2
+        target_top = brain_center[1] + math.sin(angle) * radius_y - shape.Height / 2
+        targets.append((
+            max(8, min(952 - shape.Width, target_left)),
+            max(8, min(532 - shape.Height, target_top)),
+            starts[index][2] + ((rank % 7) - 3) * 2.4,
+        ))
     app.ActiveWindow.Selection.Unselect()
-    for step in range(21):
-        amount = step / 20
-        eased = 1 - (1 - amount) ** 3
-        for index, (shape, start) in enumerate(zip(fill_shapes, starts)):
-            center_x = start[0] + shape.Width / 2
-            center_y = start[1] + shape.Height / 2
-            dx, dy = center_x - brain_center[0], center_y - brain_center[1]
-            length = math.hypot(dx, dy)
-            if length < 12:
-                angle = index / max(1, fill_count) * math.tau
-                dx, dy, length = math.cos(angle), math.sin(angle), 1
-            distance = 72 + (index % 5) * 7
-            shape.Left = start[0] + dx / length * distance * eased
-            shape.Top = start[1] + dy / length * distance * .72 * eased
-            shape.Rotation = start[2] + ((index % 7) - 3) * 1.8 * eased
+    for step in range(49):
+        amount = step / 48
+        for index, (shape, start, move_target) in enumerate(zip(fill_shapes, starts, targets)):
+            rank = rank_by_index[index]
+            begins = rank / max(1, fill_count - 1) * .62
+            local = max(0, min(1, (amount - begins) / .38))
+            eased = 1 - (1 - local) ** 3
+            shape.Left = start[0] + (move_target[0] - start[0]) * eased
+            shape.Top = start[1] + (move_target[1] - start[1]) * eased
+            shape.Rotation = start[2] + (move_target[2] - start[2]) * eased
         capture(hwnd, f"ppt-native-explode-{step:02d}.png")
     largest_fill = max(fill_shapes, key=lambda shape: shape.Width * shape.Height)
     largest_fill.Select()
