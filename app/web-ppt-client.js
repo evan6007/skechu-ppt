@@ -10,10 +10,10 @@ function finishWebPptPrepare(error,result) {
   if(error)pending.reject(error);else pending.resolve(result);
   sendWebPptCopy();
 }
-function requestWebPptPrepare(body) {
+function requestWebPptPrepare(body,progress=()=>{}) {
   if(!canWebPptPrepare()||webPptPending||webPptPreparation)return Promise.reject(new Error('背景連接尚未就緒'));
   return new Promise((resolve,reject)=>{
-    const pending=webPptPreparation={id:crypto.randomUUID(),resolve,reject};
+    const pending=webPptPreparation={id:crypto.randomUUID(),progress,resolve,reject};
     pending.timer=setTimeout(()=>finishWebPptPrepare(new Error('背景準備逾時')),180000);
     pending.poll=setInterval(()=>{if(!webPptSession||webPptSession.popup.closed)finishWebPptPrepare(new Error('連接已關閉'))},500);
     webPptSession.popup.postMessage({kind:'skechu-ppt',type:'prepare',channel:webPptSession.channel,id:pending.id,body},WEB_PPT_ORIGIN);
@@ -25,7 +25,7 @@ function finishWebPptRequest(error, result) {
   if(error)pending.reject(error);else pending.resolve(result);
 }
 function sendWebPptCopy() {
-  if(!webPptPending||!webPptSession?.approved||webPptPending.sent||webPptPreparation)return;
+  if(!webPptPending||!webPptSession?.approved||webPptPending.sent)return;
   webPptPending.sent=true;clearTimeout(webPptPending.timer);
   webPptPending.timer=setTimeout(()=>finishWebPptRequest(new Error('PowerPoint 建立物件逾時；請查看本機連接視窗，勿重複貼上舊內容')),180000);
   webPptSession.popup.postMessage({kind:'skechu-ppt',type:'copy',channel:webPptSession.channel,id:webPptPending.id,body:webPptPending.body},WEB_PPT_ORIGIN);
@@ -34,6 +34,7 @@ function handleWebPptMessage(event) {
   const session=webPptSession,data=event.data;
   if(!session||event.origin!==WEB_PPT_ORIGIN||event.source!==session.popup||data?.kind!=='skechu-ppt'||data.channel!==session.channel)return;
   if(data.capabilities)session.capabilities=data.capabilities;
+  if(data.type==='progress'&&data.id===webPptPreparation?.id){webPptPreparation.progress(data.event);return;}
   if(data.type==='prepare-result'&&data.id===webPptPreparation?.id){
     finishWebPptPrepare(data.result?.ok&&data.result.prepared?null:new Error(data.result?.error||'背景準備失敗'),data.result);return;
   }
@@ -62,7 +63,7 @@ function requestWebPptCopy(body, progress) {
       ?setTimeout(()=>finishWebPptRequest(new Error('請在本機連接視窗按「允許連接」後重試')),120000)
       :setTimeout(()=>{webPptSession=null;finishWebPptRequest(new Error('找不到新版本機連接頁面。請啟動新版 Skechu-PPT Windows 本機服務（8766），再重試；舊版需更新'))},10000);
     pending.poll=setInterval(()=>{if(webPptSession?.popup.closed){webPptSession=null;finishWebPptRequest(new Error('本機連接視窗已關閉；請再按一次複製重新連接'))}},500);
-    if(webPptPreparation){clearTimeout(pending.timer);pending.timer=setTimeout(()=>finishWebPptRequest(new Error('等候背景準備逾時，請重試')),180000);progress({stage:'正在完成背景準備，接著直接複製',percent:0});}
+    if(webPptPreparation){clearTimeout(pending.timer);pending.timer=setTimeout(()=>finishWebPptRequest(new Error('優先複製逾時，請重試')),180000);progress({stage:'正在中止背景準備，優先複製',percent:0});}
     sendWebPptCopy();
   });
 }

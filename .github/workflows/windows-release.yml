@@ -27,6 +27,8 @@ jobs:
             --icon assets/brand/skechu-ppt-mark.ico `
             --add-data "app/index.html;." `
             --add-data "app/local-smoothing.js;." `
+            --add-data "app/theme-controls.js;." `
+            --add-data "app/theme-controls.css;." `
             --add-data "app/region-fill.js;." `
             --add-data "app/paint-layers.js;." `
             --add-data "app/paint-tools.js;." `
@@ -35,6 +37,7 @@ jobs:
             --add-data "app/workspace-actions.js;." `
             --add-data "app/layer-controls.js;." `
             --add-data "app/layer-controls.css;." `
+            --add-data "app/panel-layout.js;." `
             --add-data "app/clipboard-controls.js;." `
             --add-data "app/clipboard-controls.css;." `
             --add-data "app/web-ppt-client.js;." `
@@ -66,7 +69,7 @@ jobs:
               } catch {}
             }
             if (-not $ready) { throw 'Packaged Skechu-PPT did not start.' }
-            foreach ($asset in @('web-ppt.html','web-ppt-helper.js','web-ppt-client.js','ppt-preparation.js','layer-controls.js','layer-controls.css')) {
+            foreach ($asset in @('web-ppt.html','web-ppt-helper.js','web-ppt-client.js','ppt-preparation.js','layer-controls.js','layer-controls.css','panel-layout.js','theme-controls.js','theme-controls.css')) {
               $assetResponse = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:8877/$asset" -TimeoutSec 2
               if ($assetResponse.StatusCode -ne 200) { throw "Missing packaged asset: $asset" }
             }

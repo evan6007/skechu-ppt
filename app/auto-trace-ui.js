@@ -12,14 +12,14 @@ function createAutoTraceJob() {
   return worker;
  } catch(error) {URL.revokeObjectURL(url);throw new Error(`自動描圖背景運算無法啟動：${error.message||error}`);}
 }
-document.querySelector('.tool-group[aria-label="工具模式"]').insertAdjacentHTML('beforeend','<button id="auto-trace" class="tool-button" title="把底圖深色筆畫轉成可編輯曲線，保留 T 型分岔"><span class="tool-icon" aria-hidden="true">✧</span><span class="tool-text">自動描圖</span></button>');
+document.getElementById('import-reference').insertAdjacentHTML('beforebegin','<button id="auto-trace" class="tool-button" title="把線稿、Logo 或照片角色轉成可編輯曲線"><span class="tool-icon" aria-hidden="true">✧</span><span class="tool-text">自動描圖</span></button>');
 document.body.insertAdjacentHTML('beforeend',`
 <dialog id="auto-trace-dialog" aria-labelledby="auto-trace-title">
  <div class="auto-trace-heading"><div><h2 id="auto-trace-title">自動描圖</h2><p>直接預測並畫出描圖筆曲線；調整設定會自動更新。套用後可刪點、拉切線精修。</p></div><button id="auto-trace-cancel" type="button" aria-label="取消自動描圖">✕</button></div>
- <div class="auto-trace-mode-row"><label for="auto-trace-mode">描圖方式</label><select id="auto-trace-mode"><option value="auto">自動判斷（推薦）</option><option value="line">細線稿 · 沿線中心描</option><option value="contour">Logo 輪廓 · 沿色塊邊緣描</option></select><button id="auto-trace-reset" type="button">恢復推薦設定</button></div>
+ <div class="auto-trace-mode-row"><label for="auto-trace-mode">描圖方式</label><select id="auto-trace-mode"><option value="auto">自動判斷（推薦）</option><option value="line">細線稿 · 沿線中心描</option><option value="contour">Logo 輪廓 · 沿色塊邊緣描</option><option value="photo">照片角色 · 排除背景與雜訊</option></select><button id="auto-trace-reset" type="button">恢復推薦設定</button></div>
  <p id="auto-trace-mode-hint" class="auto-trace-mode-hint">不用先猜參數：細線稿保留分岔，實心 Logo 描出外框與內部留白。</p>
  <div class="auto-trace-options">
-  <label><span class="auto-trace-option-title">深淺辨識 <output id="auto-trace-threshold-value" for="auto-trace-threshold"></output></span><input id="auto-trace-threshold" aria-label="深淺辨識" type="range" min="40" max="220" step="5" value="150"><span class="auto-trace-range-ends"><span>只抓深色</span><span>包含淺色</span></span><small>漏線往右；抓到多餘的底色往左。</small></label>
+  <label><span class="auto-trace-option-title"><span id="auto-trace-threshold-title">深淺辨識</span> <output id="auto-trace-threshold-value" for="auto-trace-threshold"></output></span><input id="auto-trace-threshold" aria-label="深淺辨識" type="range" min="40" max="220" step="5" value="150"><span class="auto-trace-range-ends"><span id="auto-trace-threshold-low">只抓深色</span><span id="auto-trace-threshold-high">包含淺色</span></span><small id="auto-trace-threshold-help">漏線往右；抓到多餘的底色往左。</small></label>
   <label><span class="auto-trace-option-title">曲線柔順 <output id="auto-trace-accuracy-value" for="auto-trace-accuracy"></output></span><input id="auto-trace-accuracy" aria-label="曲線柔順" type="range" min="0.3" max="6" step="0.1" value="2.5"><span class="auto-trace-range-ends"><span>更貼原圖</span><span>更圓滑</span></span><small>往右容許小幅偏離，減少細碎彎折。</small></label>
   <label><span class="auto-trace-option-title">錨點精簡 <output id="auto-trace-simplify-value" for="auto-trace-simplify"></output></span><input id="auto-trace-simplify" aria-label="錨點精簡" type="range" min="0" max="100" step="5" value="90"><span class="auto-trace-range-ends"><span>更多控制點</span><span>更少控制點</span></span><small>往右以較長的弧線描圖，方便精修。</small></label>
   <label><span class="auto-trace-option-title">細節清理 <output id="auto-trace-min-length-value" for="auto-trace-min-length"></output></span><input id="auto-trace-min-length" aria-label="細節清理" type="range" min="0" max="30" step="1" value="3"><span class="auto-trace-range-ends"><span>保留小細節</span><span>去掉小碎片</span></span><small>小圖示先靠左；往右會移除短線或小輪廓。</small></label>
@@ -50,7 +50,12 @@ function updateAutoTraceSettings(){
   input.setAttribute('aria-valuetext',`${percent}%`);
  }
  const mode=autoTraceOptions().mode;
- document.getElementById('auto-trace-mode-hint').textContent=mode==='contour'?'Logo 輪廓：描出色塊外框與內部留白，不把實心區域縮成骨架。':mode==='line'?'細線稿：沿筆畫中心描圖，保留 T 型分岔；適合大腦線稿。':'不用先猜參數：細線稿保留分岔，實心 Logo 描出外框與內部留白。';
+ const photo=mode==='photo';
+ document.getElementById('auto-trace-threshold-title').textContent=photo?'照片細節':'深淺辨識';
+ document.getElementById('auto-trace-threshold-low').textContent=photo?'只留主要特徵':'只抓深色';
+ document.getElementById('auto-trace-threshold-high').textContent=photo?'保留更多細節':'包含淺色';
+ document.getElementById('auto-trace-threshold-help').textContent=photo?'草地與照片雜訊會先排除；往右增加五官與斑紋細節。':'漏線往右；抓到多餘的底色往左。';
+ document.getElementById('auto-trace-mode-hint').textContent=photo?'照片角色：估計並排除背景，只描角色外框與較明確的五官、斑紋；低解析圖片仍需套用後精修。':mode==='contour'?'Logo 輪廓：描出色塊外框與內部留白，不把實心區域縮成骨架。':mode==='line'?'細線稿：沿筆畫中心描圖，保留 T 型分岔；適合大腦線稿。':'不用先猜參數：細線稿保留分岔，實心 Logo 描出外框與內部留白。';
 }
 function resetAutoTraceSettings(){
  document.getElementById('auto-trace-mode').value='auto';
@@ -64,8 +69,8 @@ function renderAutoTracePreview(){
  document.getElementById('auto-trace-lines').innerHTML=result.items.map((it,i)=>`<path class="auto-trace-predicted-line" data-auto-curve="${i}" tabindex="0" role="button" aria-label="描線 ${i+1}：${it.points.length} 個錨點" d="${autoTraceCurvePath(it)}" fill="none" stroke="${autoTracePreviewSelection===i?'#7c3aed':pen.color}" stroke-width="${autoTracePreviewSelection===i?3.5:pen.width}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`).join('');
  document.getElementById('auto-trace-anchors').innerHTML=result.items.flatMap((it,i)=>it.points.map(p=>`<circle data-preview-anchor="${i}" cx="${p.x}" cy="${p.y}" r="${autoTracePreviewSelection===i?7:3.5}" fill="white" stroke="#0891b2" stroke-width="${autoTracePreviewSelection===i?2:1}" vector-effect="non-scaling-stroke"/>`)).join('');
  document.getElementById('auto-trace-issues').innerHTML=result.issues.map(it=>`<circle cx="${it.x}" cy="${it.y}" r="7" fill="none" stroke="#ff2438" stroke-width="2" vector-effect="non-scaling-stroke"><title>${esc(it.message)}</title></circle>`).join('');
- const s=result.stats,mode=s.mode==='contour'?'Logo 輪廓':'細線稿';
- document.getElementById('auto-trace-summary').textContent=s.paths?`${mode} · ${s.paths} 條曲線 · ${s.anchors} 個錨點${s.mode==='contour'?'':` · ${s.junctions} 個分岔 · ${s.reviewCount} 處待確認`}`:'沒有找到線條；把「深淺辨識」往右拉試試';
+ const s=result.stats,mode=s.mode==='photo'?'照片角色':s.mode==='contour'?'Logo 輪廓':'細線稿';
+ document.getElementById('auto-trace-summary').textContent=s.paths?`${mode} · ${s.paths} 條曲線 · ${s.anchors} 個錨點${s.mode==='photo'?` · 外框 ${s.outlinePaths} 條／特徵 ${s.detailPaths} 條`:s.mode==='contour'?'':` · ${s.junctions} 個分岔 · ${s.reviewCount} 處待確認`}`:`沒有找到線條；把「${s.mode==='photo'?'照片細節':'深淺辨識'}」往右拉試試`;
  if(autoTraceOptions().mode==='auto')document.getElementById('auto-trace-mode-hint').textContent=`自動選用「${mode}」${s.mode==='contour'?'：沿色塊邊緣描，不會再擋掉大面積黑色。':'：沿筆畫中心描，保留 T 型分岔。'}不符合預期可手動切換。`;
  document.getElementById('auto-trace-apply').disabled=!result.items.length;
 }

@@ -251,13 +251,105 @@ const AutoTrace = (function createAutoTrace() {
     progress(100,'預覽完成');
     return {items,issues:[],stats:{mode:'contour',inkPixels:ink,boundaryPixels,skeletonPixels:0,paths:items.length,anchors:items.reduce((sum,it)=>sum+it.points.length,0),junctions:0,reviewCount:0}};
   }
+  function photoBackground(data,w,h){
+    // Find the dominant colour in a broad inner border. The few outer rows are
+    // deliberately ignored because screenshots and JPEGs often contain a frame.
+    const bins=new Map(),depth=Math.max(8,Math.round(Math.min(w,h)*.16)),edge=Math.max(2,Math.round(Math.min(w,h)*.015));
+    for(let y=edge;y<h-edge;y++)for(let x=edge;x<w-edge;x++){
+      if(x>=depth&&x<w-depth&&y>=depth&&y<h-depth)continue;
+      const i=(y*w+x)*4;if(data[i+3]<128)continue;
+      const r=data[i],g=data[i+1],b=data[i+2];
+      if(r+g+b<60)continue;
+      const key=(r>>5)*64+(g>>5)*8+(b>>5),entry=bins.get(key)||{count:0,r:0,g:0,b:0};
+      entry.count++;entry.r+=r;entry.g+=g;entry.b+=b;bins.set(key,entry);
+    }
+    let best=null;for(const entry of bins.values())if(!best||entry.count>best.count)best=entry;
+    if(!best)return {r:255,g:255,b:255,tolerance:48};
+    const bg={r:best.r/best.count,g:best.g/best.count,b:best.b/best.count};let variance=0,count=0;
+    for(let y=edge;y<h-edge;y++)for(let x=edge;x<w-edge;x++){
+      if(x>=depth&&x<w-depth&&y>=depth&&y<h-depth)continue;
+      const i=(y*w+x)*4,dr=data[i]-bg.r,dg=data[i+1]-bg.g,db=data[i+2]-bg.b,d=Math.hypot(dr,dg,db);
+      if(d<70){variance+=d*d;count++}
+    }
+    return {...bg,tolerance:clamp(42+Math.sqrt(variance/Math.max(1,count))*1.35,48,78)};
+  }
+  function closeMask(mask,w,h){
+    const expanded=new Uint8Array(mask.length),result=new Uint8Array(mask.length);
+    for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x;for(let dy=-1;dy<=1&&!expanded[i];dy++)for(let dx=-1;dx<=1;dx++)if(mask[i+dy*w+dx]){expanded[i]=1;break}}
+    for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x;let full=1;for(let dy=-1;dy<=1&&full;dy++)for(let dx=-1;dx<=1;dx++)if(!expanded[i+dy*w+dx]){full=0;break}result[i]=full}
+    return result;
+  }
+  function largestComponent(mask,w,h){
+    const seen=new Uint8Array(mask.length),queue=new Int32Array(mask.length),components=[];
+    for(let start=0;start<mask.length;start++)if(mask[start]&&!seen[start]){
+      let head=0,tail=1;queue[0]=start;seen[start]=1;const pixels=[];
+      while(head<tail){const i=queue[head++];pixels.push(i);const x=i%w,y=Math.floor(i/w);for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy;if(nx<0||nx>=w||ny<0||ny>=h)continue;const j=ny*w+nx;if(mask[j]&&!seen[j]){seen[j]=1;queue[tail++]=j}}}
+      components.push(pixels);
+    }
+    components.sort((a,b)=>b.length-a.length);const out=new Uint8Array(mask.length);
+    // The subject is one coherent component. Keeping only it also removes a
+    // dark image frame and isolated grass/JPEG speckles.
+    for(const i of components[0]||[])out[i]=1;
+    return out;
+  }
+  function fillPhotoPinholes(mask,w,h,maxArea){
+    const seen=new Uint8Array(mask.length),queue=new Int32Array(mask.length);
+    for(let start=0;start<mask.length;start++)if(!mask[start]&&!seen[start]){
+      let head=0,tail=1,touches=false;queue[0]=start;seen[start]=1;const pixels=[];
+      while(head<tail){const i=queue[head++],x=i%w,y=Math.floor(i/w);pixels.push(i);if(!x||x===w-1||!y||y===h-1)touches=true;for(const j of [i-1,i+1,i-w,i+w]){if(j<0||j>=mask.length||seen[j]||mask[j])continue;const nx=j%w;if(Math.abs(nx-x)>1)continue;seen[j]=1;queue[tail++]=j}}
+      if(!touches&&pixels.length<=maxArea)for(const i of pixels)mask[i]=1;
+    }
+    return mask;
+  }
+  function erodeMask(mask,w,h,radius){
+    const out=new Uint8Array(mask.length);
+    for(let y=radius;y<h-radius;y++)for(let x=radius;x<w-radius;x++){let full=1;for(let dy=-radius;dy<=radius&&full;dy++)for(let dx=-radius;dx<=radius;dx++)if(!mask[(y+dy)*w+x+dx]){full=0;break}out[y*w+x]=full}
+    return out;
+  }
+  function smoothLuma(data,w,h,radius=2){
+    const horizontal=new Uint16Array(w*h),out=new Uint8Array(w*h),span=radius*2+1;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){let sum=0;for(let dx=-radius;dx<=radius;dx++){const j=(y*w+clamp(x+dx,0,w-1))*4;sum+=.2126*data[j]+.7152*data[j+1]+.0722*data[j+2]}horizontal[y*w+x]=Math.round(sum)}
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){let sum=0;for(let dy=-radius;dy<=radius;dy++)sum+=horizontal[clamp(y+dy,0,h-1)*w+x];out[y*w+x]=Math.round(sum/(span*span))}
+    return out;
+  }
+  function tracePhoto(data,w,h,threshold,accuracy,simplify,minLength,progress){
+    progress(8,'分離角色與照片背景');
+    const bg=photoBackground(data,w,h),raw=new Uint8Array(w*h);
+    for(let i=0;i<raw.length;i++){
+      const j=i*4,a=data[j+3]/255,r=data[j]*a+255*(1-a),g=data[j+1]*a+255*(1-a),b=data[j+2]*a+255*(1-a);
+      raw[i]=Math.hypot(r-bg.r,g-bg.g,b-bg.b)>bg.tolerance?1:0;
+    }
+    const subject=fillPhotoPinholes(largestComponent(closeMask(raw,w,h),w,h),w,h,Math.max(20,Math.round(w*h*.0012))),ink=subject.reduce((n,v)=>n+v,0);
+    if(ink<w*h*.01)throw new Error('找不到明確主體；這個模式需要背景與角色顏色有差異。');
+    progress(35,'描出角色外框');
+    const outline=traceContours(subject,w,h,ink,Math.max(accuracy,6),Math.max(simplify,95),Math.max(minLength,10),()=>{});
+    for(const item of outline.items)item.autoTraceMode='photo-outline';
+    progress(58,'整理五官與斑紋');
+    const inside=erodeMask(subject,w,h,2),luma=smoothLuma(data,w,h,2),edges=new Uint8Array(w*h);
+    // The familiar detail slider controls edge strength here: left keeps only
+    // decisive features, right admits softer facial and colour boundaries.
+    const edgeLimit=clamp(100-(threshold-40)*.24,48,100);
+    for(let y=2;y<h-2;y++)for(let x=2;x<w-2;x++){
+      const i=y*w+x;if(!inside[i])continue;
+      const gx=Math.abs(luma[i+1]-luma[i-1])+Math.abs(luma[i+w+1]-luma[i+w-1])+Math.abs(luma[i-w+1]-luma[i-w-1]);
+      const gy=Math.abs(luma[i+w]-luma[i-w])+Math.abs(luma[i+w+1]-luma[i-w+1])+Math.abs(luma[i+w-1]-luma[i-w-1]);
+      if(gx+gy>edgeLimit*2.2)edges[i]=1;
+    }
+    const pixels=new Uint8Array(w*h*4);for(let i=0;i<edges.length;i++){const c=edges[i]?0:255,j=i*4;pixels[j]=pixels[j+1]=pixels[j+2]=c;pixels[j+3]=255}
+    let details={items:[],issues:[],stats:{paths:0,anchors:0,junctions:0,reviewCount:0}};
+    try{details=run({width:w,height:h,data:pixels,options:{mode:'line',threshold:128,accuracy:Math.max(accuracy,3.5),simplify:Math.max(simplify,94),minLength:Math.max(minLength*2.5,12)}},()=>{})}catch(error){if(!/大面積實心色塊|找不到|太多碎線/.test(error.message))throw error}
+    for(const item of details.items)item.autoTraceMode='photo-detail';
+    const items=outline.items.concat(details.items);progress(100,'照片角色預覽完成');
+    return {items,issues:[],stats:{mode:'photo',inkPixels:ink,background:{r:Math.round(bg.r),g:Math.round(bg.g),b:Math.round(bg.b)},paths:items.length,outlinePaths:outline.items.length,detailPaths:details.items.length,anchors:items.reduce((sum,it)=>sum+it.points.length,0),junctions:details.stats.junctions||0,reviewCount:0}};
+  }
   function run({width:w,height:h,data,options={}},progress=()=>{}){
     if(!Number.isInteger(w)||!Number.isInteger(h)||w<3||h<3||w*h>5e6||data.length!==w*h*4)throw new Error('圖片尺寸或像素資料不正確（最多 500 萬像素）。');
     const threshold=clamp(Number(options.threshold)||150,40,220),accuracy=clamp(Number(options.accuracy)||2.5,.3,6),simplify=clamp(Number.isFinite(Number(options.simplify))?Number(options.simplify):90,0,100),minLength=clamp(Number.isFinite(Number(options.minLength))?Number(options.minLength):3,0,30);
     const mask=new Uint8Array(w*h);let ink=0;
     for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,j=i*4,a=data[j+3]/255,lum=(.2126*data[j]+.7152*data[j+1]+.0722*data[j+2])*a+255*(1-a);if(lum<threshold){mask[i]=1;ink++}}
-    const requested=['line','contour'].includes(options.mode)?options.mode:'auto',mode=requested==='auto'?(hasSolidAreas(mask,w,h,ink)?'contour':'line'):requested;
+    const requested=['line','contour','photo'].includes(options.mode)?options.mode:'auto',mode=requested==='auto'?(hasSolidAreas(mask,w,h,ink)?'contour':'line'):requested;
     if(!ink)return {items:[],issues:[],stats:{mode,inkPixels:0,paths:0,anchors:0,junctions:0,reviewCount:0}};
+    if(mode==='photo')return tracePhoto(data,w,h,threshold,accuracy,simplify,minLength,progress);
     if(mode==='contour')return traceContours(mask,w,h,ink,accuracy,simplify,minLength,progress);
     if(ink>w*h*.32)throw new Error('這張圖有大面積實心色塊，請切換「自動判斷」或「Logo 輪廓」。');
     progress(12,'辨識深色筆畫');

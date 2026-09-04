@@ -36,9 +36,10 @@ const source=fs.readFileSync(new URL('../app/clipboard-controls.js',import.meta.
 const nodes=new Map(),writes=[],downloads=[];let requestCount=0,failNative=false,failWrite=false;
 function node(id){if(!nodes.has(id))nodes.set(id,{hidden:false,textContent:'',dataset:{},disabled:false,setAttribute(){},removeAttribute(){},click(){this.onclick?.()}});return nodes.get(id)}
 const ctx=vm.createContext({
+  performance:{now:()=>0},
   requestWebPptCopy:async(body,progress)=>{assert.deepEqual(JSON.parse(body).items,[{id:'a',type:'box'}]);progress({stage:'已連接本機服務',percent:10});return{ok:true,count:1}},
   location:{protocol:'https:'},
-  HAS_NATIVE_PPT_BRIDGE:true,pptCopyRunning:false,pptPrepareTimer:null,pptPrepareWanted:null,pptPreparedBody:null,pptPreparePromise:null,traceDraft:null,
+  HAS_NATIVE_PPT_BRIDGE:true,pptCopyRunning:false,pptPrepareTimer:null,pptPrepareWanted:null,pptPreparedBody:null,pptPreparePromise:null,pptPreparingBody:null,traceDraft:null,
   queueNativePrepare(){},noteNativeCopy(){},
   selected:'a',selectedIds:new Set(['a']),items:[{id:'ref',referenceOnly:true},{id:'a',type:'box'}],
   document:{getElementById:node},clearTimeout(){},
@@ -54,6 +55,7 @@ vm.runInContext(source,ctx);ctx.initializeClipboardControls();
 assert.equal(node('copy-ppt').hidden,false);assert.match(node('copy-ppt-mode').textContent,/可編輯/);
 await node('copy-ppt').onclick();assert.equal(requestCount,1);assert.match(node('clipboard-title').textContent,/成功.*可編輯/);
 assert.equal(node('clipboard-feedback').dataset.kind,'success');assert.equal(ctx.pptCopyRunning,false);
+ctx.pptPreparePromise=new Promise(()=>{});await ctx.copySelectionToClipboard();assert.equal(requestCount,2,'A click must not await unrelated background preparation');ctx.pptPreparePromise=null;
 failNative=true;await ctx.copySelectionToClipboard();assert.match(node('clipboard-title').textContent,/沒有確認/);assert.match(node('clipboard-message').textContent,/PowerPoint unavailable/);
 assert.equal(node('clipboard-feedback').dataset.kind,'error');assert.equal(node('copy-ppt').disabled,false);failNative=false;
 ctx.selected=null;ctx.selectedIds.clear();const countBefore=requestCount;await ctx.copySelectionToClipboard();

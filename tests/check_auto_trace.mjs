@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import path from 'node:path';
 const root=new URL('..',import.meta.url);
-const context=vm.createContext({Math,Number,Map,Set,Uint8Array,Int32Array});
+const context=vm.createContext({Math,Number,Map,Set,Uint8Array,Uint16Array,Int32Array});
 vm.runInContext(fs.readFileSync(new URL('../app/auto-trace.js',import.meta.url),'utf8')+'\nthis.trace=AutoTrace;',context);
 const trace=context.trace;
 const image=(w=100,h=100)=>({width:w,height:h,data:new Uint8Array(w*h*4).fill(255)});
@@ -43,6 +43,13 @@ const disc=paint(image(),(x,y)=>Math.hypot(x+.5-50,y+.5-50)<30),discResult=trace
 const fineLogo=trace.run({...logo,options:{mode:'contour',accuracy:.3,simplify:0}});assert.ok(fineLogo.items.every(it=>it.points.length===4),'Tight fitting does not add pixel-step anchors to a rectangle');
 workerScope.onmessage({data:logo});assert.equal(JSON.stringify(workerMessages.at(-1).result),JSON.stringify(logoResult),'Blob worker includes contour mode');
 console.log('Logo contour tests OK: auto/manual modes, holes, sparse corners, round arcs, transparency, border closure and diagonal islands.');
+
+const photo=image(160,120);for(let y=0;y<photo.height;y++)for(let x=0;x<photo.width;x++){const i=(y*photo.width+x)*4;photo.data[i]=112+(x+y)%9;photo.data[i+1]=142+(x*3+y)%11;photo.data[i+2]=62+(x+y*2)%7;photo.data[i+3]=255}
+for(let y=16;y<112;y++)for(let x=28;x<135;x++)if(((x-82)/54)**2+((y-65)/51)**2<1){const i=(y*photo.width+x)*4;photo.data[i]=photo.data[i+1]=photo.data[i+2]=225}
+line(photo,{x:55,y:48},{x:108,y:48},7);line(photo,{x:81,y:48},{x:81,y:88},5);
+const photoResult=trace.run({...photo,options:{mode:'photo',threshold:150}});assert.equal(photoResult.stats.mode,'photo');assert.equal(photoResult.stats.outlinePaths,1,'Photo mode isolates one coherent subject from a textured coloured background');assert.ok(photoResult.stats.detailPaths>0&&photoResult.stats.paths<40,'Photo mode retains decisive interior features without tracing every background speck');assert.ok(photoResult.stats.anchors<150,'Photo mode produces an editable, sparse result');
+workerScope.onmessage({data:{...photo,options:{mode:'photo',threshold:150}}});assert.equal(JSON.stringify(workerMessages.at(-1).result),JSON.stringify(photoResult),'Blob worker includes photo subject mode');
+console.log('Photo subject tests OK: textured background removal, coherent silhouette, sparse internal features and worker parity.');
 
 const bend=[];for(let y=0;y<=35;y++)bend.push({x:0,y});for(let x=1;x<=35;x++)bend.push({x,y:35});
 const cornerCurves=trace.fit(bend,{x:0,y:1},{x:-1,y:0},5);

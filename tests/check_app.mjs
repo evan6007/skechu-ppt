@@ -8,7 +8,7 @@ for (const [, source] of scripts) {
   if (source.trim()) new Function(source);
 }
 const smoothing=fs.readFileSync(new URL('../app/local-smoothing.js',import.meta.url),'utf8');
-for(const file of ['auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css','paint-layers.js','paint-tools.js','paint-tools.css','pan-tool.js','selection-controls.js','workspace-actions.js','layer-controls.js','layer-controls.css','clipboard-controls.js','web-ppt-client.js','web-ppt-helper.js','web-ppt.html','ppt-preparation.js','clipboard-controls.css']){
+for(const file of ['auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css','paint-layers.js','paint-tools.js','paint-tools.css','pan-tool.js','selection-controls.js','workspace-actions.js','layer-controls.js','layer-controls.css','panel-layout.js','theme-controls.js','theme-controls.css','clipboard-controls.js','web-ppt-client.js','web-ppt-helper.js','web-ppt.html','ppt-preparation.js','clipboard-controls.css']){
   const asset=fs.readFileSync(new URL('../app/'+file,import.meta.url),'utf8');
   if(file.endsWith('.js'))new Function(asset);
   if(!fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes('./'+file))throw new Error('Missing offline asset '+file);
@@ -73,7 +73,7 @@ for (const circularClosure of ["fittedCircle=closing?circularArcModel(it.points)
   if (!html.includes(circularClosure)) throw new Error(`Missing direct circular closure marker: ${circularClosure}`);
 }
 
-for (const boundarySnap of ['edgeRouteMask', 'referenceBoundaryRoute', 'routeFollowsBoundary', 'cache.edges[index]', '邊界磁吸已開啟']) {
+for (const boundarySnap of ['edgeRouteMask', 'referenceBoundaryRoute', 'routeFollowsBoundary', 'cache.edges[index]', '磁吸已開啟']) {
   if (!html.includes(boundarySnap)) throw new Error(`Missing boundary snap marker: ${boundarySnap}`);
 }
 

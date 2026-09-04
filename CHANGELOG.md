@@ -9,11 +9,16 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 - Page-thumbnail context menu with copy/paste, independent duplication, rename, blank-page insertion, ordering and confirmed deletion. Page copies retain canvas dimensions and remap item, attachment, fill-source and junction identities.
 - Pasting a copied web image into the canvas creates a normal, unlocked image layer with proportional sizing and Undo. Text inputs retain native paste, decoding is isolated from page changes, and images are read from clipboard files without remote URL fetching.
 - Automatic selection between line-art centerlines and solid Logo contours, with manual overrides. Contours retain outer boundaries, inner cutouts, sharp corners and long straight sides as editable cubic paths, including artwork touching the image border or using transparent backgrounds. Solid artwork is no longer rejected by the line-art ink-density guard.
+- Three responsive graphite, mist and linen interface themes; draggable side-panel splits; editable canvas dimensions; and an icon-based shape popover for rectangles, circles and polygons.
+- Direct drop import for PNG, JPG, SVG and Skechu project JSON files. Artwork can remain visible and interactive outside the canvas instead of being clipped at its edge.
 
 ### Changed
 
 - Multi-selected curves show editable anchor points instead of per-path bounding rectangles. Shared T-junction markers are deduplicated; clicking or dragging an anchor focuses its own path, while dragging the stroke still moves the selected group.
 - Replaced abstract automatic-trace number fields with four live, labeled sliders: dark/light detection, curve softness, anchor simplification and detail cleanup. Added recommended-settings reset, detected-mode feedback, and plain-language directional hints. Existing line-art/T-junction tracing and isolated preview/apply/undo behavior remain intact.
+- Reworked the desktop and mobile toolbars around compact neutral controls, moved secondary page actions to a non-blocking side popover, restored grid visibility under a clean translucent canvas, and replaced ambiguous menu glyphs with magnetic-trace and export/share icons.
+- Page thumbnails and layer rows now reorder by dragging their body, with stable insertion thresholds, animated displacement and a translucent drag preview.
+- Replaced the text-heavy repository introduction with a real complex editor screenshot, an at-a-glance feature grid and a short three-step start path.
 
 ## [0.1.3] - 2026-09-03
 

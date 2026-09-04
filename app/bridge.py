@@ -19,11 +19,37 @@ import win32com.client
 
 LOCK = threading.Lock()
 PPT_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="skechu-ppt")
+PREPARE_CANCEL_LOCK = threading.Lock()
+PREPARE_CANCEL_EVENTS = set()
 STATE = {"app": None, "presentation": None, "cache_key": None, "cached_group": None,
-         "cached_count": 0, "item_hashes": {}, "item_shapes": {}, "origin": None}
+         "cached_count": 0, "item_hashes": {}, "item_geometry_hashes": {},
+         "item_shapes": {}, "origin": None}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CACHE_STATES = OrderedDict()
 MAX_NATIVE_CACHES = 6
+
+
+class PreparationCancelled(RuntimeError):
+    pass
+
+
+def register_prepare_cancel():
+    event = threading.Event()
+    with PREPARE_CANCEL_LOCK:
+        PREPARE_CANCEL_EVENTS.add(event)
+    return event
+
+
+def unregister_prepare_cancel(event):
+    with PREPARE_CANCEL_LOCK:
+        PREPARE_CANCEL_EVENTS.discard(event)
+
+
+def cancel_background_prepares():
+    with PREPARE_CANCEL_LOCK:
+        pending = tuple(PREPARE_CANCEL_EVENTS)
+    for event in pending:
+        event.set()
 
 
 @contextmanager
@@ -48,8 +74,8 @@ def native_cache_context(cache_id):
                 except Exception:
                     pass
         state = {"app": None, "presentation": None, "cache_key": None,
-                 "cached_group": None, "cached_count": 0, "item_hashes": {},
-                 "item_shapes": {}, "origin": None}
+                  "cached_group": None, "cached_count": 0, "item_hashes": {},
+                  "item_geometry_hashes": {}, "item_shapes": {}, "origin": None}
     CACHE_STATES[cache_id] = state
     STATE = state
     try:
@@ -347,7 +373,7 @@ def circle_arc_bezier_nodes(points, closed=False):
 def build_arrow_freeform(slide, points, min_x, min_y, scale, closed, curved=True, explicit_bezier=False,
                          point_kinds=None, point_smoothness=None, point_angles=None,
                          point_handle_angles=None, default_strength=100, centerline_locked=False,
-                         edge_locked=False):
+                         edge_locked=False, verification_checks=None):
     item = {"type": "arrow", "points": points, "closed": closed, "curved": curved,
             "explicitBezier": explicit_bezier, "pointKinds": point_kinds,
             "pointSmoothness": point_smoothness, "pointAngles": point_angles,
@@ -356,22 +382,36 @@ def build_arrow_freeform(slide, points, min_x, min_y, scale, closed, curved=True
     nodes = freeform_node_points(item)
     cubic = curved or centerline_locked or (explicit_bezier and not closed and
                                            len(points) >= 4 and (len(points) - 1) % 3 == 0)
-    builder = slide.Shapes.BuildFreeform(1, (nodes[0]["x"] - min_x) * scale,
-                                         (nodes[0]["y"] - min_y) * scale)
-    if cubic:
-        for i in range(1, len(nodes), 3):
-            c1, c2, end = nodes[i:i + 3]
-            # Corner means explicit Bezier controls, not a visually sharp curve.
-            # Auto discards the controls and lets Office reshape the segment.
-            builder.AddNodes(1, 1,
-                             (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
-                             (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
-                             (end["x"] - min_x) * scale, (end["y"] - min_y) * scale)
-    else:
-        for point in nodes[1:]:
-            builder.AddNodes(0, 0, (point["x"] - min_x) * scale, (point["y"] - min_y) * scale)
-    shape = builder.ConvertToShape()
-    verify_freeform_nodes(shape, nodes, min_x, min_y, scale)
+    shape = None
+    if cubic and not closed:
+        # AddCurve accepts the complete 3n+1 Bezier array in one COM call.
+        # BuildFreeform.AddNodes used one cross-process call per segment and
+        # dominated cold preparation for dense auto-traced line art.
+        coordinates = tuple(((point["x"] - min_x) * scale,
+                             (point["y"] - min_y) * scale) for point in nodes)
+        try:
+            points_array = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R4,
+                                                   coordinates)
+            shape = slide.Shapes.AddCurve(points_array)
+        except Exception:
+            shape = None
+    if shape is None:
+        builder = slide.Shapes.BuildFreeform(1, (nodes[0]["x"] - min_x) * scale,
+                                             (nodes[0]["y"] - min_y) * scale)
+        if cubic:
+            for i in range(1, len(nodes), 3):
+                c1, c2, end = nodes[i:i + 3]
+                # Corner means explicit Bezier controls, not a visually sharp curve.
+                # Auto discards the controls and lets Office reshape the segment.
+                builder.AddNodes(1, 1,
+                                 (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
+                                 (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
+                                 (end["x"] - min_x) * scale, (end["y"] - min_y) * scale)
+        else:
+            for point in nodes[1:]:
+                builder.AddNodes(0, 0, (point["x"] - min_x) * scale, (point["y"] - min_y) * scale)
+        shape = builder.ConvertToShape()
+    verify_freeform_nodes(shape, nodes, min_x, min_y, scale, max_checks=verification_checks)
     return shape
 
 
@@ -455,6 +495,16 @@ def item_hash(item):
                                      ensure_ascii=False).encode("utf-8")).hexdigest()
 
 
+def item_geometry_hash(item):
+    kind = item.get("type")
+    if kind in ("arrow", "polygon"):
+        geometry = {"type": kind, "nodes": freeform_node_points(item)}
+    else:
+        geometry = {"type": kind, "bounds": bounds(item), "rotation": item.get("r", 0)}
+    return hashlib.sha256(json.dumps(geometry, sort_keys=True, separators=(",", ":"),
+                                     ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
 def freeform_node_points(item):
     kind = item.get("type")
     points = list(item.get("points") or [])
@@ -511,31 +561,56 @@ def freeform_node_points(item):
     return nodes
 
 
-def verify_freeform_nodes(shape, nodes, min_x, min_y, scale, tolerance=.02):
+def verify_freeform_nodes(shape, nodes, min_x, min_y, scale, tolerance=.02, max_checks=None):
     """Reject Office geometry drift instead of silently copying a different shape."""
-    if shape.Nodes.Count != len(nodes):
+    if max_checks is not None and max_checks < 0:
+        return
+    node_count = shape.Nodes.Count
+    if node_count != len(nodes):
         raise ValueError("PowerPoint changed the freeform node count")
-    for index, point in enumerate(nodes, 1):
+    if max_checks == 0:
+        return
+    indices = list(range(1, len(nodes) + 1))
+    if max_checks and len(indices) > max_checks:
+        # Building a dense trace used to read every node back through COM. That
+        # duplicates hundreds of slow cross-process calls per curve. Sample
+        # anchors and handles during the background build; explicit QA still
+        # calls this function without max_checks and verifies every node.
+        anchors = list(range(1, len(nodes) + 1, 3))
+        if anchors[-1] != len(nodes):
+            anchors.append(len(nodes))
+        anchor_slots = max(2, (max_checks + 1) // 2)
+        chosen = {anchors[round(i * (len(anchors) - 1) / max(1, anchor_slots - 1))]
+                  for i in range(anchor_slots)}
+        controls = [index for index in indices if index not in anchors]
+        remaining = max_checks - len(chosen)
+        if remaining > 0 and controls:
+            chosen.update(controls[round(i * (len(controls) - 1) / max(1, remaining - 1))]
+                          for i in range(remaining))
+        indices = sorted(chosen)
+    for index in indices:
+        point = nodes[index - 1]
         actual = shape.Nodes.Item(index).Points[0]
         expected = ((point["x"] - min_x) * scale, (point["y"] - min_y) * scale)
         if math.hypot(actual[0] - expected[0], actual[1] - expected[1]) > tolerance:
             raise ValueError(f"PowerPoint changed freeform control point {index}")
 
 
-def update_freeform_shape(shape, item, min_x, min_y, scale):
+def update_freeform_shape(shape, item, min_x, min_y, scale, update_geometry=True):
     nodes = freeform_node_points(item)
-    if shape.Nodes.Count != len(nodes):
-        raise ValueError("freeform node count changed")
-    for index, point in enumerate(nodes, 1):
-        shape.Nodes.SetPosition(index, (point["x"] - min_x) * scale,
-                                (point["y"] - min_y) * scale)
-    # Moving an anchor may move its adjacent handles. Repair the final positions;
-    # if Office still changes them, the caller rebuilds with explicit controls.
-    for index in range(len(nodes), 0, -1):
-        point = nodes[index - 1]
-        shape.Nodes.SetPosition(index, (point["x"] - min_x) * scale,
-                                (point["y"] - min_y) * scale)
-    verify_freeform_nodes(shape, nodes, min_x, min_y, scale)
+    if update_geometry:
+        if shape.Nodes.Count != len(nodes):
+            raise ValueError("freeform node count changed")
+        for index, point in enumerate(nodes, 1):
+            shape.Nodes.SetPosition(index, (point["x"] - min_x) * scale,
+                                    (point["y"] - min_y) * scale)
+        # Moving an anchor may move its adjacent handles. Repair the final positions;
+        # if Office still changes them, the caller rebuilds with explicit controls.
+        for index in range(len(nodes), 0, -1):
+            point = nodes[index - 1]
+            shape.Nodes.SetPosition(index, (point["x"] - min_x) * scale,
+                                    (point["y"] - min_y) * scale)
+        verify_freeform_nodes(shape, nodes, min_x, min_y, scale, max_checks=5)
     kind = item.get("type")
     if kind == "arrow":
         closed = bool(item.get("closed"))
@@ -563,10 +638,10 @@ def update_freeform_shape(shape, item, min_x, min_y, scale):
         shape.Line.Weight = stroke_width * scale
 
 
-def update_cached_shape(shape, item, min_x, min_y, scale):
+def update_cached_shape(shape, item, min_x, min_y, scale, update_geometry=True):
     kind = item.get("type")
     if kind in ("arrow", "polygon"):
-        update_freeform_shape(shape, item, min_x, min_y, scale)
+        update_freeform_shape(shape, item, min_x, min_y, scale, update_geometry)
         return
     x, y, w, h = bounds(item)
     left, top, width, height = (x - min_x) * scale, (y - min_y) * scale, w * scale, h * scale
@@ -600,14 +675,53 @@ def update_cached_shape(shape, item, min_x, min_y, scale):
     shape.Rotation = float(item.get("r", 0))
 
 
-def copy_native(payload, progress=None, copy_clipboard=True):
+def appendable_region_fill(item):
+    """A paint-bucket face is one closed native freeform and can join the cache cheaply."""
+    return (item.get("type") == "arrow" and item.get("paintLayer") == "fill" and
+            bool(item.get("closed")) and len(item.get("points") or []) >= 3)
+
+
+def add_cached_region_fill(slide, item, min_x, min_y, scale):
+    points = item.get("points") or []
+    shape = build_arrow_freeform(
+        slide, points, min_x, min_y, scale, True,
+        bool(item.get("curved", True)), bool(item.get("explicitBezier")),
+        item.get("pointKinds"), item.get("pointSmoothness"), item.get("pointAngles"),
+        item.get("pointHandleAngles"), item.get("smoothnessDefault", 100),
+        bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")))
+    update_freeform_shape(shape, item, min_x, min_y, scale, update_geometry=False)
+    safe_id = re.sub(r"[^A-Za-z0-9_-]", "_", str(item.get("id")))
+    shape.Name = "sema_%s_main" % safe_id
+    return shape
+
+
+def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
     pythoncom.CoInitialize()
     payload = native_payload(payload)
     with LOCK, native_cache_context(payload.get("cacheId")):
         started = time.perf_counter()
         last_progress = {"percent": -1, "stage": None}
+        scratch = {"presentation": None}
+
+        def cancel_if_requested():
+            if cancel_event is None or not cancel_event.is_set():
+                return
+            pres = scratch.get("presentation")
+            if pres is not None:
+                try:
+                    pres.Saved = True
+                    pres.Close()
+                except Exception:
+                    pass
+                scratch["presentation"] = None
+                if STATE.get("presentation") is pres:
+                    STATE.update(presentation=None, cache_key=None, cached_group=None,
+                                 cached_count=0, item_hashes={}, item_geometry_hashes={},
+                                 item_shapes={}, origin=None)
+            raise PreparationCancelled("背景準備已讓位給前景複製")
 
         def report(percent, stage, current=0, total=0, force=False):
+            cancel_if_requested()
             percent = max(0, min(100, int(percent)))
             should_send = (force or stage != last_progress["stage"] or
                            percent >= last_progress["percent"] + 3 or percent == 100)
@@ -619,7 +733,8 @@ def copy_native(payload, progress=None, copy_clipboard=True):
                 last_progress["stage"] = stage
 
         report(1, "連接 PowerPoint", force=True)
-        cache_key = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
+        cache_content = {key: value for key, value in payload.items() if key != "cacheId"}
+        cache_key = hashlib.sha256(json.dumps(cache_content, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
         app = STATE.get("app")
         if app is not None:
             try:
@@ -647,6 +762,7 @@ def copy_native(payload, progress=None, copy_clipboard=True):
             min_x, min_y = cached_origin[:2]
         origin = (round(min_x, 6), round(min_y, 6), round(scale, 6))
         current_hashes = {str(item.get("id")): item_hash(item) for item in selected}
+        current_geometry_hashes = {str(item.get("id")): item_geometry_hash(item) for item in selected}
         if cache_key == STATE.get("cache_key") and STATE.get("cached_group") is not None:
             try:
                 if copy_clipboard:
@@ -660,9 +776,73 @@ def copy_native(payload, progress=None, copy_clipboard=True):
                 STATE["cache_key"] = None
                 STATE["cached_group"] = None
         cached_hashes = STATE.get("item_hashes") or {}
+        cached_geometry_hashes = STATE.get("item_geometry_hashes") or {}
         changed_ids = [key for key, value in current_hashes.items() if cached_hashes.get(key) != value]
+        added_ids = [key for key in current_hashes if key not in cached_hashes]
+        removed_ids = [key for key in cached_hashes if key not in current_hashes]
+        order_changed = list(current_hashes) != list(cached_hashes)
+        added_items = [item for item in selected if str(item.get("id")) in added_ids]
+        existing_changed_items = [item for item in selected
+                                  if str(item.get("id")) in changed_ids and
+                                  str(item.get("id")) not in added_ids]
+        can_append_fills = (STATE.get("cached_group") is not None and STATE.get("origin") == origin and
+                            0 < len(added_items) <= 64 and not removed_ids and
+                            all(appendable_region_fill(item) for item in added_items) and
+                            all(item.get("type") in ("text", "box", "ellipse", "arrow", "polygon") and
+                                len((STATE.get("item_shapes") or {}).get(str(item.get("id")), [])) == 1
+                                for item in existing_changed_items))
+        if can_append_fills:
+            try:
+                report(8, "加入新填色色塊", 0, len(added_items), True)
+                slide = STATE["presentation"].Slides(1)
+                cached_group = STATE["cached_group"]
+                try:
+                    cached_group.Ungroup()
+                except Exception:
+                    # A one-shape cache is a ShapeRange rather than a group.
+                    pass
+                item_shapes = dict(STATE.get("item_shapes") or {})
+                for changed_index, item in enumerate(existing_changed_items, 1):
+                    item_id = str(item.get("id"))
+                    update_cached_shape(slide.Shapes.Item(item_shapes[item_id][0]), item,
+                                        min_x, min_y, scale,
+                                        cached_geometry_hashes.get(item_id) != current_geometry_hashes[item_id])
+                for added_index, item in enumerate(added_items, 1):
+                    cancel_if_requested()
+                    shape = add_cached_region_fill(slide, item, min_x, min_y, scale)
+                    item_shapes[str(item.get("id"))] = [shape.Name]
+                    report(8 + int(added_index / len(added_items) * 74),
+                           "加入新填色色塊", added_index, len(added_items))
+                # Newly added fills start at the top of the slide. Bring every
+                # non-fill object forward in one batch, leaving the newest fill
+                # above older fills but below the line art.
+                foreground_names = [name for item in selected if item.get("paintLayer") != "fill"
+                                    for name in item_shapes[str(item.get("id"))]]
+                if foreground_names:
+                    slide.Shapes.Range(foreground_names).ZOrder(0)
+                names = [name for item in selected for name in item_shapes[str(item.get("id"))]]
+                report(88, "更新群組", len(names), len(names), True)
+                group = slide.Shapes.Range(names).Group() if len(names) > 1 else slide.Shapes.Range(names)
+                if copy_clipboard:
+                    report(96, "寫入剪貼簿", len(names), len(names), True)
+                    group.Copy()
+                STATE["cache_key"] = cache_key
+                STATE["cached_group"] = group
+                STATE["cached_count"] = len(names)
+                STATE["item_hashes"] = current_hashes
+                STATE["item_geometry_hashes"] = current_geometry_hashes
+                STATE["item_shapes"] = item_shapes
+                report(100, "完成", len(names), len(names), True)
+                return {"count": len(names), "cached": False, "incremental": True,
+                        "prepared": not copy_clipboard,
+                        "changed": len(existing_changed_items) + len(added_items),
+                        "seconds": round(time.perf_counter() - started, 2)}
+            except Exception:
+                # Regrouping support varies between Office builds. A clean full
+                # rebuild below remains the safe fallback.
+                pass
         can_increment = (STATE.get("cached_group") is not None and STATE.get("origin") == origin and
-                         list(current_hashes) == list(cached_hashes) and changed_ids)
+                         set(current_hashes) == set(cached_hashes) and changed_ids)
         if can_increment:
             changed_items = [item for item in selected if str(item.get("id")) in changed_ids]
             can_increment = all(item.get("type") in ("text", "box", "ellipse", "arrow", "polygon") and
@@ -674,15 +854,29 @@ def copy_native(payload, progress=None, copy_clipboard=True):
                 changed_total = len(changed_items)
                 report(8, "更新已修改物件", 0, changed_total, True)
                 for changed_index, item in enumerate(changed_items, 1):
-                    shape_name = STATE["item_shapes"][str(item.get("id"))][0]
-                    update_cached_shape(group.GroupItems.Item(shape_name), item, min_x, min_y, scale)
+                    item_id = str(item.get("id"))
+                    shape_name = STATE["item_shapes"][item_id][0]
+                    update_cached_shape(group.GroupItems.Item(shape_name), item, min_x, min_y, scale,
+                                        cached_geometry_hashes.get(item_id) != current_geometry_hashes[item_id])
                     report(8 + int(changed_index / max(1, changed_total) * 82),
                            "更新已修改物件", changed_index, changed_total)
+                if order_changed:
+                    # Repainting raises only the changed fill within the fill stack.
+                    # Restore every foreground shape above it with one ShapeRange call.
+                    changed_fills = [item for item in selected
+                                     if str(item.get("id")) in changed_ids and item.get("paintLayer") == "fill"]
+                    for item in changed_fills:
+                        group.GroupItems.Item(STATE["item_shapes"][str(item.get("id"))][0]).ZOrder(0)
+                    foreground_names = [name for item in selected if item.get("paintLayer") != "fill"
+                                        for name in STATE["item_shapes"][str(item.get("id"))]]
+                    if foreground_names:
+                        group.GroupItems.Range(foreground_names).ZOrder(0)
                 if copy_clipboard:
                     report(96, "寫入剪貼簿", changed_total, changed_total, True)
                     group.Copy()
                 STATE["cache_key"] = cache_key
                 STATE["item_hashes"] = current_hashes
+                STATE["item_geometry_hashes"] = current_geometry_hashes
                 report(100, "完成", changed_total, changed_total, True)
                 return {"count": STATE.get("cached_count", 0), "cached": False, "incremental": True,
                         "prepared": not copy_clipboard, "changed": len(changed_items),
@@ -693,12 +887,6 @@ def copy_native(payload, progress=None, copy_clipboard=True):
                 pass
         report(3, "準備暫存投影片", force=True)
         old = STATE.get("presentation")
-        if old is not None:
-            try:
-                old.Saved = True
-                old.Close()
-            except Exception:
-                pass
         try:
             pres = app.Presentations.Add(False)
         except Exception:
@@ -708,6 +896,7 @@ def copy_native(payload, progress=None, copy_clipboard=True):
             app = win32com.client.DispatchEx("PowerPoint.Application")
             STATE["app"] = app
             pres = app.Presentations.Add(False)
+        scratch["presentation"] = pres
         slide = pres.Slides.Add(1, 12)
         names = []
         item_shapes = {}
@@ -716,6 +905,7 @@ def copy_native(payload, progress=None, copy_clipboard=True):
         # instead of repeating every slow PowerPoint COM formatting call.
         style_templates = {}
         text_templates = {}
+        arrow_style_groups = {}
 
         def add_reused_text(text, x, y, w, h, size, color, center=True, rotation=0,
                             font_name="Arial", align=None, valign="top", bold=False,
@@ -740,12 +930,14 @@ def copy_native(payload, progress=None, copy_clipboard=True):
         def remember(shape, item, suffix="main"):
             item_id = str(item.get("id"))
             safe_id = re.sub(r"[^A-Za-z0-9_-]", "_", item_id)
+            shape_name = "sema_%s_%s" % (safe_id, suffix)
             try:
-                shape.Name = "sema_%s_%s" % (safe_id, suffix)
+                shape.Name = shape_name
             except Exception:
-                pass
-            names.append(shape.Name)
-            item_shapes.setdefault(item_id, []).append(shape.Name)
+                shape_name = shape.Name
+            names.append(shape_name)
+            item_shapes.setdefault(item_id, []).append(shape_name)
+            return shape_name
         total_items = max(1, len(selected))
         report(5, "建立 PowerPoint 物件", 0, total_items, True)
         for item_index, item in enumerate(selected, 1):
@@ -860,36 +1052,25 @@ def copy_native(payload, progress=None, copy_clipboard=True):
                     continue
                 closed = bool(item.get("closed"))
                 curved = bool(item.get("curved", True)) or bool(item.get("centerlineLocked"))
+                # AddCurve is deterministic within one Office session. Verify
+                # closed fills plus representative open curves; exhaustive
+                # per-node verification remains in the PowerPoint QA tests.
+                verification_checks = (3 if closed or item_index == 1 or
+                                       item_index == len(selected) or item_index % 64 == 0 else -1)
                 shape = build_arrow_freeform(slide, pts, min_x, min_y, scale, closed, curved,
                                              bool(item.get("explicitBezier")), item.get("pointKinds"),
                                              item.get("pointSmoothness"), item.get("pointAngles"),
                                              item.get("pointHandleAngles"), item.get("smoothnessDefault", 100),
-                                             bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")))
-                stage = "line color"
-                try:
-                    shape.Line.ForeColor.RGB = rgb(item.get("color", "#596a73"))
-                    stage = "line weight"
-                    shape.Line.Weight = float(item.get("width", 3)) * scale
-                    shape.Line.Visible = -1 if float(item.get("width", 3)) > 0 else 0
-                    stage = "line dash"
-                    if item.get("style") == "dash":
-                        shape.Line.DashStyle = 4
-                    arrow_style = {"triangle": 2, "stealth": 4, "diamond": 5, "circle": 6}.get(item.get("headShape"), 2)
-                    if not closed and math.hypot(pts[0]["x"]-pts[-1]["x"], pts[0]["y"]-pts[-1]["y"]) > .01:
-                        stage = "begin arrowhead"
-                        shape.Line.BeginArrowheadStyle = arrow_style if item.get("startHead") else 1
-                        stage = "end arrowhead"
-                        shape.Line.EndArrowheadStyle = arrow_style if item.get("endHead", True) else 1
-                    stage = "fill visibility"
-                    shape.Fill.Visible = -1 if closed else 0
-                    if closed:
-                        stage = "fill color"
-                        shape.Fill.ForeColor.RGB = rgb(item.get("fill", "#dbeafe"))
-                        stage = "fill transparency"
-                        shape.Fill.Transparency = 1 - float(item.get("fillOpacity", .25))
-                except Exception as exc:
-                    raise RuntimeError("arrow formatting failed at %s: %s" % (stage, exc))
-                remember(shape, item)
+                                             bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")),
+                                             verification_checks=verification_checks)
+                shape_name = remember(shape, item)
+                has_arrowheads = not closed and math.hypot(pts[0]["x"]-pts[-1]["x"], pts[0]["y"]-pts[-1]["y"]) > .01
+                style_key = (item.get("color", "#596a73"), round(float(item.get("width", 3)), 6),
+                             item.get("style") == "dash", bool(item.get("startHead")) if has_arrowheads else False,
+                             bool(item.get("endHead", True)) if has_arrowheads else False,
+                             item.get("headShape", "triangle"), closed, item.get("fill", "#dbeafe"),
+                             round(float(item.get("fillOpacity", .25)), 6))
+                arrow_style_groups.setdefault(style_key, []).append(shape_name)
             elif kind == "image":
                 src = item.get("src", "")
                 if src.startswith("assets/"):
@@ -902,6 +1083,35 @@ def copy_native(payload, progress=None, copy_clipboard=True):
                 remember(shape, item)
         if not names:
             raise ValueError("沒有可複製的 PowerPoint 原生元素")
+        # Apply identical trace styles to a ShapeRange. Auto tracing commonly
+        # creates hundreds of same-style curves; formatting them one-by-one
+        # caused more COM round trips than building their geometry.
+        for style_key, shape_names in arrow_style_groups.items():
+            color, width, dashed, start_head, end_head, head_shape, closed, fill, fill_opacity = style_key
+            shape_range = slide.Shapes.Range(shape_names)
+            stage = "line color"
+            try:
+                shape_range.Line.ForeColor.RGB = rgb(color)
+                stage = "line weight"
+                shape_range.Line.Weight = width * scale
+                shape_range.Line.Visible = -1 if width > 0 else 0
+                stage = "line dash"
+                shape_range.Line.DashStyle = 4 if dashed else 1
+                arrow_style = {"triangle": 2, "stealth": 4, "diamond": 5, "circle": 6}.get(head_shape, 2)
+                if not closed:
+                    stage = "begin arrowhead"
+                    shape_range.Line.BeginArrowheadStyle = arrow_style if start_head else 1
+                    stage = "end arrowhead"
+                    shape_range.Line.EndArrowheadStyle = arrow_style if end_head else 1
+                stage = "fill visibility"
+                shape_range.Fill.Visible = -1 if closed else 0
+                if closed:
+                    stage = "fill color"
+                    shape_range.Fill.ForeColor.RGB = rgb(fill)
+                    stage = "fill transparency"
+                    shape_range.Fill.Transparency = 1 - fill_opacity
+            except Exception as exc:
+                raise RuntimeError("arrow formatting failed at %s: %s" % (stage, exc))
         report(90, "建立 PowerPoint 物件", len(selected), len(selected), True)
         build_seconds = time.perf_counter() - started
         # Copy one native group so PowerPoint cannot independently reflow the
@@ -917,15 +1127,23 @@ def copy_native(payload, progress=None, copy_clipboard=True):
         if copy_clipboard:
             report(97, "寫入剪貼簿", len(names), len(names), True)
             group.Copy()
+        if old is not None:
+            try:
+                old.Saved = True
+                old.Close()
+            except Exception:
+                pass
         STATE["presentation"] = pres
         STATE["cache_key"] = cache_key
         STATE["cached_group"] = group
         STATE["cached_count"] = len(names)
         STATE["item_hashes"] = current_hashes
+        STATE["item_geometry_hashes"] = current_geometry_hashes
         STATE["item_shapes"] = item_shapes
         STATE["origin"] = origin
         total_seconds = time.perf_counter() - started
         report(100, "完成", len(names), len(names), True)
+        scratch["presentation"] = None
         return {"count": len(names), "cached": False, "prepared": not copy_clipboard,
                 "seconds": round(total_seconds, 2),
                 "phases": {"build": round(build_seconds, 2), "group": round(group_seconds, 2),
@@ -951,9 +1169,30 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
+        if self.path == "/cancel-prepare":
+            # This endpoint never enters the serialized COM worker.  A newer
+            # editor state can therefore stop an obsolete background build
+            # immediately instead of waiting behind it.
+            cancel_background_prepares()
+            body = json.dumps({"ok": True, "cancelled": True}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "http://127.0.0.1:8765")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if self.path not in ("/copy", "/prepare"):
             self.send_error(404)
             return
+        copy_request = self.path == "/copy"
+        cancel_event = None
+        if copy_request:
+            # A user click is latency-sensitive. Stop current or queued idle
+            # preparation before placing the copy on the serialized COM worker.
+            cancel_background_prepares()
+        else:
+            cancel_event = register_prepare_cancel()
         try:
             length = int(self.headers.get("Content-Length", "0"))
             payload = json.loads(self.rfile.read(length))
@@ -989,11 +1228,14 @@ class Handler(SimpleHTTPRequestHandler):
             # Every COM request runs on one persistent worker thread so the
             # PowerPoint application and native group cache remain reusable.
             result = PPT_EXECUTOR.submit(
-                copy_native, payload, emit, self.path == "/copy"
+                copy_native, payload, emit, copy_request, cancel_event
             ).result()
             emit({"type": "result", "ok": True, **result})
         except Exception as exc:
             emit({"type": "result", "ok": False, "error": str(exc)})
+        finally:
+            if cancel_event is not None:
+                unregister_prepare_cancel(cancel_event)
 
     def log_message(self, *_):
         pass

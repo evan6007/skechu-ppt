@@ -15,6 +15,45 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
+class NativePreparationPriorityTests(unittest.TestCase):
+    def test_fill_color_does_not_invalidate_freeform_geometry(self):
+        spec = importlib.util.spec_from_file_location("style_bridge", ROOT / "app" / "bridge.py")
+        bridge = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bridge)
+        item = {"id": "fill", "type": "arrow", "closed": True, "curved": True,
+                "points": [{"x": 0, "y": 0}, {"x": 40, "y": 20}, {"x": 80, "y": 0}],
+                "fill": "#ef4444", "fillOpacity": 1}
+        changed = copy.deepcopy(item)
+        changed.update(fill="#2563eb", fillOrder=4)
+        self.assertNotEqual(bridge.item_hash(item), bridge.item_hash(changed))
+        self.assertEqual(bridge.item_geometry_hash(item), bridge.item_geometry_hash(changed))
+
+    def test_only_closed_paint_faces_are_appendable_to_native_cache(self):
+        spec = importlib.util.spec_from_file_location("fill_bridge", ROOT / "app" / "bridge.py")
+        bridge = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bridge)
+        face = {"id": "fill", "type": "arrow", "paintLayer": "fill", "closed": True,
+                "points": [{"x": 0, "y": 0}, {"x": 40, "y": 0}, {"x": 20, "y": 30}]}
+        self.assertTrue(bridge.appendable_region_fill(face))
+        self.assertFalse(bridge.appendable_region_fill({**face, "paintLayer": "line"}))
+        self.assertFalse(bridge.appendable_region_fill({**face, "closed": False}))
+
+    def test_cancelled_background_prepare_stops_before_powerpoint_access(self):
+        spec = importlib.util.spec_from_file_location("priority_bridge", ROOT / "app" / "bridge.py")
+        bridge = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bridge)
+        cancel = bridge.register_prepare_cancel()
+        cancel.set()
+        try:
+            with self.assertRaisesRegex(bridge.PreparationCancelled, "讓位"):
+                bridge.copy_native({"items": [{"id": "box", "type": "box", "x": 0, "y": 0,
+                                                "w": 10, "h": 10}]}, copy_clipboard=False,
+                                   cancel_event=cancel)
+        finally:
+            bridge.unregister_prepare_cancel(cancel)
+        self.assertFalse(bridge.PREPARE_CANCEL_EVENTS)
+
+
 @unittest.skipUnless(os.environ.get("SKECHU_TEST_POWERPOINT") == "1", "requires local PowerPoint")
 class NativePowerPointGeometryTests(unittest.TestCase):
     @classmethod
@@ -32,7 +71,7 @@ class NativePowerPointGeometryTests(unittest.TestCase):
                 pres.Close()
         self.bridge.CACHE_STATES.clear()
         self.bridge.STATE.update(presentation=None, cache_key=None, cached_group=None,
-                                 item_hashes={}, item_shapes={}, origin=None)
+                                 item_hashes={}, item_geometry_hashes={}, item_shapes={}, origin=None)
 
     @unittest.skipUnless(os.environ.get("SKECHU_TEST_CLIPBOARD") == "1", "explicit clipboard benchmark opt-in")
     def test_incremental_caches_and_background_clipboard_isolation(self):
@@ -78,6 +117,32 @@ class NativePowerPointGeometryTests(unittest.TestCase):
         nodes = self.bridge.freeform_node_points(item)
         self.bridge.verify_freeform_nodes(shape, nodes, 0, 0, .75)
         return shape
+
+    def test_new_region_fill_is_appended_without_rebuilding_existing_lines(self):
+        lines = [{"id": f"line-{index}", "type": "arrow", "curved": True,
+                  "width": 2, "color": "#123f8c", "startHead": False,
+                  "endHead": False,
+                  "points": [{"x": 0, "y": index * 15},
+                             {"x": 50, "y": index * 15 + 8},
+                             {"x": 100, "y": index * 15}]}
+                 for index in range(4)]
+        payload = {"items": lines, "cacheId": "qa:append-fill"}
+        cold = self.bridge.copy_native(payload, copy_clipboard=False)
+        self.assertFalse(cold.get("incremental", False))
+        fill = {"id": "region-fill", "type": "arrow", "paintLayer": "fill",
+                "curved": True, "closed": True, "width": 0, "color": "#ef4444",
+                "fill": "#ef4444", "fillOpacity": 1,
+                "points": [{"x": 10, "y": 8}, {"x": 80, "y": 8},
+                           {"x": 80, "y": 36}, {"x": 10, "y": 36}]}
+        payload["items"] = [fill, *lines]
+        appended = self.bridge.copy_native(payload, copy_clipboard=False)
+        self.assertTrue(appended["incremental"])
+        self.assertEqual(appended["changed"], 1)
+        self.assertEqual(appended["count"], 5)
+        with self.bridge.native_cache_context("qa:append-fill"):
+            state = self.bridge.STATE
+            self.assertEqual(set(state["item_shapes"]), {"region-fill", *[line["id"] for line in lines]})
+            self.assertEqual(state["cached_group"].GroupItems.Count, 5)
 
     def test_split_cusp_first_build_cached_update_and_render(self):
         item = copy.deepcopy(self.fixture)

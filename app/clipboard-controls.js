@@ -36,6 +36,7 @@ async function copySelectionToClipboard() {
     return;
   }
   const bar = document.getElementById('ppt-progress');
+  const clickedAt=performance.now();
   setClipboardBusy(true); clearTimeout(pptPrepareTimer); pptPrepareWanted = null;
   bar.hidden = false; bar.value = 0;
   clipboardFeedback('正在複製到 PowerPoint', '正在建立可編輯物件，請等到「複製成功」再切到 PPT 貼上。');
@@ -46,15 +47,19 @@ async function copySelectionToClipboard() {
       const count = event.total ? ` ${event.current}/${event.total}` : '';
       clipboardFeedback('正在複製到 PowerPoint', `${event.stage}${count}（${event.percent || 0}%）；完成後再按 Ctrl+V。`);
     };
-    // Let the one already-running preparation finish; never queue obsolete versions ahead of a copy.
-    if(HAS_NATIVE_PPT_BRIDGE&&pptPreparePromise)await pptPreparePromise;
+    // Send the foreground copy immediately. The bridge cancels any in-flight
+    // idle preparation so a click never waits for an unrelated full-page cache.
+    if(HAS_NATIVE_PPT_BRIDGE&&pptPreparePromise){
+      clipboardFeedback('正在複製到 PowerPoint', pptPreparingBody===body?'正在接手背景快取並優先複製。':'正在中止背景準備，優先複製目前選取物件。');
+    }
     const result = HAS_NATIVE_PPT_BRIDGE
       ? await readNativeStream(await fetch('/copy', {method:'POST', headers:{'Content-Type':'application/json'}, body}), progress)
       : await requestWebPptCopy(body, progress);
     if (!(result.count > 0)) throw new Error('PowerPoint 未回傳可複製物件');
     noteNativeCopy(body,result); bar.value = 100;
     const speed=result.cached?'快取':result.incremental?`更新 ${result.changed} 個改動`:'首次建立';
-    const timing=Number.isFinite(result.seconds)?`（${speed} ${result.seconds} 秒）`:'';
+    const totalSeconds=(performance.now()-clickedAt)/1000;
+    const timing=Number.isFinite(result.seconds)?`（${speed} ${result.seconds} 秒${totalSeconds>result.seconds+.35?`；按下後共 ${totalSeconds.toFixed(2)} 秒`:''}）`:'';
     clipboardFeedback('複製成功：可編輯 PPT 物件', `已寫入系統剪貼簿，共 ${result.count} 個物件${timing}。切到 PowerPoint 投影片，按 Ctrl+V；取消群組後可分別編輯。`, 'success');
   } catch (error) {
     clipboardFeedback('沒有確認複製成功', `${error.message || error}。請確認新版 Windows 本機服務與桌面 PowerPoint 正常執行。若連接頁是 404，請更新本機版。此時剪貼簿可能仍是舊內容。`, 'error', !HAS_NATIVE_PPT_BRIDGE);

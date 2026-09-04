@@ -26,3 +26,4 @@ body .palette-drag-ghost{transform:translate(20px,20px)}
 .stage-wrap.hand-dragging,.stage-wrap.hand-dragging .stage,.stage-wrap.hand-dragging .stage *{cursor:grabbing}
 .stage [data-outline-only="true"],.stage [data-outline-only="true"] .arrow-line,.stage [data-outline-only="true"] .polygon-shape{pointer-events:stroke}
 #scene [data-locked="true"],#scene [data-locked="true"] *{pointer-events:none}
+.stage-wrap.file-drop-ready{outline:4px dashed #7c3aed;outline-offset:-8px;background-color:#ede9fe}

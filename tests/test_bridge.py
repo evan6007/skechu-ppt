@@ -155,6 +155,21 @@ class BridgePureFunctionTests(unittest.TestCase):
             self.assertAlmostEqual(actual[0], (point["x"]+3)*.75)
             self.assertAlmostEqual(actual[1], (point["y"]+4)*.75)
 
+    def test_count_only_production_check_avoids_per_node_com_reads(self):
+        nodes = [{"x": 0, "y": 0}, {"x": 1, "y": 1}, {"x": 2, "y": 2}]
+        shape = SimpleNamespace(Nodes=SimpleNamespace(
+            Count=3, Item=lambda _index: self.fail("count-only verification read a node")))
+        self.bridge.verify_freeform_nodes(shape, nodes, 0, 0, 1, max_checks=0)
+
+    def test_sampled_production_check_can_skip_a_known_curve(self):
+        class Nodes:
+            @property
+            def Count(self):
+                self_outer.fail("skipped verification touched PowerPoint nodes")
+        self_outer = self
+        self.bridge.verify_freeform_nodes(SimpleNamespace(Nodes=Nodes()), [], 0, 0, 1,
+                                          max_checks=-1)
+
     def test_magnetic_circle_samples_export_as_one_true_arc_model(self):
         points = [
             {"x": 100 + 80 * math.cos(math.pi + math.pi / 16 * i),

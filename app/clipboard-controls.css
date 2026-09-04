@@ -2,6 +2,10 @@
 .export-actions .ppt-copy-button:hover{background:#5b21b6}
 .ppt-copy-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
 #copy-ppt-mode{font-size:10px;font-weight:400;padding-left:7px;border-left:1px solid #ffffff60}
+.export-actions .ppt-progress{width:112px;height:10px;border:0;border-radius:999px;overflow:hidden;background:#e9ddff;box-shadow:inset 0 0 0 1px #d7c4ff}
+.ppt-progress::-webkit-progress-bar{background:#e9ddff;border-radius:999px}
+.ppt-progress::-webkit-progress-value{background:linear-gradient(90deg,#8b5cf6,#5b21b6);border-radius:999px;transition:width .16s ease}
+.ppt-progress::-moz-progress-bar{background:linear-gradient(90deg,#8b5cf6,#5b21b6);border-radius:999px}
 #copy-all-ppt{white-space:nowrap}
 .clipboard-feedback{position:fixed;right:18px;top:118px;z-index:2200;width:min(410px,calc(100vw - 36px));box-sizing:border-box;padding:16px 42px 16px 16px;border:1px solid #c4b5fd;border-left:5px solid #7c3aed;border-radius:12px;background:#fff;box-shadow:0 8px 32px #17203325;color:#172033;line-height:1.55;font-size:13px}
 .clipboard-feedback[hidden]{display:none}

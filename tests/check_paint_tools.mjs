@@ -7,6 +7,9 @@ import {spawnSync} from 'node:child_process';
 const html = fs.readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
 const geometry = fs.readFileSync(new URL('../app/paint-layers.js', import.meta.url), 'utf8');
 const paintCss = fs.readFileSync(new URL('../app/paint-tools.css', import.meta.url), 'utf8');
+const paintToolsSource = fs.readFileSync(new URL('../app/paint-tools.js', import.meta.url), 'utf8');
+assert.ok(paintToolsSource.includes('window.EyeDropper')&&paintToolsSource.includes('吸取畫布、圖片或螢幕上的顏色'));
+assert.ok(!paintToolsSource.includes('底圖取色'),'Eyedropper is no longer restricted to the reference image');
 assert.ok(paintCss.includes('.stage .handle[data-handle="tl"],.stage .handle[data-handle="br"]{cursor:nwse-resize}'));
 assert.ok(paintCss.includes('.stage .handle[data-handle="tr"],.stage .handle[data-handle="bl"]{cursor:nesw-resize}'));
 assert.ok(paintCss.indexOf('.stage-wrap.hand-tool') > paintCss.indexOf('cursor:nesw-resize'), 'Hand cursor must override resize cursors in pan mode');
@@ -100,7 +103,7 @@ const controller=vm.createContext({
   svgPt:e=>({x:e.clientX,y:e.clientY}),overlayUnit:()=>1,deepCopy:plain,
   completePaletteDrop(){paintCount++;return true},
   commit(){controller.history.push('snapshot');controller.future=[]},
-  byId:id=>controller.items.find(it=>it.id===id),
+  byId:id=>controller.items.find(it=>it.id===id),rememberPaletteColor(){},
   setOnlySelected:id=>{controller.selected=id;controller.selectedIds=new Set([id])},
   renderPalette(){},clearSelectionState(){},
 });
@@ -108,6 +111,8 @@ vm.runInContext(geometry+'\n'+fs.readFileSync(new URL('../app/paint-tools.js',im
 controller.setTracePen=()=>controller.resetPaintTools();
 controller.activateSelectTool=()=>controller.setTracePen(false);
 controller.initializePaintTools();controller.activatePaintBucket();
+controller.window.EyeDropper=class{async open(){return{sRGBHex:'#12ab34'}}};
+await controller.activateColorPicker();assert.equal(controller.activePaletteColor,'#12ab34','System eyedropper accepts any on-screen color without a reference image');
 const pointer=(x,y,extra={})=>({button:0,pointerId:1,clientX:x,clientY:y,preventDefault(){},stopImmediatePropagation(){},target:{closest:()=>null},...extra});
 const down=events.get('stage:pointerdown:true'),move=events.get('stage:pointermove:true'),up=events.get('stage:pointerup:true');
 down(pointer(200,200));down(pointer(220,220));
@@ -180,9 +185,9 @@ try:
     assert all(ordered[i][1]<ordered[i+1][1] for i in range(len(ordered)-1)),ordered
     # Recolor and reorder together used to reuse the old group's stacking order.
     items[0],items[1]=items[1],items[0]
-    items[0]['fill']='#22c55e'
+    items[1]['fill']='#22c55e'
     changed=bridge.copy_native({"items":items},copy_clipboard=False)
-    assert not changed.get('incremental'),changed
+    assert changed.get('incremental'),changed
     state=bridge.STATE;group=state['cached_group']
     positions=[group.GroupItems.Item(state['item_shapes'][item['id']][0]).ZOrderPosition for item in items]
     assert positions==sorted(positions),positions

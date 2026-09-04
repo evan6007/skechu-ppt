@@ -18,6 +18,7 @@ let sceneRenders=0,menuCalls=0;
 function el(id) {
   if(!elements.has(id))elements.set(id,{hidden:false,textContent:'',classList:{add(){},remove(){}},
     addEventListener(type,handler,capture){events.set(id+':'+type+':'+!!capture,handler)},
+    click(){this.onclick?.()},
     setPointerCapture(){},hasPointerCapture(){return true},releasePointerCapture(){},
     getBoundingClientRect(){return {left:0,top:0}},clientWidth:1200,clientHeight:675,scrollLeft:0,scrollTop:0});
   return elements.get(id);
@@ -47,6 +48,7 @@ vm.runInContext(html.slice(downStart,html.indexOf("svg.addEventListener('auxclic
 const moveStart=html.indexOf('function handleCanvasPointerMove(');
 vm.runInContext(html.slice(moveStart,html.indexOf("svg.addEventListener('pointermove',",moveStart)),ctx);
 vm.runInContext(html.split('\n').find(l=>l.startsWith("window.addEventListener('keydown',")),ctx);
+vm.runInContext(html.split('\n').find(l=>l.startsWith("document.getElementById('select-all').onclick=")),ctx);
 ctx.initializeSelectionControls();
 const down=e=>{events.get('wrap:pointerdown:true')(e);events.get('svg:pointerdown:false')(e)},move=ctx.handleCanvasPointerMove,up=e=>ctx.finishSelectionGesture(e);
 const target=(id,handle,index)=>({closest:selector=>selector==='[data-id]'&&id ? {dataset:{id}} : ['[data-handle]','[data-handle],[data-segment],[data-action]'].includes(selector)&&handle ? {dataset:{handle,...(index==null?{}:{point:String(index)})},getAttribute:()=>0} : null});
@@ -146,10 +148,13 @@ assert.deepEqual([...ctx.selectedIds],['b','a'],'Shift-marquee adds objects');
 reset(['line']);down(right(180,400));move(right(360,460));up(right(360,460));
 assert.equal(ctx.selected,'line');assert.deepEqual([...ctx.selectedPoints],[0,1],'Anchor marquee survives initial blank deselection');
 reset(['b']);down(event(140,160));move(event(370,330));
-assert.equal(ctx.marqueeRect,null,'Left-drag on blank canvas must never start a marquee');up(event(370,330));
-assert.equal(ctx.selectedIds.size,0);assert.equal(ctx.history.length,0);assert.equal(ctx.state(),original);
+assert.deepEqual(plain(ctx.marqueeRect),{x:140,y:160,w:230,h:170},'Left-drag from real blank canvas starts a marquee');up(event(370,330));
+assert.deepEqual([...ctx.selectedIds],['a']);assert.equal(ctx.history.length,0);assert.equal(ctx.state(),original);
 reset(['b']);blankDown(event(10,10));events.get('wrap:pointermove:false')(event(400,400));
-assert.equal(ctx.marqueeRect,null,'Left-drag on checkerboard must never marquee');events.get('wrap:pointerup:false')(event(400,400));
+assert.ok(ctx.marqueeRect,'Left-drag can start on checkerboard around the page');events.get('wrap:pointerup:false')(event(400,400));
+assert.deepEqual([...ctx.selectedIds],['a']);
+reset(['line']);down(event(180,400));move(event(360,460));up(event(360,460));
+assert.equal(ctx.selected,'line');assert.deepEqual([...ctx.selectedPoints],[0,1],'Left marquee selects anchors when exactly one path was active');
 reset(['b']);blankDown(right(10,10));events.get('wrap:pointermove:false')(right(370,330));events.get('wrap:pointerup:false')(right(370,330));
 assert.deepEqual([...ctx.selectedIds],['a'],'Right-drag can begin on checkerboard');
 reset(['b']);down(right(170,190,{target:target('a')}));
@@ -178,6 +183,11 @@ for(const type of ['image','text','box','ellipse','polygon','arrow']) {
 }
 reset(['a']);down(event(900,640,{button:1}));up(event(900,640,{button:1}));
 assert.equal(ctx.selected,'a','Middle-click no longer clears selection');
+reset([]);ctx.paintTool='bucket';ctx.tracePenOn=true;
+events.get('window:keydown:false')({key:'a',ctrlKey:true,target:{tagName:'svg'},preventDefault(){}});
+assert.equal(ctx.paintTool,null);assert.equal(ctx.tracePenOn,false,'Ctrl+A immediately returns to the selection tool');
+assert.deepEqual([...ctx.selectedIds],['empty','a','b','line'],'Ctrl+A selects every unlocked visible object');
+assert.match(ctx.multiSelectionMarkup(),/group-anchor-hit/,'Ctrl+A exposes editable path anchors immediately');
 reset(['a']);ctx.selectLayerFromEvent({shiftKey:true},'a');assert.equal(ctx.selectedIds.size,0,'Layer list uses the same Shift toggle');
 reset(['a']);events.get('window:keydown:false')({key:'Escape',target:{tagName:'svg'},preventDefault(){}});
 assert.equal(ctx.selected,null,'Escape in selection mode clears everything');
@@ -187,10 +197,16 @@ assert.equal(ctx.state(),original);assert.equal(ctx.drag,null);assert.equal(ctx.
 for(const mode of ['bucket','picker','reference','pan']){reset();ctx.paintTool=mode;blankDown(event(10,10));blankDown(right(10,10));assert.equal(ctx.selected,'a',mode+' keeps its own background gesture');assert.equal(ctx.drag,null);}
 reset();ctx.tracePenOn=true;blankDown(event(10,10));blankDown(right(10,10));assert.equal(ctx.selected,'a','Drawing mode does not become a marquee');assert.equal(ctx.drag,null);
 assert.match(html,/data-outline-only=/);assert.match(html,/items\.filter\(selectableOnCanvas\)/);
-assert.ok(!html.includes('左鍵拖空白可框選'),'Help text must match right-button marquee');
+assert.ok(html.includes('從空白處拖曳框選'),'Select tool tooltip explains pointer-origin selection without a permanent help block');
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
-for(const asset of ['paint-layers.js','paint-tools.js','paint-tools.css','selection-controls.js']) {
-  const versioned=asset+(asset==='selection-controls.js'?'?v=25-workspace':'?v=22-visibility-web-native');
+const runtimeVersions={
+  'paint-layers.js':'?v=22-visibility-web-native',
+  'paint-tools.js':'?v=41-liquid-paper',
+  'paint-tools.css':'?v=38-responsive-shell',
+  'selection-controls.js':'?v=26-left-marquee',
+};
+for(const asset of Object.keys(runtimeVersions)) {
+  const versioned=asset+runtimeVersions[asset];
   assert.ok(html.includes('"'+versioned+'"'),'Changed runtime asset must bypass stale HTTP caches: '+asset);
   assert.ok(worker.includes("'./"+versioned+"'"),'Offline cache must use the same asset version: '+asset);
 }

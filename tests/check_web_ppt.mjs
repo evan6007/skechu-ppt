@@ -44,16 +44,19 @@ el('disconnect').onclick();await listener(event);assert.equal(fetches,1,'Revocat
 const originalSelected=JSON.stringify({items:[{type:'arrow',points:[{x:0,y:0},{x:1,y:2}]}]});assert.equal(local.validWebPptPayload(originalSelected).items.length,1);
 // New helpers advertise preparation; old helpers remain copy-compatible without warming.
 assert.equal(ctx.canWebPptPrepare(),false);reply('approved',{capabilities:['prepare','cache-contexts']});assert.equal(ctx.canWebPptPrepare(),true);
-let warm=ctx.requestWebPptPrepare(originalSelected);const prepareMessage=messages.at(-1).data;assert.equal(prepareMessage.type,'prepare');
-promise=request();assert.equal(messages.at(-1).data.type,'prepare','Copy waits for one in-flight preparation');
-reply('prepare-result',{id:'stale',result:{ok:true,prepared:true,count:1}});assert.equal(messages.at(-1).data.type,'prepare');
+const warmProgress=[];let warm=ctx.requestWebPptPrepare(originalSelected,event=>warmProgress.push(event));const prepareMessage=messages.at(-1).data;assert.equal(prepareMessage.type,'prepare');
+promise=request();assert.equal(messages.at(-1).data.type,'copy','Foreground copy immediately preempts in-flight preparation');
+const priorityCopy=messages.at(-1).data;
+reply('prepare-result',{id:'stale',result:{ok:true,prepared:true,count:1}});assert.equal(messages.at(-1).data.type,'copy');
+reply('progress',{id:prepareMessage.id,event:{stage:'建立 PowerPoint 物件',percent:42}});assert.equal(warmProgress[0].percent,42,'Background preparation progress reaches the main editor');
 reply('prepare-result',{id:prepareMessage.id,result:{ok:true,prepared:true,count:1}});await warm;
-assert.equal(messages.at(-1).data.type,'copy');reply('result',{id:messages.at(-1).data.id,result:{ok:true,count:1}});await promise;
+reply('result',{id:priorityCopy.id,result:{ok:true,count:1}});await promise;
 warm=ctx.requestWebPptPrepare(originalSelected);reply('revoked');await assert.rejects(warm,/中斷/);assert.equal(ctx.canWebPptPrepare(),false);
 const warmRequests=[];
-local.fetch=async(url,options)=>{warmRequests.push({url,body:JSON.parse(options.body)});let done=false;return {ok:true,body:{getReader:()=>({read:async()=>done?{done:true}:(done=true,{done:false,value:new TextEncoder().encode('{"type":"result","ok":true,"prepared":true,"count":1,"seconds":0.01}\n')})})}}};
+local.fetch=async(url,options)=>{warmRequests.push({url,body:JSON.parse(options.body)});let done=false;return {ok:true,body:{getReader:()=>({read:async()=>done?{done:true}:(done=true,{done:false,value:new TextEncoder().encode('{"type":"progress","stage":"build","percent":50}\n{"type":"result","ok":true,"prepared":true,"count":1,"seconds":0.01}\n')})})}}};
 el('allow').onclick();await listener({...event,data:{...event.data,type:'prepare',body:'{"cacheId":"test:all","items":[{"type":"box"}]}'}});
 assert.equal(warmRequests[0].url,'/prepare');assert.equal(replies.at(-1).data.type,'prepare-result');assert.equal(replies.at(-1).data.result.prepared,true);
+assert.ok(replies.some(message=>message.data.type==='progress'&&message.data.event.percent===50),'Local companion forwards background progress');
 el('disconnect').onclick();await listener({...event,data:{...event.data,type:'prepare'}});assert.equal(warmRequests.length,1);
 assert.throws(()=>local.validWebPptPayload('{"cacheId":{},"items":[{"type":"box"}]}'),/快取/);
 console.log('Web-native PPT OK: consent handshake, strict origin/source/channel, no premature data, reusable session, timeout/popup/close errors, streamed results and unsafe path rejection.');

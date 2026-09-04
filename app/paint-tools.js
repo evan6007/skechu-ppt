@@ -68,12 +68,24 @@ function finishReferenceDrag(cancel = false) {
 
 async function activateColorPicker() {
   if (paintTool === 'picker') { activateSelectTool(); return; }
-  const refs = items.filter(it => it.type === 'image' && it.referenceOnly && !it.hidden);
-  if (!refs.length) { paintStatus('請先匯入底圖，再使用「底圖取色」；一般顏色仍可從色框選擇'); return; }
   const returnMode = paintTool === 'bucket' ? 'bucket' : null;
   setPaintTool('picker'); colorPickerReturn = returnMode;
   const serial = ++colorPickerSerial;
-  paintStatus('正在準備底圖原色…');
+  if (window.EyeDropper) {
+    paintStatus('吸色：點畫布、圖片或螢幕上的任意顏色；Esc 取消');
+    try {
+      const result = await new window.EyeDropper().open();
+      if (serial !== colorPickerSerial || paintTool !== 'picker') return;
+      acceptPickedColor(result.sRGBHex);
+    } catch (error) {
+      if (serial !== colorPickerSerial) return;
+      setPaintTool(returnMode);
+      paintStatus(error?.name === 'AbortError' ? '已取消吸色' : '系統吸色器無法啟動；仍可使用色框選色');
+    }
+    return;
+  }
+  const refs = items.filter(it => it.type === 'image' && !it.hidden);
+  paintStatus(refs.length ? '正在準備圖片取色…' : '吸色：點畫布上的線條或色塊；Esc 取消');
   try {
     const sources = await Promise.all(refs.map(async ref => {
       const im = new Image(); im.crossOrigin = 'anonymous';
@@ -86,12 +98,31 @@ async function activateColorPicker() {
     }));
     if (serial !== colorPickerSerial || paintTool !== 'picker') return;
     colorSampleSource = sources;
-    paintStatus('底圖取色：點一下取原始顏色，不受底圖透明度影響；放大鏡在旁邊，Esc 取消');
+    paintStatus('吸色：可點任何圖片、線條或色塊；圖片取原色，不受圖層透明度影響');
   } catch (error) {
     if (serial !== colorPickerSerial) return;
-    activateSelectTool(); paintStatus('無法讀取底圖顏色，請重新匯入本機圖片');
-    console.warn('Reference color sampling unavailable', error);
+    colorSampleSource = [];
+    paintStatus('圖片像素無法讀取；仍可點畫布上的線條或色塊吸色');
+    console.warn('Image color sampling unavailable', error);
   }
+}
+function targetPaintColor(target) {
+  if (typeof getComputedStyle !== 'function') return null;
+  const element = target?.closest?.('[data-id]') || target;
+  if (!element || element === svg) return null;
+  const candidates = [target, element, ...Array.from(element.querySelectorAll?.('path,rect,ellipse,circle,polygon,text') || [])];
+  for (const candidate of candidates) {
+    if (!candidate || candidate.closest?.('#selection')) continue;
+    const style = getComputedStyle(candidate);
+    for (const property of ['fill', 'stroke', 'color']) {
+      const value = style[property];
+      if (value && value !== 'none' && value !== 'transparent' && !/^rgba\([^)]*,\s*0\s*\)$/.test(value)) {
+        const match = value.match(/rgba?\((\d+)[, ]+(\d+)[, ]+(\d+)/);
+        if (match) return '#' + match.slice(1,4).map(part => Number(part).toString(16).padStart(2,'0')).join('');
+      }
+    }
+  }
+  return null;
 }
 function updateColorSample(event) {
   colorSample = null;
@@ -118,21 +149,35 @@ function updateColorSample(event) {
     cross.style.left = event.clientX + 'px'; cross.style.top = event.clientY + 'px';
     loupe.hidden = cross.hidden = false; return;
   }
+  colorSample = targetPaintColor(event.target);
+  if (colorSample) {
+    const preview = loupe.querySelector('canvas'), ctx = preview.getContext('2d');
+    ctx.fillStyle = colorSample; ctx.fillRect(0, 0, 96, 96);
+    loupe.querySelector('output').textContent = colorSample.toUpperCase();
+    const position = colorLoupePosition(event.clientX, event.clientY, innerWidth, innerHeight);
+    loupe.style.left = position.x + 'px'; loupe.style.top = position.y + 'px';
+    cross.style.left = event.clientX + 'px'; cross.style.top = event.clientY + 'px';
+    loupe.hidden = cross.hidden = false;
+  }
+}
+function acceptPickedColor(color) {
+  if (!/^#[0-9a-f]{6}$/i.test(color || '')) return;
+  const returnMode = colorPickerReturn;
+  rememberPaletteColor(color); activePaletteColor = color.toLowerCase(); syncPaintColor(); setPaintTool(returnMode);
+  paintStatus(`已吸取 ${color.toUpperCase()}${returnMode === 'bucket' ? '；油漆桶可繼續連續填色' : '；可拖色票，或開啟油漆桶填色'}`);
 }
 function acceptColorSample(event) {
   updateColorSample(event);
-  if (!colorSample) { paintStatus('請點在底圖內取色'); return; }
-  const color = colorSample, returnMode = colorPickerReturn;
-  rememberPaletteColor(color); syncPaintColor(); setPaintTool(returnMode);
-  paintStatus(`已取底圖原色 ${color.toUpperCase()}${returnMode === 'bucket' ? '；油漆桶可繼續連續填色' : '；可拖色票，或開啟油漆桶填色'}`);
+  if (!colorSample) { paintStatus('這裡沒有可吸取的顏色；請點線條、色塊或圖片'); return; }
+  acceptPickedColor(colorSample);
 }
 
 function initializePaintTools() {
   const bucketIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 8-8 8 8-8 8Z M8 2l5 5 M4 12h16 M21 15s-2 2-2 4a2 2 0 0 0 4 0c0-2-2-4-2-4Z"/></svg>';
   const pickerIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5 M4 16l10-10 4 4L8 20H4Z M14 6l3-3a2 2 0 0 1 3 3l-3 3"/></svg>';
-  document.getElementById('palette-grid').insertAdjacentHTML('afterend', `<div class="palette-current" id="paint-current-color"><i></i>目前顏色 <span></span></div><div class="palette-tools"><button id="paint-bucket" type="button" aria-pressed="false" title="連續點封閉區域填色（B）；Esc 退出">${bucketIcon}油漆桶</button><button id="palette-eyedropper" type="button" aria-pressed="false" title="從底圖取原色；放大鏡在游標旁邊（I）">${pickerIcon}底圖取色</button></div>`);
-  document.querySelector('.workspace-actions').insertAdjacentHTML('afterend', '<div class="reference-tools"><button id="resize-reference" type="button" aria-pressed="false" title="拖四角等比例縮放底圖；只改底圖，不改線圖"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5 M15 4h5v5 M20 15v5h-5 M9 20H4v-5 M5 5l5 5 M19 19l-5-5"/></svg>調整底圖大小</button></div>');
-  document.querySelector('.palette-tip').innerHTML = '色塊固定在線條下方。<strong>油漆桶</strong>可連續點填；也能拖曳色票。<strong>底圖取色</strong>不遮住游標，Esc 退出工具。';
+  document.getElementById('palette-grid').insertAdjacentHTML('afterend', `<div class="palette-current" id="paint-current-color"><i></i>目前顏色 <span></span></div><div class="palette-tools"><button id="paint-bucket" type="button" aria-pressed="false" title="連續點封閉區域填色（B）；Esc 退出">${bucketIcon}油漆桶</button><button id="palette-eyedropper" type="button" aria-pressed="false" title="吸取畫布、圖片或螢幕上的顏色（I）">${pickerIcon}吸色</button></div>`);
+  const referenceToolsSlot = document.getElementById('reference-tools-slot') || document.querySelector('.workspace-actions');
+  referenceToolsSlot.insertAdjacentHTML('beforeend', '<div class="reference-tools"><button id="resize-reference" type="button" aria-pressed="false" title="拖四角等比例縮放底圖；只改底圖，不改線圖"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5 M15 4h5v5 M20 15v5h-5 M9 20H4v-5 M5 5l5 5 M19 19l-5-5"/></svg>調整底圖大小</button></div>');
   document.body.insertAdjacentHTML('beforeend', '<div class="color-loupe" id="color-loupe" hidden><canvas width="96" height="96"></canvas><output></output></div><div class="color-sample-cross" id="color-sample-cross" hidden></div>');
   document.getElementById('paint-bucket').onclick = activatePaintBucket;
   document.getElementById('palette-eyedropper').onclick = activateColorPicker;

@@ -58,9 +58,13 @@ function beginBackgroundSelection(event, capture = svg) {
   const before = selectionSnapshot();
   event.preventDefault();
   if (!event.shiftKey) clearSelectionState(false);
-  drag = {kind: 'blank'};
+  // Pointer origin decides intent: an object starts moving, real background
+  // starts a marquee. A stationary background click still only deselects.
+  drag = {kind: 'marquee', start: svgPt(event), additive: event.shiftKey,
+    pointOwner: before.ids.length === 1 && byId(before.selected)?.points ? before.selected : null,
+    contextOnClick: false};
   marqueeRect = null; registerSelectionGesture(event, before, capture); refreshSelectionUI();
-  if (!event.shiftKey) document.getElementById('status').textContent = '已取消全部選取；按住右鍵拖曳可框選';
+  document.getElementById('status').textContent = event.shiftKey ? '從空白處拖曳可追加框選' : '已取消全部選取；繼續拖曳可框選';
 }
 function selectionContextTarget(event) {
   return event.target.closest('[data-anchor-owner]')?.dataset.anchorOwner || event.target.closest('[data-id]')?.dataset.id ||
@@ -77,7 +81,7 @@ function beginRightSelection(event, capture = svg) {
   const before = selectionSnapshot();
   drag = {kind: 'marquee', start: svgPt(event), additive: event.shiftKey,
     pointOwner: before.ids.length === 1 && byId(before.selected)?.points ? before.selected : null,
-    contextTarget: selectionContextTarget(event)};
+    contextTarget: selectionContextTarget(event), contextOnClick: true};
   document.getElementById('context-menu').hidden = true;
   marqueeRect = null; registerSelectionGesture(event, before, capture);
 }
@@ -211,7 +215,7 @@ function finishSelectionGesture(event, cancel = false) {
   stageWrap.classList.remove('panning');
   if (gesture.capture.hasPointerCapture(gesture.pointerId)) gesture.capture.releasePointerCapture(gesture.pointerId);
   if (gesture.stateBefore != null) render(); else refreshSelectionUI();
-  if (!cancel && gesture.kind === 'marquee' && !gesture.moved) showSelectionContextMenu(gesture.contextTarget, event.clientX, event.clientY);
+  if (!cancel && gesture.kind === 'marquee' && !gesture.moved && gesture.contextOnClick) showSelectionContextMenu(gesture.contextTarget, event.clientX, event.clientY);
   if (cancel) document.getElementById('status').textContent = '已取消拖曳，物件保持原位';
 }
 function selectLayerFromEvent(event, id) {

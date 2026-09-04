@@ -1,6 +1,43 @@
 /* Layer folders are metadata on the original editable items, never flattened paths.
  * Keeping metadata in items preserves the existing project and Undo format. */
 let layerPointerDrag = null, suppressLayerClick = false;
+function layerRowForKey(host,key){return [...host.querySelectorAll('[data-layer-key]')].find(row=>row.dataset.layerKey===key)||null}
+function beginLayerDragVisual(gesture,event){
+  const host=document.getElementById('layers'),row=gesture.row||layerRowForKey(host,gesture.key);if(!row)return;
+  const rect=row.getBoundingClientRect(),ghost=row.cloneNode(true);gesture.row=row;gesture.offsetX=gesture.x-rect.left;gesture.offsetY=gesture.y-rect.top;gesture.sourceHeight=rect.height;
+  gesture.layout=[...host.querySelectorAll('[data-layer-key]')].map(row=>{const box=row.getBoundingClientRect();return{row,key:row.dataset.layerKey,top:box.top+host.scrollTop,left:box.left,height:box.height,width:box.width}});
+  row.dataset.dragSource='true';ghost.classList.add('layer-drag-ghost');ghost.removeAttribute('data-layer-key');ghost.querySelectorAll('button').forEach(button=>button.tabIndex=-1);
+  Object.assign(ghost.style,{width:rect.width+'px',left:rect.left+'px',top:rect.top+'px'});document.body.appendChild(ghost);gesture.ghost=ghost;
+}
+function layerDropAt(gesture,event){
+  const host=document.getElementById('layers'),layout=gesture.layout||[],y=event.clientY+host.scrollTop,candidates=layout.filter(entry=>entry.key!==gesture.key),sourceIndex=layout.findIndex(entry=>entry.key===gesture.key);if(!candidates.length||sourceIndex<0)return null;
+  const direct=candidates.find(entry=>y>=entry.top&&y<=entry.top+entry.height);
+  if(direct?.key.startsWith('group:')&&!gesture.key.startsWith('group:')){const fraction=(y-direct.top)/direct.height;if(fraction>.28&&fraction<.72)return{target:direct.key,position:'inside',row:direct.row,insertIndex:null}}
+  const center=entry=>entry.top+entry.height/2,dragCenter=event.clientY-gesture.offsetY+(gesture.sourceHeight||36)/2+host.scrollTop,sourceCenter=center(layout[sourceIndex]);let insertIndex=sourceIndex;
+  if(dragCenter>sourceCenter)for(let index=sourceIndex+1;index<layout.length;index++){const boundary=(center(layout[index-1])+center(layout[index]))/2;if(dragCenter>=boundary)insertIndex=index}
+  else if(dragCenter<sourceCenter)for(let index=sourceIndex-1;index>=0;index--){const boundary=(center(layout[index])+center(layout[index+1]))/2;if(dragCenter<=boundary)insertIndex=index}
+  if(insertIndex===sourceIndex)return null;
+  const before=candidates[insertIndex],entry=before||candidates.at(-1);return{target:entry.key,position:before?'above':'below',row:entry.row,insertIndex};
+}
+function previewLayerOrder(gesture){
+  const host=document.getElementById('layers'),rows=[...host.querySelectorAll('[data-layer-key]')],source=rows.findIndex(row=>row.dataset.layerKey===gesture.key),target=gesture.insertIndex;
+  const signature=`${gesture.position||''}:${target??''}`;if(gesture.previewSignature===signature)return;gesture.previewSignature=signature;
+  rows.forEach(row=>row.style.transform='');if(source<0||target==null||target===source||gesture.position==='inside')return;
+  const height=(gesture.sourceHeight||36)+4;
+  if(target>source)rows.slice(source+1,target+1).forEach(row=>row.style.transform=`translateY(${-height}px)`);
+  else if(target<source)rows.slice(target,source).forEach(row=>row.style.transform=`translateY(${height}px)`);
+}
+function updateLayerDragVisual(gesture,event){
+  if(!gesture.ghost)beginLayerDragVisual(gesture,event);
+  if(gesture.ghost){gesture.ghost.style.left=event.clientX-gesture.offsetX+'px';gesture.ghost.style.top=event.clientY-gesture.offsetY+'px'}
+  previewLayerOrder(gesture);
+}
+function clearLayerDragVisual(gesture,settle=false){
+  const host=document.getElementById('layers');host.querySelectorAll('[data-layer-key]').forEach(row=>{row.style.transform='';delete row.dataset.dragSource});
+  const ghost=gesture?.ghost;if(!ghost)return;
+  if(settle){ghost.classList.add('settling');ghost.style.opacity='0';setTimeout(()=>ghost.remove(),110)}
+  else ghost.remove();
+}
 function layerGroupOf(it) {
   if (Object.prototype.hasOwnProperty.call(it, 'layerGroup')) return it.layerGroup;
   // Existing projects gain a collapsed folder without rewriting their geometry.
@@ -38,7 +75,7 @@ function layerRowMarkup(key, members, group = null, child = false) {
   return `<div class="layer-entry ${child?'layer-child':''} ${all?'active':some?'partial':''} ${locked?'is-locked':''} ${hidden?'is-hidden':''}" data-layer-key="${safeKey}">
     <button type="button" class="layer-grip" data-layer-drag="${safeKey}" aria-label="拖曳排序：${safeName}" title="拖曳上下排序；放到群組中央可加入" ${members.some(it=>it.locked)?'disabled':''}>${layerIcon('grip')}</button>
     ${group?`<button type="button" class="layer-fold" data-layer-fold="${safeKey}" aria-label="${group.collapsed?'展開':'收合'}：${safeName}" aria-expanded="${!group.collapsed}">${group.collapsed?'▸':'▾'}</button>`:'<span class="layer-fold-space"></span>'}
-    <button type="button" class="layer-name" ${group?`data-layer-group="${safeKey}"`:`data-layer="${esc(members[0].id)}"`} title="${safeName}" aria-pressed="${all}">${group?layerIcon('folder'):`<i class="dot ${esc(members[0].type)}"></i>`}<span>${safeName}</span>${group?`<small>${members.length}</small>`:''}</button>
+    <button type="button" class="layer-name" data-layer-drag="${safeKey}" ${group?`data-layer-group="${safeKey}"`:`data-layer="${esc(members[0].id)}"`} title="點一下選取；直接拖曳上下排序：${safeName}" aria-pressed="${all}">${group?layerIcon('folder'):`<i class="dot ${esc(members[0].type)}"></i>`}<span>${safeName}</span>${group?`<small>${members.length}</small>`:''}</button>
     <button type="button" class="layer-eye ${hidden?'eye-off':partialHidden?'mixed':''}" data-layer-visibility="${safeKey}" aria-label="${hidden?'顯示':'隱藏'}：${safeName}" aria-pressed="${!hidden}" title="${partialHidden?'部分隱藏；點一下隱藏整組':hidden?'顯示圖層':'隱藏圖層（匯出時也排除）'}">${layerIcon(hidden?'eyeOff':'eye')}</button>
     <button type="button" class="layer-lock ${locked?'locked':mixed?'mixed':''}" data-layer-lock="${safeKey}" aria-label="${locked?'解除鎖定':'鎖定'}：${safeName}" aria-pressed="${locked}" title="${mixed?'部分鎖定；點一下鎖定整組':locked?'點一下解除鎖定':'點一下鎖定'}">${layerIcon(locked?'lock':'unlock')}</button>
   </div>`;
@@ -144,7 +181,8 @@ function finishLayerPointer(cancel = false) {
   host.querySelectorAll('[data-drop]').forEach(el=>el.removeAttribute('data-drop'));
   if(host.hasPointerCapture(gesture.pointerId))host.releasePointerCapture(gesture.pointerId);
   suppressLayerClick=gesture.moved;
-  if(!cancel&&gesture.moved&&gesture.target)moveLayerEntry(gesture.key,gesture.target,gesture.position);
+  const moved=!cancel&&gesture.moved&&gesture.target&&moveLayerEntry(gesture.key,gesture.target,gesture.position);
+  clearLayerDragVisual(gesture,!!moved);
 }
 function initializeLayerControls() {
   const host=document.getElementById('layers');
@@ -161,20 +199,17 @@ function initializeLayerControls() {
   };
   host.addEventListener('pointerdown',event=>{
     suppressLayerClick=false;
-    const grip=event.target.closest('[data-layer-drag]');if(event.button!==0||!grip||grip.disabled)return;
-    event.preventDefault();layerPointerDrag={key:grip.dataset.layerDrag,pointerId:event.pointerId,x:event.clientX,y:event.clientY,moved:false};host.setPointerCapture(event.pointerId);
+    const dragTarget=event.target.closest('[data-layer-drag]');if(event.button!==0||!dragTarget||dragTarget.disabled)return;
+    const key=dragTarget.dataset.layerDrag;if(layerMembers(key).some(it=>it.locked))return;
+    const row=event.target.closest('[data-layer-key]');layerPointerDrag={key,pointerId:event.pointerId,x:event.clientX,y:event.clientY,moved:false,row:row?.dataset?.layerKey===key?row:null};host.setPointerCapture(event.pointerId);
   });
   host.addEventListener('pointermove',event=>{
     const gesture=layerPointerDrag;if(!gesture||gesture.pointerId!==event.pointerId)return;
-    if(!gesture.moved&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<4)return;
-    gesture.moved=true;const bounds=host.getBoundingClientRect();
+    if(!gesture.moved&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<8)return;
+    event.preventDefault();gesture.moved=true;if(!gesture.ghost)beginLayerDragVisual(gesture,event);const bounds=host.getBoundingClientRect();
     if(event.clientY<bounds.top+28)host.scrollTop-=18;else if(event.clientY>bounds.bottom-28)host.scrollTop+=18;
-    host.querySelectorAll('[data-drop]').forEach(el=>el.removeAttribute('data-drop'));
-    const row=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-layer-key]');
-    gesture.target=null;if(!row||!host.contains(row))return;
-    const rect=row.getBoundingClientRect(),fraction=(event.clientY-rect.top)/rect.height;
-    gesture.position=row.dataset.layerKey.startsWith('group:')&&!gesture.key.startsWith('group:')&&fraction>.28&&fraction<.72?'inside':fraction<.5?'above':'below';
-    gesture.target=row.dataset.layerKey;row.dataset.drop=gesture.position;
+    const drop=layerDropAt(gesture,event);gesture.target=drop?.target||null;gesture.position=drop?.position||null;gesture.insertIndex=drop?.insertIndex??null;
+    const dropSignature=drop?`${drop.target}:${drop.position}`:'';if(gesture.dropSignature!==dropSignature){host.querySelectorAll('[data-drop]').forEach(el=>el.removeAttribute('data-drop'));if(drop?.row)drop.row.dataset.drop=drop.position;gesture.dropSignature=dropSignature}updateLayerDragVisual(gesture,event);
   });
   host.addEventListener('pointerup',event=>{if(layerPointerDrag?.pointerId===event.pointerId)finishLayerPointer();});
   for(const event of ['pointercancel','lostpointercapture'])host.addEventListener(event,()=>finishLayerPointer(true));

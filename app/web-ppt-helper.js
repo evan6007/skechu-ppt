@@ -34,7 +34,7 @@ function initializeWebPptHelper() {
       const response=await fetch(preparing?'/prepare':'/copy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       if(!response.ok||!response.body)throw new Error('本機 PowerPoint 服務無法處理要求');
       const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='',result=null;
-      const accept=line=>{if(!line.trim())return;const event=JSON.parse(line);if(event.type==='progress'){bar.value=event.percent||0;status.textContent=(preparing?'背景準備：':'')+event.stage+'（'+(event.percent||0)+'%）';if(!preparing)reply('progress',{id:data.id,event});}else if(event.type==='result')result=event;};
+      const accept=line=>{if(!line.trim())return;const event=JSON.parse(line);if(event.type==='progress'){bar.value=event.percent||0;status.textContent=(preparing?'背景準備：':'')+event.stage+'（'+(event.percent||0)+'%）';reply('progress',{id:data.id,event});}else if(event.type==='result')result=event;};
       while(true){const {value,done}=await reader.read();buffer+=decoder.decode(value||new Uint8Array(),{stream:!done});const lines=buffer.split('\n');buffer=lines.pop();lines.forEach(accept);if(done)break;}if(buffer.trim())accept(buffer);
       if(!result?.ok||!(result.count>0))throw new Error(result?.error||'沒有確認原生複製成功');
       if(preparing&&!result.prepared)throw new Error('服務尚未支援背景準備');
