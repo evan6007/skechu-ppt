@@ -134,8 +134,23 @@ try:
     time.sleep(0.5)
     capture(hwnd, "ppt-native-02-all-selected.png")
 
-    # Pull the independent colored regions away from the line-art center.
-    fill_shapes = [ungrouped.Item(index) for index in range(1, fill_count + 1)]
+    # Pull the independent colored regions into a deliberately composed
+    # exploded-view ring. Keep the original line art as a smaller focal point
+    # in the middle instead of leaving a full-size drawing behind the pieces.
+    fill_names = [ungrouped.Item(index).Name for index in range(1, fill_count + 1)]
+    line_names = [ungrouped.Item(index).Name for index in range(fill_count + 1, ungrouped.Count + 1)]
+    line_group = slide.Shapes.Range(tuple(line_names)).Group()
+    line_group.LockAspectRatio = -1
+    line_start = (line_group.Left, line_group.Top, line_group.Width, line_group.Height)
+    line_scale = min(390 / line_group.Width, 270 / line_group.Height)
+    line_target = (
+        (960 - line_group.Width * line_scale) / 2,
+        (540 - line_group.Height * line_scale) / 2,
+        line_group.Width * line_scale,
+        line_group.Height * line_scale,
+    )
+
+    fill_shapes = [slide.Shapes.Item(name) for name in fill_names]
     starts = [(shape.Left, shape.Top, shape.Rotation, shape.Width, shape.Height) for shape in fill_shapes]
     clockwise = sorted(
         range(fill_count),
@@ -146,30 +161,35 @@ try:
     )
     rank_by_index = {shape_index: rank for rank, shape_index in enumerate(clockwise)}
     targets = []
+    ring_radius_x = 418
+    ring_radius_y = 228
+    angular_step = math.tau / fill_count
     for index, shape in enumerate(fill_shapes):
         rank = rank_by_index[index]
-        angle = -math.pi / 2 + (rank + 6) / fill_count * math.tau
-        area = shape.Width * shape.Height
-        display_scale = .56 if area > 60000 else (.76 if area > 26000 else 1)
+        angle = -math.pi / 2 + (rank + 2) * angular_step
+        local_spacing = math.hypot(
+            ring_radius_x * math.sin(angle) * angular_step,
+            ring_radius_y * math.cos(angle) * angular_step,
+        )
+        target_max_dimension = max(38, min(58, local_spacing * .78))
+        display_scale = target_max_dimension / max(shape.Width, shape.Height)
         target_width, target_height = shape.Width * display_scale, shape.Height * display_scale
-        radius_x = max(60, 448 - target_width / 2)
-        radius_y = max(42, 248 - target_height / 2)
-        target_left = brain_center[0] + math.cos(angle) * radius_x - target_width / 2
-        target_top = brain_center[1] + math.sin(angle) * radius_y - target_height / 2
-        target_left = max(8, min(952 - target_width, target_left))
-        target_top = max(8, min(532 - target_height, target_top))
-        if math.hypot(target_left - starts[index][0], target_top - starts[index][1]) < 110:
-            angle += math.pi
-            target_left = max(8, min(952 - target_width,
-                brain_center[0] + math.cos(angle) * radius_x - target_width / 2))
-            target_top = max(8, min(532 - target_height,
-                brain_center[1] + math.sin(angle) * radius_y - target_height / 2))
+        target_left = 480 + math.cos(angle) * ring_radius_x - target_width / 2
+        target_top = 270 + math.sin(angle) * ring_radius_y - target_height / 2
+        target_left = max(10, min(950 - target_width, target_left))
+        target_top = max(10, min(530 - target_height, target_top))
+        tangent_rotation = ((math.degrees(angle) + 90 + 180) % 360) - 180
         targets.append((target_left, target_top,
-                        starts[index][2] + ((rank % 7) - 3) * 2.4,
+                        tangent_rotation,
                         target_width, target_height))
     app.ActiveWindow.Selection.Unselect()
     for step in range(49):
         amount = step / 48
+        line_eased = 1 - (1 - amount) ** 3
+        line_group.Width = line_start[2] + (line_target[2] - line_start[2]) * line_eased
+        line_group.Height = line_start[3] + (line_target[3] - line_start[3]) * line_eased
+        line_group.Left = line_start[0] + (line_target[0] - line_start[0]) * line_eased
+        line_group.Top = line_start[1] + (line_target[1] - line_start[1]) * line_eased
         for index, (shape, start, move_target) in enumerate(zip(fill_shapes, starts, targets)):
             rank = rank_by_index[index]
             begins = rank / max(1, fill_count - 1) * .62
@@ -182,8 +202,8 @@ try:
             shape.Top = start[1] + (move_target[1] - start[1]) * eased
             shape.Rotation = start[2] + (move_target[2] - start[2]) * eased
         capture(hwnd, f"ppt-native-explode-{step:02d}.png")
-    largest_fill = max(fill_shapes, key=lambda shape: shape.Width * shape.Height)
-    largest_fill.Select()
+    showcase_fill = max(fill_shapes, key=lambda shape: shape.Width * shape.Height)
+    showcase_fill.Select()
     app.Activate()
     time.sleep(0.5)
     capture(hwnd, "ppt-native-explode-selected.png")
