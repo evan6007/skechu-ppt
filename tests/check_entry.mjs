@@ -13,4 +13,12 @@ assert.match(svg,/<title[^>]*>Open Web/);
 assert.match(svg,/No installation/);
 assert.ok(!/<script|foreignObject|(?:href|src)=/i.test(svg),'The entry card is a self-contained static SVG');
 assert.ok(readme.includes('Copy to PPT is Windows-only'),'Platform limitations remain explicit');
-console.log('Web-first entry OK: primary launch card, correct link, static asset and secondary Windows installer.');
+const featureGifs=['feature-auto-trace.gif','feature-anchor-editing.gif','feature-pages-layers.gif','feature-shapes-export.gif'];
+for(const name of featureGifs){
+  const path=`docs/media/${name}`,data=fs.readFileSync(new URL('../'+path,import.meta.url));
+  assert.ok(readme.includes(path),`README must display ${name}`);
+  assert.equal(data.subarray(0,3).toString(),'GIF',`${name} must be a real GIF`);
+  assert.ok(data.length>50000,`${name} must contain a meaningful UI recording`);
+}
+assert.ok(!readme.includes('editor-workflow.gif'),'The obsolete combined montage must not replace four focused demos');
+console.log('Web-first entry OK: primary launch card, four focused feature GIFs and secondary Windows installer.');

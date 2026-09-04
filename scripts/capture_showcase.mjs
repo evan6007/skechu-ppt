@@ -108,6 +108,27 @@ try {
   await delay(350);
   await capture('04-shapes.png');
 
+  await evaluate(`document.getElementById('add-shape').click();document.querySelector('.export-menu').open=true`);
+  await delay(350);
+  await capture('05-export.png');
+
+  await evaluate(`document.querySelector('.export-menu').open=false;clearSelectionState();render();const card=document.querySelectorAll('#workspace-pages [data-page-id]')[1];const rect=card.getBoundingClientRect();card.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,button:2,clientX:rect.right-18,clientY:rect.top+32}))`);
+  await delay(350);
+  await capture('06-pages.png');
+
+  await evaluate(`document.getElementById('page-context-menu').hidden=true;const host=document.getElementById('layers');host.scrollTop=host.scrollHeight;const group=host.querySelector('[data-layer-group]');group?.click();host.scrollTop=host.scrollHeight`);
+  await delay(500);
+  await capture('07-layers.png');
+
+  await evaluate(`document.getElementById('auto-trace').click()`);
+  await waitFor(`document.getElementById('auto-trace-dialog').open`);
+  await waitFor(`document.getElementById('auto-trace-svg').getAttribute('aria-busy')==='false'&&!document.getElementById('auto-trace-apply').disabled`, 45000);
+  await capture('08-auto-trace.png');
+  await evaluate(`const input=document.getElementById('auto-trace-simplify');input.value='65';input.dispatchEvent(new Event('input',{bubbles:true}))`);
+  await delay(1200);
+  await waitFor(`document.getElementById('auto-trace-svg').getAttribute('aria-busy')==='false'&&!document.getElementById('auto-trace-apply').disabled`, 45000);
+  await capture('09-auto-trace-adjusted.png');
+
   console.log(path.resolve(outputDir));
 } finally {
   try { if (socket?.readyState === WebSocket.OPEN) await command('Browser.close'); } catch {}

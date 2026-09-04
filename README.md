@@ -26,11 +26,16 @@
 
 ## See it at a glance
 
-<p align="center">
-  <img src="docs/media/editor-workflow.gif" width="960" alt="A clean recording of Skechu-PPT showing the finished vector, aligned grid, editable anchors, and shape menu">
-</p>
-
-<p align="center"><sub>Actual browser UI: finished vector → aligned grid → Ctrl+A anchor editing → shape picker.</sub></p>
+<table>
+  <tr>
+    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="Auto trace with live preview and adjustable settings"><br><strong>Auto trace</strong> — detect the drawing, preview real anchors, and tune the result live.</td>
+    <td width="50%"><img src="docs/media/feature-anchor-editing.gif" alt="Aligned grid and Ctrl+A anchor editing"><br><strong>Anchor editing</strong> — align the grid, select everything instantly, and refine every curve.</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/media/feature-pages-layers.gif" alt="Page context menu and layer management"><br><strong>Pages and layers</strong> — right-click pages; reorder, group, hide, and lock artwork.</td>
+    <td width="50%"><img src="docs/media/feature-shapes-export.gif" alt="Shape picker and PowerPoint, project, and SVG export"><br><strong>Shapes and export</strong> — add shapes, save projects, export SVG, or copy editable PowerPoint objects.</td>
+  </tr>
+</table>
 
 | ✦ **Auto trace** | 🧲 **Magnetic pen** | ◉ **Anchor editing** | 🪣 **Paint bucket** |
 | :---: | :---: | :---: | :---: |
