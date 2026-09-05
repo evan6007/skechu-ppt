@@ -62,7 +62,9 @@ async function github(path, token, fetcher, method = 'GET') {
   const response = await fetcher(`${API}${path}`, {
     method,
     headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2026-03-10', 'User-Agent': 'Skechu-PPT-Star', ...(method === 'PUT' ? { 'Content-Length': '0' } : {}) },
-    redirect: 'error', signal: AbortSignal.timeout(15000)
+    // Workers only supports manual/follow. Manual plus strict status checks
+    // refuses redirects without forwarding the token to another destination.
+    redirect: 'manual', signal: AbortSignal.timeout(15000)
   });
   if (response.status === 401) fail(401, 'GitHub 授權已失效，請重新連接');
   if (response.status === 403 || response.status === 429) fail(403, 'GitHub 暫時拒絕操作，請檢查 Star 權限或稍後再試');
@@ -70,8 +72,9 @@ async function github(path, token, fetcher, method = 'GET') {
 }
 
 // Dependency injection is only for tests; production can never select upstream URLs.
-export function createService(fetcher = fetch) {
+export function createService(fetcher = (...args) => globalThis.fetch(...args)) {
   return { async fetch(request, env) {
+    let phase = 'request';
     const origin = request.headers.get('origin');
     const allowed = env.APP_ORIGIN || 'https://evan6007.github.io';
     const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', Vary: 'Origin' };
@@ -96,24 +99,29 @@ export function createService(fetcher = fetch) {
         return reply({ url: target.href, state });
       }
       if (url.pathname === '/auth/exchange' && request.method === 'POST') {
+        phase = 'auth-validation';
         const { state, verifier, code } = await body(request);
         const login = await unseal(state, 'oauth', origin, env);
         if (login.callback !== callback || typeof verifier !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(verifier) || typeof code !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(code)) fail(400, '授權回傳資料錯誤');
         const challenge = base64url(await crypto.subtle.digest('SHA-256', encoder.encode(verifier)));
         if (challenge !== login.challenge) fail(401, '授權驗證不符，請重新連接');
+        phase = 'token-exchange';
         const response = await fetcher('https://github.com/login/oauth/access_token', {
           method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
           body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, redirect_uri: callback, code, code_verifier: verifier }),
-          redirect: 'error', signal: AbortSignal.timeout(15000)
+          redirect: 'manual', signal: AbortSignal.timeout(15000)
         });
         if (!response.ok) fail(502, 'GitHub 授權服務暫時無法使用');
+        phase = 'token-response';
         const grant = await response.json();
         // Reject broad OAuth tokens; this service is for a least-privilege GitHub App.
         if (grant.error || typeof grant.access_token !== 'string' || !grant.access_token.startsWith('ghu_') || grant.token_type?.toLowerCase() !== 'bearer') fail(401, 'GitHub 未完成授權，請重新連接');
         const lifetime = Math.min(Number(grant.expires_in) || 28800, 28800);
         if (!Number.isFinite(lifetime) || lifetime < 60) fail(401, 'GitHub 授權已過期');
+        phase = 'identity-request';
         const identity = await github('/user', grant.access_token, fetcher);
         if (!identity.ok) fail(502, '無法確認 GitHub 使用者');
+        phase = 'identity-response';
         const user = await identity.json();
         if (typeof user.login !== 'string' || !/^[A-Za-z0-9-]{1,39}$/.test(user.login)) fail(502, 'GitHub 使用者資料錯誤');
         const exp = seconds() + lifetime - 30;
@@ -122,6 +130,7 @@ export function createService(fetcher = fetch) {
         return reply({ session, login: user.login, expiresAt: exp * 1000 });
       }
       if (url.pathname === '/star' && ['GET', 'POST'].includes(request.method)) {
+        phase = 'star-request';
         const session = await unseal(request.headers.get('authorization')?.replace(/^Bearer /, ''), 'session', origin, env);
         const path = `/user/starred/${REPOSITORY}`;
         if (request.method === 'POST') {
@@ -138,7 +147,7 @@ export function createService(fetcher = fetch) {
       fail(404, '找不到此功能');
     } catch (error) {
       // Never include upstream response bodies, credentials, codes or tokens in errors/logs.
-      return reply({ error: error.status ? error.message : '授權服務暫時無法使用，請稍後再試' }, error.status || 502);
+      return reply({ error: error.status ? error.message : `授權服務暫時無法使用（${phase}），請稍後再試`, ...(!error.status ? { code: `${phase}:${['TypeError','TimeoutError','AbortError','SyntaxError'].includes(error.name) ? error.name : 'Unavailable'}` } : {}) }, error.status || 502);
     }
   } };
 }

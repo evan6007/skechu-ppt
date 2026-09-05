@@ -10,6 +10,7 @@ function fixture() {
   const calls = [], used = new Set();
   let starred = false, revoked = false, rejectWrites = false;
   const service = createService(async (url, options) => {
+    assert.equal(options.redirect, 'manual', 'Workers rejects redirect:error; never follow credentials across redirects');
     calls.push({ url, options });
     if (url === 'https://github.com/login/oauth/access_token') {
       const input = JSON.parse(options.body);
@@ -133,4 +134,19 @@ test('failed writes never claim success or retry; unconfigured service fails clo
   assert.equal((await f.send('/star', { starred: true }, login.session)).status, 502);
   assert.equal(f.calls.length, before + 1);
   assert.equal((await f.send('/auth/start', { challenge }, null, {}, {})).status, 503);
+});
+
+test('upstream redirects are refused without following or leaking the client secret', async () => {
+  const calls = [];
+  const service = createService(async (url, options) => {
+    calls.push(url);
+    assert.equal(options.redirect, 'manual');
+    return new Response(null, { status: 302, headers: { Location: 'https://untrusted.example/' } });
+  });
+  const send = (path, data) => service.fetch(new Request(`https://service.example${path}`, {method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(data)}), env);
+  const { state } = await (await send('/auth/start', { challenge })).json();
+  const response = await send('/auth/exchange', { state, verifier, code:'one' });
+  assert.equal(response.status, 502);
+  assert.deepEqual(calls, ['https://github.com/login/oauth/access_token']);
+  assert.doesNotMatch(await response.text(), /test-secret|untrusted/);
 });
