@@ -39,6 +39,7 @@ jobs:
             --add-data "app/paint-layers.js;." `
             --add-data "app/paint-tools.js;." `
             --add-data "app/pan-tool.js;." `
+            --add-data "app/touch-gestures.js;." `
             --add-data "app/selection-controls.js;." `
             --add-data "app/workspace-actions.js;." `
             --add-data "app/layer-controls.js;." `

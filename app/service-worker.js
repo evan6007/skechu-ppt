@@ -1,9 +1,10 @@
-const CACHE_NAME = 'skechu-ppt-v67-touch-shell';
+const CACHE_NAME = 'skechu-ppt-v68-touch-gestures';
 const APP_SHELL = [
   './',
   './index.html',
   './mobile-controls.js?v=67-touch-shell',
-  './mobile-controls.css?v=67-touch-shell',
+  './mobile-controls.css?v=68-touch-gestures',
+  './touch-gestures.js?v=68-touch-gestures',
   './starter-brain.png',
   './theme-controls.js?v=46-canvas-shapes',
   './theme-controls.css?v=55-canvas-color-menu',

@@ -44,6 +44,8 @@ jobs:
         run: node tests/check_selection.mjs
       - name: Check mobile controls and compact panels
         run: node tests/check_mobile.mjs
+      - name: Check two-finger canvas navigation
+        run: node tests/check_touch_gestures.mjs
       - name: Check page actions and image paste
         run: node tests/check_workspace_actions.mjs
       - name: Check layer folders and drag ordering

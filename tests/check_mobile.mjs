@@ -5,8 +5,9 @@ import assert from 'node:assert/strict';
 const read = file => fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const source = read('app/mobile-controls.js'), css = read('app/mobile-controls.css'), html = read('app/index.html');
 for (const file of ['mobile-controls.js','mobile-controls.css']) {
-  assert.ok(html.includes(file+'?v=67-touch-shell'));
-  assert.ok(read('app/service-worker.js').includes(file+'?v=67-touch-shell'));
+  const version=file.endsWith('.css')?'?v=68-touch-gestures':'?v=67-touch-shell';
+  assert.ok(html.includes(file+version));
+  assert.ok(read('app/service-worker.js').includes(file+version));
   assert.ok(read('.github/workflows/windows-release.yml').includes('app/'+file+';.'));
 }
 assert.ok(html.includes('initializeMobileControls();') && html.includes('syncMobileControls();'));

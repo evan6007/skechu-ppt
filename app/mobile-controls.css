@@ -1,6 +1,8 @@
 /* SVG geometry is shared; only the touch layout lives behind the breakpoint. */
 .editor-icon{width:20px;height:20px;display:block;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .mobile-editor-dock,.mobile-sheet-heading,.mobile-selection-actions,.mobile-zoom-controls{display:none}
+.stage-wrap{touch-action:none;overscroll-behavior:contain;overflow-anchor:none}
+.stage-wrap.touch-navigating .stage{cursor:grabbing}
 @media(max-width:900px){
   .app{height:100dvh;grid-template-rows:48px 58px minmax(0,1fr) calc(58px + env(safe-area-inset-bottom,0px))}
   button,a,summary{-webkit-tap-highlight-color:transparent}
