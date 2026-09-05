@@ -97,6 +97,9 @@ vm.runInContext(app.split('\n').find(l=>l.startsWith('function tracePenStrokeSty
 for(const name of ['transformAutoTraceItems','autoJunctionMembers','syncAutoJunctions'])loadFunction(ui,name);
 let seq=0;const transformed=context.transformAutoTraceItems(result,{x:10,y:20,w:200,h:100,r:30},100,100,'test',()=>`test-${seq++}`);
 for(const it of transformed){assert.equal(it.color,'#123f8c');assert.equal(it.width,3.5,'Applied curves use the clearer manual pen style')}
+const aspectSource=JSON.parse(JSON.stringify(result.items[0]));aspectSource.points=[{x:0,y:0},{x:100,y:100}];aspectSource.pointHandleAngles={0:{in:0,out:0,inLength:0,outLength:0},1:{in:0,out:0,inLength:0,outLength:0}};aspectSource.pointJunctions={};
+const aspectFit=context.transformAutoTraceItems({items:[aspectSource],issues:[]},{x:10,y:20,w:200,h:100,r:0},100,100,'aspect',()=>`aspect-${seq++}`)[0];
+assert.deepEqual(JSON.parse(JSON.stringify(aspectFit.points)),[{x:60,y:20},{x:160,y:120}],'Applied trace uses the reference image contain rectangle instead of stretching to a mismatched outer box');
 context.items=transformed;context.syncAutoJunctions();
 const members=[...context.autoJunctionMembers().values()][0];context.selected=members[1].it.id;
 members[1].it.points[members[1].index]={x:80,y:90};context.syncAutoJunctions();

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../app/index.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../app/theme-controls.css',import.meta.url),'utf8');
 const source=fs.readFileSync(new URL('../app/theme-controls.js',import.meta.url),'utf8');
+const autoTraceUi=fs.readFileSync(new URL('../app/auto-trace-ui.js',import.meta.url),'utf8');
 const stored=new Map([['skechu-ui-theme','linen']]),events=new Map();
 const buttons=['graphite','mist','linen'].map(theme=>({dataset:{uiTheme:theme},active:false,classList:{toggle(name,value){if(name==='active')this.owner.active=value}},setAttribute(name,value){this[name]=value}}));buttons.forEach(button=>button.classList.owner=button);
 const picker={addEventListener(type,fn){events.set(type,fn)}},meta={content:''};
@@ -41,6 +42,8 @@ assert.ok(html.includes('id="add-shape"')&&html.includes('aria-controls="shape-m
 assert.match(html,/id="shape-menu-popover"[\s\S]*?data-shape-kind="rectangle"[\s\S]*?data-shape-kind="ellipse"[\s\S]*?data-shape-kind="polygon"/,'Shape menu must offer three icon choices');
 assert.ok(!html.includes('id="shape-kind"'),'Shape type selector must remain hidden until the shape button is opened');
 assert.ok(html.includes('<span class="tool-text">新增底圖</span>'),'Reference toolbar label must say 新增底圖');
+assert.ok(autoTraceUi.includes("insertAdjacentHTML('afterend'")&&autoTraceUi.includes('<span class="tool-text">自動描圖</span>'),'Add reference must stay left of auto trace in workflow order');
+assert.ok(html.includes('M19 3v6M16 6h6')&&autoTraceUi.includes('M4 17c3-7 7-8 10-4s4 3 6-2'),'Reference and auto trace must use precise add-image and editable-curve SVG icons');
 for(const id of ['canvas-width','canvas-height'])assert.ok(html.includes(`id="${id}"`),'Missing canvas dimension control '+id);
 assert.ok(html.includes('function updateCanvasSize()')&&html.includes('page.canvasWidth=width;page.canvasHeight=height'),'Canvas dimensions must update the active page model');
 for(const marker of ['id="canvas-paper-color"','id="canvas-paper-opacity"','id="canvas-paper-white"','id="canvas-paper-transparent"','function canvasAppearance(','function updateCanvasAppearance()'])assert.ok(html.includes(marker),'Missing per-page canvas appearance marker '+marker);

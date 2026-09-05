@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v56-auto-trace-shared-image';
+const CACHE_NAME = 'skechu-ppt-v57-auto-trace-contain-coordinates';
 const APP_SHELL = [
   './',
   './index.html',
@@ -22,7 +22,7 @@ const APP_SHELL = [
   './clipboard-controls.css?v=28-ppt-progress',
   './paint-tools.css?v=38-responsive-shell',
   './auto-trace.js?v=26-photo-trace',
-  './auto-trace-ui.js?v=46-shared-image',
+  './auto-trace-ui.js?v=47-contain-coordinates',
   './auto-trace-worker.js',
   './auto-trace.css?v=28-shared-image',
   './manifest.webmanifest',

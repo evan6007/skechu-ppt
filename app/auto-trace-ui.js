@@ -13,7 +13,7 @@ function createAutoTraceJob() {
   return worker;
  } catch(error) {URL.revokeObjectURL(url);throw new Error(`自動描圖背景運算無法啟動：${error.message||error}`);}
 }
-document.getElementById('import-reference').insertAdjacentHTML('beforebegin','<button id="auto-trace" class="tool-button" title="把線稿、Logo 或照片角色轉成可編輯曲線"><span class="tool-icon" aria-hidden="true">✧</span><span class="tool-text">自動描圖</span></button>');
+document.getElementById('import-reference').insertAdjacentHTML('afterend','<button id="auto-trace" class="tool-button" title="把線稿、Logo 或照片角色轉成可編輯曲線"><span class="tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17c3-7 7-8 10-4s4 3 6-2"/><circle cx="4" cy="17" r="1.5"/><circle cx="14" cy="13" r="1.5"/><circle cx="20" cy="11" r="1.5"/><path d="M18 3v4M16 5h4"/></svg></span><span class="tool-text">自動描圖</span></button>');
 document.body.insertAdjacentHTML('beforeend',`
 <dialog id="auto-trace-dialog" aria-labelledby="auto-trace-title">
  <div class="auto-trace-heading"><div><h2 id="auto-trace-title">自動描圖</h2><p>直接預測並畫出描圖筆曲線；調整設定會自動更新。套用後可刪點、拉切線精修。</p></div><button id="auto-trace-cancel" type="button" aria-label="取消自動描圖">✕</button></div>
@@ -140,8 +140,8 @@ async function generateAutoTracePreview(){
  }catch(error){if(serial!==autoTraceSerial)return;autoTraceJob?.terminate();autoTraceJob=null;setAutoTraceBusy(false);document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';summary.textContent=`自動描圖未完成：${error.message||error}`}
 }
 function transformAutoTraceItems(result,ref,w,h,batch,makeId){
- const sx=ref.w/w,sy=ref.h/h,angle=(ref.r||0)*Math.PI/180,cx=ref.x+ref.w/2,cy=ref.y+ref.h/2;
- const transform=p=>{const x=ref.x+p.x*sx-cx,y=ref.y+p.y*sy-cy;return{x:cx+x*Math.cos(angle)-y*Math.sin(angle),y:cy+x*Math.sin(angle)+y*Math.cos(angle)}};
+ const scale=Math.min(ref.w/w,ref.h/h),drawW=w*scale,drawH=h*scale,drawX=ref.x+(ref.w-drawW)/2,drawY=ref.y+(ref.h-drawH)/2,angle=(ref.r||0)*Math.PI/180,cx=ref.x+ref.w/2,cy=ref.y+ref.h/2;
+ const transform=p=>{const x=drawX+p.x*scale-cx,y=drawY+p.y*scale-cy;return{x:cx+x*Math.cos(angle)-y*Math.sin(angle),y:cy+x*Math.sin(angle)+y*Math.cos(angle)}};
  const created=result.items.map((source,index)=>{
   const it=deepCopy(source);it.id=makeId();it.name=`自動描圖 ${index+1}`;it.autoTraceBatch=batch;it.layerGroup={id:'trace-'+batch,name:'自動描圖',collapsed:true};Object.assign(it,tracePenStrokeStyle());
   for(const [key,handle] of Object.entries(it.pointHandleAngles)){const p=source.points[key],anchor=transform(p);for(const side of ['in','out']){const a=handle[side]*Math.PI/180,c=transform({x:p.x+Math.cos(a)*handle[side+'Length'],y:p.y+Math.sin(a)*handle[side+'Length']}),dx=c.x-anchor.x,dy=c.y-anchor.y;handle[side]=Math.atan2(dy,dx)*180/Math.PI;handle[side+'Length']=Math.hypot(dx,dy)}}
