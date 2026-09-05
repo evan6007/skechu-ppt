@@ -1,6 +1,7 @@
 /* Editor integration: preview is isolated; only Apply adds items to history. */
 let autoTraceJob=null,autoTraceResult=null,autoTraceSource=null,autoTraceSerial=0,autoTraceTimer=null;
 let autoTraceReviewCursor=0,autoTracePreviewSelection=null;
+let autoTraceDialogAnimation=null,autoTraceDialogClosing=false,autoTraceOriginRect=null;
 const autoJunctionPositions=new Map();
 function createAutoTraceJob() {
  // The worker contains the already-loaded engine, with no file:// fetch or importScripts.
@@ -29,7 +30,35 @@ document.body.insertAdjacentHTML('beforeend',`
  <div class="auto-trace-footer"><span id="auto-trace-anchor-info">青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。</span><button id="auto-trace-apply" class="primary" type="button" disabled>套用線圖</button></div>
 </dialog>`);
 const autoTraceDialog=document.getElementById('auto-trace-dialog');
-function cancelAutoTrace(){clearTimeout(autoTraceTimer);autoTraceTimer=null;autoTraceSerial++;autoTraceJob?.terminate();autoTraceJob=null;autoTraceResult=null;autoTraceSource=null;setAutoTraceBusy(false);autoTraceDialog.close()}
+function autoTraceVisibleRect(node){const rect=node?.getBoundingClientRect?.();return rect&&rect.width>2&&rect.height>2?{left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom,width:rect.width,height:rect.height}:null}
+function autoTraceReferenceRect(ref){
+ const host=document.getElementById('scene'),nodes=host?.querySelectorAll?[...host.querySelectorAll('[data-id]')]:[],node=nodes.find(candidate=>candidate.dataset?.id===ref?.id);
+ return autoTraceVisibleRect(node)||autoTraceVisibleRect(document.getElementById('auto-trace'));
+}
+function autoTracePrefersReducedMotion(){return typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches}
+function runAutoTraceDialogMotion(opening){
+ if(typeof autoTraceDialog.animate!=='function'||autoTracePrefersReducedMotion())return null;
+ const dialogRect=autoTraceVisibleRect(autoTraceDialog),previewRect=autoTraceVisibleRect(document.getElementById('auto-trace-svg')),origin=autoTraceOriginRect;
+ if(!dialogRect||!previewRect||!origin)return null;
+ const scale=Math.max(.08,Math.min(.92,origin.width/previewRect.width,origin.height/previewRect.height));
+ const previewCenter={x:(previewRect.left+previewRect.right)/2,y:(previewRect.top+previewRect.bottom)/2},originCenter={x:(origin.left+origin.right)/2,y:(origin.top+origin.bottom)/2};
+ const collapsed={transform:`translate3d(${originCenter.x-previewCenter.x}px,${originCenter.y-previewCenter.y}px,0) scale(${scale})`,opacity:.18,filter:'blur(2px)'};
+ const expanded={transform:'translate3d(0,0,0) scale(1)',opacity:1,filter:'blur(0px)'};
+ autoTraceDialogAnimation?.cancel();
+ autoTraceDialog.style.transformOrigin=`${previewCenter.x-dialogRect.left}px ${previewCenter.y-dialogRect.top}px`;
+ autoTraceDialog.classList?.add('auto-trace-animating');
+ const animation=autoTraceDialog.animate(opening?[collapsed,expanded]:[expanded,collapsed],{duration:opening?380:320,easing:opening?'cubic-bezier(.16,1,.3,1)':'cubic-bezier(.4,0,.2,1)',fill:'both'});
+ autoTraceDialogAnimation=animation;
+ animation.finished.catch(()=>{}).finally(()=>{if(autoTraceDialogAnimation!==animation)return;autoTraceDialogAnimation=null;autoTraceDialog.classList?.remove('auto-trace-animating')});
+ return animation.finished.catch(()=>{});
+}
+function finishAutoTraceDialogClose(){if(autoTraceDialog.open)autoTraceDialog.close();autoTraceDialogClosing=false;autoTraceOriginRect=null;autoTraceDialog.classList?.remove('auto-trace-closing','auto-trace-entering','auto-trace-animating');autoTraceDialog.style.transformOrigin=''}
+function closeAutoTraceDialog(ref){
+ if(!autoTraceDialog.open||autoTraceDialogClosing)return null;
+ autoTraceDialogClosing=true;autoTraceOriginRect=autoTraceReferenceRect(ref)||autoTraceOriginRect;autoTraceDialog.classList?.add('auto-trace-closing');
+ const motion=runAutoTraceDialogMotion(false);if(!motion){finishAutoTraceDialogClose();return null}motion.finally(finishAutoTraceDialogClose);return motion;
+}
+function cancelAutoTrace(){const ref=autoTraceSource?.ref;clearTimeout(autoTraceTimer);autoTraceTimer=null;autoTraceSerial++;autoTraceJob?.terminate();autoTraceJob=null;autoTraceResult=null;autoTraceSource=null;setAutoTraceBusy(false);return closeAutoTraceDialog(ref)}
 function setAutoTraceBusy(busy){document.getElementById('auto-trace-svg').setAttribute('aria-busy',String(busy));document.getElementById('auto-trace-anchors').innerHTML='';autoTracePreviewSelection=null;document.getElementById('auto-trace-anchor-info').textContent='青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。'}
 function invalidateAutoTrace(){
  updateAutoTraceSettings();
@@ -80,8 +109,11 @@ async function openAutoTrace(){
  if(!ref){document.getElementById('status').textContent='請先匯入底圖，再按「自動描圖」';return}
  if(ref.preserveFull!==true){document.getElementById('status').textContent='請透過「底圖」匯入圖片，以保留原圖座標再自動描圖';return}
  if(traceDraft){document.getElementById('status').textContent='請先按 Enter 完成目前描線，再使用自動描圖';return}
- autoTraceSource={ref:deepCopy(ref),signature:autoTraceSignature(ref)};autoTraceResult=null;autoTraceDialog.showModal();
- document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';
+ autoTraceSource={ref:deepCopy(ref),signature:autoTraceSignature(ref)};autoTraceResult=null;autoTraceDialogClosing=false;autoTraceOriginRect=autoTraceReferenceRect(ref);
+ const initialWidth=Math.max(1,ref.w),initialHeight=Math.max(1,ref.h),previewSvg=document.getElementById('auto-trace-svg');
+ previewSvg.setAttribute('viewBox',`0 0 ${initialWidth} ${initialHeight}`);document.getElementById('auto-trace-image').innerHTML=`<image href="${esc(ref.src)}" width="${initialWidth}" height="${initialHeight}" opacity=".25" preserveAspectRatio="none"/>`;
+ document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';autoTraceDialog.classList?.add('auto-trace-entering');autoTraceDialog.showModal();runAutoTraceDialogMotion(true);
+ const revealBackdrop=()=>autoTraceDialog.classList?.remove('auto-trace-entering');if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(revealBackdrop));else revealBackdrop();
  invalidateAutoTrace();clearTimeout(autoTraceTimer);autoTraceTimer=null;if(validAutoTraceOptions())await generateAutoTracePreview();
 }
 async function generateAutoTracePreview(){
@@ -170,6 +202,7 @@ document.getElementById('detach-auto-junction').onclick=detachAutoJunction;
 document.getElementById('auto-trace').onclick=openAutoTrace;
 document.getElementById('auto-trace-apply').onclick=applyAutoTrace;
 document.getElementById('auto-trace-cancel').onclick=cancelAutoTrace;
+autoTraceDialog.addEventListener('cancel',event=>{event.preventDefault();cancelAutoTrace()});
 autoTraceDialog.addEventListener('cancel',e=>{e.preventDefault();cancelAutoTrace()});
 for(const id of ['auto-trace-threshold','auto-trace-accuracy','auto-trace-simplify','auto-trace-min-length'])document.getElementById(id).addEventListener('input',invalidateAutoTrace);
 document.getElementById('auto-trace-mode').addEventListener('change',invalidateAutoTrace);
