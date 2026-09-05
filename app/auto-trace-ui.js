@@ -111,8 +111,8 @@ async function openAutoTrace(){
  autoTraceSource={ref:deepCopy(ref),signature:autoTraceSignature(ref)};autoTraceResult=null;autoTraceDialogClosing=false;
  const initialWidth=Math.max(1,ref.w),initialHeight=Math.max(1,ref.h),previewSvg=document.getElementById('auto-trace-svg');
  previewSvg.setAttribute('viewBox',`0 0 ${initialWidth} ${initialHeight}`);document.getElementById('auto-trace-image').innerHTML=`<image href="${esc(ref.src)}" width="${initialWidth}" height="${initialHeight}" opacity=".25" preserveAspectRatio="xMidYMid meet"/>`;
- document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';autoTraceDialog.classList?.add('auto-trace-entering');autoTraceDialog.showModal();runAutoTraceDialogMotion(true,ref);
- const revealBackdrop=()=>autoTraceDialog.classList?.remove('auto-trace-entering');if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(revealBackdrop));else revealBackdrop();
+ document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';autoTraceDialog.classList?.add('auto-trace-entering');autoTraceDialog.showModal();
+ const revealDialog=()=>autoTraceDialog.classList?.remove('auto-trace-entering'),motion=runAutoTraceDialogMotion(true,ref);if(motion)motion.finally(revealDialog);else revealDialog();
  invalidateAutoTrace();clearTimeout(autoTraceTimer);autoTraceTimer=null;if(validAutoTraceOptions())await generateAutoTracePreview();
 }
 async function generateAutoTracePreview(){
@@ -154,8 +154,8 @@ function applyAutoTrace(){
  const ref=autoTraceSource&&byId(autoTraceSource.ref.id);
  if(!autoTraceResult?.items.length||!ref||autoTraceSignature(ref)!==autoTraceSource.signature){document.getElementById('auto-trace-summary').textContent='底圖或工作區域已變更，請關閉後再開啟「自動描圖」';document.getElementById('auto-trace-apply').disabled=true;return}
  const batch=`auto-${id()}`,created=transformAutoTraceItems(autoTraceResult,ref,autoTraceSource.width,autoTraceSource.height,batch,id),stats=autoTraceResult.stats;
- commit();items.push(...created);setTracePen(false);setOnlySelected(created[0]?.id||null);selectedPoint=null;editPoints=true;cancelAutoTrace();render();
- autoTraceReviewCursor=0;document.getElementById('status').textContent=`已新增 ${stats.paths} 條可編輯曲線、${stats.junctions} 個共用分岔；原圖保留，可復原。${stats.reviewCount?'按右側「下一個待確認」檢查紅色接點。':''}`;
+ const finishApply=()=>{commit();items.push(...created);setTracePen(false);setOnlySelected(created[0]?.id||null);selectedPoint=null;editPoints=true;render();autoTraceReviewCursor=0;document.getElementById('status').textContent=`已新增 ${stats.paths} 條可編輯曲線、${stats.junctions} 個共用分岔；原圖保留，可復原。${stats.reviewCount?'按右側「下一個待確認」檢查紅色接點。':''}`};
+ const motion=cancelAutoTrace();if(motion)motion.finally(finishApply);else finishApply();
 }
 function autoJunctionMembers(sourceItems=items){const groups=new Map();for(const it of sourceItems)for(const [key,group] of Object.entries(it.pointJunctions||{})){const index=Number(key);if(!it.points?.[index])continue;if(!groups.has(group))groups.set(group,[]);groups.get(group).push({it,index,p:it.points[index]})}return groups}
 function mergeAutoTraceProperties(a,b,merged,offset){

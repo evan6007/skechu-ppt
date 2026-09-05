@@ -144,7 +144,6 @@ try {
   await capture('auto-01-imported.png');
   await evaluate(`document.getElementById('auto-trace').click();autoTraceDialogMotion?.animation.pause()`);
   await waitFor(`document.getElementById('auto-trace-dialog').open&&autoTraceDialogMotion?.animation`);
-  await evaluate(`autoTraceDialog.classList.remove('auto-trace-entering')`);
   const autoOpenFrames=12;
   for(let step=0;step<autoOpenFrames;step+=1){
     const time=Math.min(419,Math.round(step/(autoOpenFrames-1)*419));
@@ -154,6 +153,7 @@ try {
   await evaluate(`autoTraceDialogMotion.animation.finish()`);
   await waitFor(`!autoTraceDialogMotion`);
   await waitFor(`document.getElementById('auto-trace-svg').getAttribute('aria-busy')==='false'&&!document.getElementById('auto-trace-apply').disabled`, 45000);
+  await delay(240);
   await capture('auto-03-preview.png');
   await evaluate(`document.getElementById('auto-trace-apply').click();autoTraceDialogMotion?.animation.pause()`);
   await waitFor(`autoTraceDialogMotion?.animation`);
@@ -165,7 +165,9 @@ try {
   }
   await evaluate(`autoTraceDialogMotion.animation.finish()`);
   await waitFor(`!document.getElementById('auto-trace-dialog').open`);
-  await delay(250);
+  await waitFor(`items.some(item=>item.autoTrace)`);
+  await evaluate(`clearSelectionState(false);render()`);
+  await delay(120);
   await capture('auto-04-applied.png');
   await evaluate(`window.__autoReferenceStart=deepCopy(items.find(item=>item.referenceOnly))`);
   for (let step = 0; step < 12; step += 1) {

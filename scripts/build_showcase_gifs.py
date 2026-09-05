@@ -53,6 +53,23 @@ def smooth_fixed_view(image, bounds=(0, 0, 1, 1)):
     )
 
 
+def freshen_orange(image):
+    """Keep the demo reference's orange accent vivid after its preview opacity is applied."""
+    rgb = image.convert("RGB")
+    hsv = rgb.convert("HSV")
+    hue, saturation, value = hsv.split()
+    hue_values = list(hue.getdata())
+    saturation_values = list(saturation.getdata())
+    value_values = list(value.getdata())
+    for index, (h, s, v) in enumerate(zip(hue_values, saturation_values, value_values)):
+        if 5 <= h <= 34 and s >= 18 and v >= 72:
+            saturation_values[index] = min(255, round(s * 2.6 + 35))
+            value_values[index] = min(255, round(v * 1.06 + 5))
+    saturation.putdata(saturation_values)
+    value.putdata(value_values)
+    return Image.merge("HSV", (hue, saturation, value)).convert("RGB")
+
+
 def trace_view(image, point=None):
     edge = METADATA["trace"]["edgeScreen"]
     crop_width = min(420, image.width)
@@ -128,19 +145,19 @@ def zoom_sequence(image, start_bounds, end_bounds, count, start_angle=0, end_ang
     return frames
 
 
-def save_gif(name, frames):
+def save_gif(name, frames, colors=112):
     sampled = frames[::4]
     palette_sheet = Image.new("RGB", (180, 101 * len(sampled) + 36))
     for index, frame in enumerate(sampled):
         palette_sheet.paste(frame.resize((180, 101), Image.Resampling.BILINEAR), (0, index * 101))
-    swatches = ["#f97316", "#fb923c", "#fff7ed", "#0d0f12", "#f3f4f6", "#38bdf8", "#22c55e"]
+    swatches = ["#ff9500", "#f97316", "#fb923c", "#ffb05c", "#fff7ed", "#0d0f12", "#f3f4f6", "#38bdf8", "#22c55e"]
     swatch_top = 101 * len(sampled)
     swatch_width = 180 // len(swatches)
     palette_draw = ImageDraw.Draw(palette_sheet)
     for index, color in enumerate(swatches):
         palette_draw.rectangle((index * swatch_width, swatch_top,
                                 (index + 1) * swatch_width - 1, swatch_top + 35), fill=color)
-    palette = palette_sheet.quantize(colors=112, method=Image.Quantize.MEDIANCUT)
+    palette = palette_sheet.quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
     encoded = [frame.quantize(palette=palette, dither=Image.Dither.NONE) for frame in frames]
     encoded[0].save(
         OUTPUT_DIR / name, save_all=True, append_images=encoded[1:],
@@ -163,40 +180,43 @@ save_gif("feature-magnetic-trace.gif", trace_frames)
 
 # 2. Start blank, import a reference, auto trace it, move the reference aside, then reveal all anchors.
 auto_bounds = (0.04, 0.02, 0.96, 0.84)
-auto_blank = smooth_fixed_view(open_frame("auto-00-blank.png"), auto_bounds)
+auto_blank = freshen_orange(smooth_fixed_view(open_frame("auto-00-blank.png"), auto_bounds))
 auto_imported_source = open_frame("auto-01-imported.png")
-auto_imported = smooth_fixed_view(auto_imported_source, auto_bounds)
-auto_opening = [smooth_fixed_view(open_frame(f"auto-02-opening-{step:02d}.png"), auto_bounds)
+auto_imported = freshen_orange(smooth_fixed_view(auto_imported_source, auto_bounds))
+auto_opening = [freshen_orange(smooth_fixed_view(open_frame(f"auto-02-opening-{step:02d}.png"), auto_bounds))
                 for step in range(METADATA["autoTraceMotion"]["openingFrames"])]
 auto_preview_source = open_frame("auto-03-preview.png")
-auto_preview = smooth_fixed_view(auto_preview_source, auto_bounds)
+auto_preview = freshen_orange(smooth_fixed_view(auto_preview_source, auto_bounds))
 auto_preview_close_bounds = (0.452, 0.574, 0.682, 0.780)
-auto_preview_close = smooth_fixed_view(auto_preview_source, auto_preview_close_bounds)
-auto_closing = [smooth_fixed_view(open_frame(f"auto-04-closing-{step:02d}.png"), auto_bounds)
+auto_preview_close = freshen_orange(smooth_fixed_view(auto_preview_source, auto_preview_close_bounds))
+auto_closing = [freshen_orange(smooth_fixed_view(open_frame(f"auto-04-closing-{step:02d}.png"), auto_bounds))
                 for step in range(METADATA["autoTraceMotion"]["closingFrames"])]
-auto_shrink = [smooth_fixed_view(open_frame(f"auto-05-shrink-{step:02d}.png"), auto_bounds) for step in range(12)]
-auto_applied_source = open_frame("auto-05-shrink-00.png")
-auto_applied_clean = smooth_fixed_view(auto_applied_source, auto_bounds)
+auto_shrink = [freshen_orange(smooth_fixed_view(open_frame(f"auto-05-shrink-{step:02d}.png"), auto_bounds)) for step in range(12)]
+auto_applied_source = open_frame("auto-04-applied.png")
+auto_applied_clean = freshen_orange(smooth_fixed_view(auto_applied_source, auto_bounds))
 auto_corner = auto_shrink[-1]
-auto_anchors = smooth_fixed_view(open_frame("auto-06-all-anchors.png"), auto_bounds)
+auto_anchors = freshen_orange(smooth_fixed_view(open_frame("auto-06-all-anchors.png"), auto_bounds))
 anchor_count = METADATA["autoTraceAnchors"]
 auto_frames = [card("自動描圖", "空白工作區", auto_blank, "#38bdf8") for _ in range(8)]
 auto_frames += [card("自動描圖", "匯入底圖", frame, "#38bdf8", (162, 8), index == 3) for index, frame in enumerate(tween(auto_blank, auto_imported, 7))]
 auto_frames += [card("自動描圖", "底圖已就緒", auto_imported, "#38bdf8") for _ in range(5)]
 auto_frames += [card("自動描圖", "底圖精準對齊預覽", frame, "#38bdf8") for frame in auto_opening]
+auto_frames += [card("自動描圖", "開啟描圖預覽", frame, "#38bdf8") for frame in tween(auto_opening[-1], auto_preview, 6)]
 auto_frames += [card("自動描圖", "預覽描圖結果", auto_preview, "#38bdf8") for _ in range(8)]
-auto_frames += [card("自動描圖", "放大小腦描邊細節", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_close_bounds, 30)]
+auto_frames += [card("自動描圖", "放大小腦描邊細節", freshen_orange(frame), "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_close_bounds, 30)]
 auto_frames += [card("自動描圖", "複雜線條完整描出", auto_preview_close, "#38bdf8") for _ in range(22)]
-auto_frames += [card("自動描圖", "返回完整預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_close_bounds, auto_bounds, 26)]
+auto_frames += [card("自動描圖", "返回完整預覽", freshen_orange(frame), "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_close_bounds, auto_bounds, 26)]
 auto_frames += [card("自動描圖", "完整預覽已確認", auto_preview, "#38bdf8") for _ in range(7)]
+auto_frames += [card("自動描圖", "關閉描圖預覽", frame, "#38bdf8") for frame in tween(auto_preview, auto_closing[0], 6)]
 auto_frames += [card("自動描圖", "套用並返回原圖", frame, "#38bdf8") for frame in auto_closing]
+auto_frames += [card("自動描圖", "完成向量線稿", frame, "#38bdf8") for frame in tween(auto_closing[-1], auto_applied_clean, 6)]
 auto_frames += [card("自動描圖", "描圖已套用", auto_applied_clean, "#38bdf8") for _ in range(10)]
 auto_frames += [card("自動描圖", "底圖縮到左下角", frame, "#38bdf8") for frame in auto_shrink[1:]]
 auto_frames += [card("自動描圖", "無填色向量線稿", auto_corner, "#38bdf8") for _ in range(8)]
 auto_frames += [card("自動描圖", "Ctrl+A 全選", frame, "#38bdf8") for frame in tween(auto_corner, auto_anchors, 6)]
 auto_frames += [card("自動描圖", f"{anchor_count} 個可編輯錨點", auto_anchors, "#38bdf8") for _ in range(12)]
 auto_frames += [card("自動描圖", "重新播放", frame, "#38bdf8") for frame in tween(auto_anchors, auto_blank, 6)]
-save_gif("feature-auto-trace.gif", auto_frames)
+save_gif("feature-auto-trace.gif", auto_frames, colors=256)
 
 # 3. Precomputed regions fill the same brain with seven colors in under one second.
 fill_bounds = (0.084, 0.10, 0.917, 0.912)

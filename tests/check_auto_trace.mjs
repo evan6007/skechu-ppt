@@ -138,6 +138,7 @@ console.log('Auto trace editor tests OK: shared-node movement, detach, save/relo
 // Exercise the production dialog controller with deterministic worker/timer replies.
 assert.ok(!ui.includes('auto-trace-preview'),'No regenerate button or dependency remains');
 assert.ok(ui.includes('function autoTraceImageRect(')&&ui.includes("node?.querySelector?.('image')")&&ui.includes("group?.querySelector?.('image')")&&ui.includes('runAutoTraceDialogMotion(true,ref)')&&ui.includes('runAutoTraceDialogMotion(false,ref)')&&ui.includes("matchMedia('(prefers-reduced-motion: reduce)')"),'The real auto-trace dialog must morph the same image between exact rendered pixel bounds in both directions, without introducing rotation and with reduced-motion support');
+assert.ok(ui.includes('if(motion)motion.finally(revealDialog)')&&ui.includes('if(motion)motion.finally(finishApply)'),'The preview chrome and generated paths must appear only after their shared-image transitions finish');
 const elements=new Map(),timers=new Map(),workers=[];let timerId=0;
 const defaults={'auto-trace-threshold':['150',40,220],'auto-trace-accuracy':['2.5',.3,6],'auto-trace-simplify':['90',0,100],'auto-trace-min-length':['3',0,30]};
 for(const id of Object.keys(defaults))assert.match(ui,new RegExp(`id="${id}"[^>]*type="range"`),'Every tuning control is a slider');
