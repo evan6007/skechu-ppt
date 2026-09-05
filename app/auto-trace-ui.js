@@ -1,7 +1,7 @@
 /* Editor integration: preview is isolated; only Apply adds items to history. */
 let autoTraceJob=null,autoTraceResult=null,autoTraceSource=null,autoTraceSerial=0,autoTraceTimer=null;
 let autoTraceReviewCursor=0,autoTracePreviewSelection=null;
-let autoTraceDialogAnimation=null,autoTraceDialogClosing=false,autoTraceOriginRect=null;
+let autoTraceDialogMotion=null,autoTraceDialogClosing=false;
 const autoJunctionPositions=new Map();
 function createAutoTraceJob() {
  // The worker contains the already-loaded engine, with no file:// fetch or importScripts.
@@ -30,33 +30,32 @@ document.body.insertAdjacentHTML('beforeend',`
  <div class="auto-trace-footer"><span id="auto-trace-anchor-info">青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。</span><button id="auto-trace-apply" class="primary" type="button" disabled>套用線圖</button></div>
 </dialog>`);
 const autoTraceDialog=document.getElementById('auto-trace-dialog');
-function autoTraceVisibleRect(node){const rect=node?.getBoundingClientRect?.();return rect&&rect.width>2&&rect.height>2?{left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom,width:rect.width,height:rect.height}:null}
-function autoTraceReferenceRect(ref){
- const host=document.getElementById('scene'),nodes=host?.querySelectorAll?[...host.querySelectorAll('[data-id]')]:[],node=nodes.find(candidate=>candidate.dataset?.id===ref?.id);
- return autoTraceVisibleRect(node)||autoTraceVisibleRect(document.getElementById('auto-trace'));
+function autoTraceImageRect(node){const rect=node?.getBoundingClientRect?.();return rect&&rect.width>2&&rect.height>2?{left:rect.left,top:rect.top,width:rect.width,height:rect.height}:null}
+function autoTraceReferenceGeometry(ref){
+ const host=document.getElementById('scene'),nodes=host?.querySelectorAll?[...host.querySelectorAll('[data-id]')]:[],node=nodes.find(candidate=>candidate.dataset?.id===ref?.id),image=node?.querySelector?.('image'),rect=autoTraceImageRect(image);
+ return node&&rect?{node,rect}:null;
 }
+function autoTracePreviewGeometry(){const group=document.getElementById('auto-trace-image'),image=group?.querySelector?.('image'),rect=autoTraceImageRect(image);return group&&rect?{group,rect}:null}
 function autoTracePrefersReducedMotion(){return typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches}
-function runAutoTraceDialogMotion(opening){
- if(typeof autoTraceDialog.animate!=='function'||autoTracePrefersReducedMotion())return null;
- const dialogRect=autoTraceVisibleRect(autoTraceDialog),previewRect=autoTraceVisibleRect(document.getElementById('auto-trace-svg')),origin=autoTraceOriginRect;
- if(!dialogRect||!previewRect||!origin)return null;
- const scale=Math.max(.08,Math.min(.92,origin.width/previewRect.width,origin.height/previewRect.height));
- const previewCenter={x:(previewRect.left+previewRect.right)/2,y:(previewRect.top+previewRect.bottom)/2},originCenter={x:(origin.left+origin.right)/2,y:(origin.top+origin.bottom)/2};
- const collapsed={transform:`translate3d(${originCenter.x-previewCenter.x}px,${originCenter.y-previewCenter.y}px,0) scale(${scale})`,opacity:.18,filter:'blur(2px)'};
- const expanded={transform:'translate3d(0,0,0) scale(1)',opacity:1,filter:'blur(0px)'};
- autoTraceDialogAnimation?.cancel();
- autoTraceDialog.style.transformOrigin=`${previewCenter.x-dialogRect.left}px ${previewCenter.y-dialogRect.top}px`;
- autoTraceDialog.classList?.add('auto-trace-animating');
- const animation=autoTraceDialog.animate(opening?[collapsed,expanded]:[expanded,collapsed],{duration:opening?380:320,easing:opening?'cubic-bezier(.16,1,.3,1)':'cubic-bezier(.4,0,.2,1)',fill:'both'});
- autoTraceDialogAnimation=animation;
- animation.finished.catch(()=>{}).finally(()=>{if(autoTraceDialogAnimation!==animation)return;autoTraceDialogAnimation=null;autoTraceDialog.classList?.remove('auto-trace-animating')});
- return animation.finished.catch(()=>{});
+function cleanupAutoTraceDialogMotion(motion=autoTraceDialogMotion){
+ if(!motion)return;motion.animation?.cancel?.();motion.ghost?.remove?.();
+ if(motion.sourceNode?.style)motion.sourceNode.style.visibility='';if(motion.targetGroup?.style)motion.targetGroup.style.opacity='';
+ if(autoTraceDialogMotion===motion){autoTraceDialogMotion=null;autoTraceDialog.classList?.remove('auto-trace-animating')}
 }
-function finishAutoTraceDialogClose(){if(autoTraceDialog.open)autoTraceDialog.close();autoTraceDialogClosing=false;autoTraceOriginRect=null;autoTraceDialog.classList?.remove('auto-trace-closing','auto-trace-entering','auto-trace-animating');autoTraceDialog.style.transformOrigin=''}
+function runAutoTraceDialogMotion(opening,ref){
+ if(autoTracePrefersReducedMotion()||typeof document.createElement!=='function'||typeof autoTraceDialog.appendChild!=='function')return null;cleanupAutoTraceDialogMotion();
+ const source=autoTraceReferenceGeometry(ref),target=autoTracePreviewGeometry();if(!source||!target)return null;
+ const ghost=document.createElement('img');if(typeof ghost.animate!=='function'||!ghost.style)return null;
+ ghost.className='auto-trace-shared-image';ghost.alt='';ghost.src=ref.src;const sourceOpacity=Math.max(0,Math.min(1,Number(ref.opacity??1))),previewOpacity=.25,from=opening?source.rect:target.rect,to=opening?target.rect:source.rect;
+ Object.assign(ghost.style,{left:`${from.left}px`,top:`${from.top}px`,width:`${from.width}px`,height:`${from.height}px`});source.node.style.visibility='hidden';target.group.style.opacity='0';autoTraceDialog.appendChild(ghost);autoTraceDialog.classList?.add('auto-trace-animating');
+ const frame=rect=>({left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${rect.height}px`}),animation=ghost.animate([{...frame(from),opacity:opening?sourceOpacity:previewOpacity},{...frame(to),opacity:opening?previewOpacity:sourceOpacity}],{duration:opening?420:360,easing:opening?'cubic-bezier(.16,1,.3,1)':'cubic-bezier(.4,0,.2,1)',fill:'both'}),motion={animation,ghost,sourceNode:source.node,targetGroup:target.group};
+ autoTraceDialogMotion=motion;const finished=animation.finished.catch(()=>{}).then(()=>{if(autoTraceDialogMotion===motion)cleanupAutoTraceDialogMotion(motion)});return finished;
+}
+function finishAutoTraceDialogClose(){cleanupAutoTraceDialogMotion();if(autoTraceDialog.open)autoTraceDialog.close();autoTraceDialogClosing=false;autoTraceDialog.classList?.remove('auto-trace-closing','auto-trace-entering','auto-trace-animating')}
 function closeAutoTraceDialog(ref){
  if(!autoTraceDialog.open||autoTraceDialogClosing)return null;
- autoTraceDialogClosing=true;autoTraceOriginRect=autoTraceReferenceRect(ref)||autoTraceOriginRect;autoTraceDialog.classList?.add('auto-trace-closing');
- const motion=runAutoTraceDialogMotion(false);if(!motion){finishAutoTraceDialogClose();return null}motion.finally(finishAutoTraceDialogClose);return motion;
+ autoTraceDialogClosing=true;autoTraceDialog.classList?.add('auto-trace-closing');
+ const motion=runAutoTraceDialogMotion(false,ref);if(!motion){finishAutoTraceDialogClose();return null}motion.finally(finishAutoTraceDialogClose);return motion;
 }
 function cancelAutoTrace(){const ref=autoTraceSource?.ref;clearTimeout(autoTraceTimer);autoTraceTimer=null;autoTraceSerial++;autoTraceJob?.terminate();autoTraceJob=null;autoTraceResult=null;autoTraceSource=null;setAutoTraceBusy(false);return closeAutoTraceDialog(ref)}
 function setAutoTraceBusy(busy){document.getElementById('auto-trace-svg').setAttribute('aria-busy',String(busy));document.getElementById('auto-trace-anchors').innerHTML='';autoTracePreviewSelection=null;document.getElementById('auto-trace-anchor-info').textContent='青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。'}
@@ -109,10 +108,10 @@ async function openAutoTrace(){
  if(!ref){document.getElementById('status').textContent='請先匯入底圖，再按「自動描圖」';return}
  if(ref.preserveFull!==true){document.getElementById('status').textContent='請透過「底圖」匯入圖片，以保留原圖座標再自動描圖';return}
  if(traceDraft){document.getElementById('status').textContent='請先按 Enter 完成目前描線，再使用自動描圖';return}
- autoTraceSource={ref:deepCopy(ref),signature:autoTraceSignature(ref)};autoTraceResult=null;autoTraceDialogClosing=false;autoTraceOriginRect=autoTraceReferenceRect(ref);
+ autoTraceSource={ref:deepCopy(ref),signature:autoTraceSignature(ref)};autoTraceResult=null;autoTraceDialogClosing=false;
  const initialWidth=Math.max(1,ref.w),initialHeight=Math.max(1,ref.h),previewSvg=document.getElementById('auto-trace-svg');
- previewSvg.setAttribute('viewBox',`0 0 ${initialWidth} ${initialHeight}`);document.getElementById('auto-trace-image').innerHTML=`<image href="${esc(ref.src)}" width="${initialWidth}" height="${initialHeight}" opacity=".25" preserveAspectRatio="none"/>`;
- document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';autoTraceDialog.classList?.add('auto-trace-entering');autoTraceDialog.showModal();runAutoTraceDialogMotion(true);
+ previewSvg.setAttribute('viewBox',`0 0 ${initialWidth} ${initialHeight}`);document.getElementById('auto-trace-image').innerHTML=`<image href="${esc(ref.src)}" width="${initialWidth}" height="${initialHeight}" opacity=".25" preserveAspectRatio="xMidYMid meet"/>`;
+ document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';autoTraceDialog.classList?.add('auto-trace-entering');autoTraceDialog.showModal();runAutoTraceDialogMotion(true,ref);
  const revealBackdrop=()=>autoTraceDialog.classList?.remove('auto-trace-entering');if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(revealBackdrop));else revealBackdrop();
  invalidateAutoTrace();clearTimeout(autoTraceTimer);autoTraceTimer=null;if(validAutoTraceOptions())await generateAutoTracePreview();
 }
@@ -126,7 +125,7 @@ async function generateAutoTracePreview(){
   const context=canvas.getContext('2d',{willReadFrequently:true});context.drawImage(im,0,0,w,h);const pixels=context.getImageData(0,0,w,h).data;
   autoTraceSource.width=w;autoTraceSource.height=h;
   document.getElementById('auto-trace-svg').setAttribute('viewBox',`0 0 ${w} ${h}`);
-  document.getElementById('auto-trace-image').innerHTML=`<image href="${esc(ref.src)}" width="${w}" height="${h}" opacity=".25" preserveAspectRatio="none"/>`;
+  document.getElementById('auto-trace-image').innerHTML=`<image href="${esc(ref.src)}" width="${w}" height="${h}" opacity=".25" preserveAspectRatio="xMidYMid meet"/>`;
   autoTraceJob=createAutoTraceJob();
   autoTraceJob.onmessage=event=>{
    if(serial!==autoTraceSerial)return;const message=event.data;

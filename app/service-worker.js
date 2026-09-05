@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v55-auto-trace-modal-zoom';
+const CACHE_NAME = 'skechu-ppt-v56-auto-trace-shared-image';
 const APP_SHELL = [
   './',
   './index.html',
@@ -22,9 +22,9 @@ const APP_SHELL = [
   './clipboard-controls.css?v=28-ppt-progress',
   './paint-tools.css?v=38-responsive-shell',
   './auto-trace.js?v=26-photo-trace',
-  './auto-trace-ui.js?v=45-modal-zoom',
+  './auto-trace-ui.js?v=46-shared-image',
   './auto-trace-worker.js',
-  './auto-trace.css?v=27-modal-zoom',
+  './auto-trace.css?v=28-shared-image',
   './manifest.webmanifest',
   './skechu-mark.svg',
   './skechu-icon.png',
