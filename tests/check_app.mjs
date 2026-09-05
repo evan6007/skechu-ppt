@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 
 const html = fs.readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
+for(const marker of ['class="repo-actions"','href="https://github.com/evan6007/skechu-ppt"','id="github-star"','開啟 GitHub，登入後按右上角 Star'])if(!html.includes(marker))throw new Error(`Missing GitHub action: ${marker}`);
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 if (!scripts.length) throw new Error('No inline application script found.');
 
@@ -31,7 +32,7 @@ const forbidden = [
   /SemaSNN/i,
   /hippocamp/i,
   /Figure\s+[2b]/i,
-  /(?:fetch|src|href)\s*[=(]\s*['"]https?:\/\/(?!127\.0\.0\.1|localhost|github\.com\/evan6007\/skechu-ppt\/releases\/latest\/download\/Skechu-PPT-Windows-Setup\.exe)/i,
+  /(?:fetch|src|href)\s*[=(]\s*['"]https?:\/\/(?!127\.0\.0\.1|localhost|github\.com\/evan6007\/skechu-ppt(?:[\/"']))/i,
 ];
 for (const pattern of forbidden) {
   if (pattern.test(html)) throw new Error(`Forbidden private or remote reference: ${pattern}`);

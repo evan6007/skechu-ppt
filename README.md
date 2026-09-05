@@ -29,7 +29,7 @@
 <table>
   <tr>
     <td width="50%"><img src="docs/media/feature-magnetic-trace.gif" alt="A close-up pointer moves slowly just above a curved line while an orange trace point stays snapped to it"><br><strong>Magnetic tracing</strong> — move near an image boundary and the orange point follows the real edge.</td>
-    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="A complex reference image is auto-traced and Ctrl+A reveals every editable anchor"><br><strong>Auto trace</strong> — trace a complex reference, apply the result, and press Ctrl+A to reveal every anchor.</td>
+    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="A blank canvas receives a reference image, produces unfilled vector line art, moves the reference into a corner, and reveals every editable anchor"><br><strong>Auto trace</strong> — import a reference, generate clean line art, move the source aside, and press Ctrl+A to edit every anchor.</td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/media/feature-rainbow-fill.gif" alt="Enclosed regions formed by complex line art are filled while T-junction boundaries remain intact"><br><strong>Connected-region fill</strong> — fill enclosed areas formed by your line art, including regions closed by T-junctions.</td>

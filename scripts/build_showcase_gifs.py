@@ -125,21 +125,28 @@ for step, trace_point in enumerate(METADATA["trace"]["frames"]):
 trace_frames += [trace_frames[-1]] * 6
 save_gif("feature-magnetic-trace.gif", trace_frames)
 
-# 2. The same brain goes from source image to auto trace, then Ctrl+A reveals all anchors.
+# 2. Start blank, import a reference, auto trace it, move the reference aside, then reveal all anchors.
 auto_bounds = (0.04, 0.02, 0.96, 0.84)
-auto_source = fixed_view(open_frame("auto-00-source.png"), auto_bounds)
-auto_opening = fixed_view(open_frame("auto-01-opening.png"), auto_bounds)
-auto_preview = fixed_view(open_frame("auto-02-preview.png"), auto_bounds)
-auto_applied = fixed_view(open_frame("auto-03-applied.png"), auto_bounds)
-auto_anchors = fixed_view(open_frame("auto-04-all-anchors.png"), auto_bounds)
+auto_blank = fixed_view(open_frame("auto-00-blank.png"), auto_bounds)
+auto_imported = fixed_view(open_frame("auto-01-imported.png"), auto_bounds)
+auto_opening = fixed_view(open_frame("auto-02-opening.png"), auto_bounds)
+auto_preview = fixed_view(open_frame("auto-03-preview.png"), auto_bounds)
+auto_applied = fixed_view(open_frame("auto-04-applied.png"), auto_bounds)
+auto_shrink = [fixed_view(open_frame(f"auto-05-shrink-{step:02d}.png"), auto_bounds) for step in range(12)]
+auto_corner = auto_shrink[-1]
+auto_anchors = fixed_view(open_frame("auto-06-all-anchors.png"), auto_bounds)
 anchor_count = METADATA["autoTraceAnchors"]
-auto_frames = [card("自動描圖", "複雜參考圖", auto_source, "#38bdf8", (162, 8), i == 2) for i in range(5)]
-auto_frames += [card("自動描圖", "開啟自動描圖", frame, "#38bdf8") for frame in tween(auto_source, auto_opening, 7)]
-auto_frames += [card("自動描圖", "預覽描圖線", frame, "#38bdf8") for frame in tween(auto_opening, auto_preview, 7)]
-auto_frames += [card("自動描圖", "套用線條", frame, "#38bdf8", (522, 327)) for frame in tween(auto_preview, auto_applied, 7)]
-auto_frames += [card("自動描圖", "Ctrl+A 全選", frame, "#38bdf8") for frame in tween(auto_applied, auto_anchors, 7)]
-auto_frames += [card("自動描圖", f"{anchor_count} 個錨點", auto_anchors, "#38bdf8") for _ in range(10)]
-auto_frames += [card("自動描圖", "重新播放", frame, "#38bdf8") for frame in tween(auto_anchors, auto_source, 6)]
+auto_frames = [card("自動描圖", "空白工作區", auto_blank, "#38bdf8") for _ in range(8)]
+auto_frames += [card("自動描圖", "匯入底圖", frame, "#38bdf8", (162, 8), index == 3) for index, frame in enumerate(tween(auto_blank, auto_imported, 7))]
+auto_frames += [card("自動描圖", "底圖已就緒", auto_imported, "#38bdf8") for _ in range(5)]
+auto_frames += [card("自動描圖", "點自動描圖", frame, "#38bdf8") for frame in tween(auto_imported, auto_opening, 6)]
+auto_frames += [card("自動描圖", "即時辨識輪廓", frame, "#38bdf8") for frame in tween(auto_opening, auto_preview, 7)]
+auto_frames += [card("自動描圖", "線稿蹦出來", frame, "#38bdf8", (522, 327)) for frame in tween(auto_preview, auto_applied, 4)]
+auto_frames += [card("自動描圖", "底圖縮到左下角", frame, "#38bdf8") for frame in auto_shrink]
+auto_frames += [card("自動描圖", "無填色向量線稿", auto_corner, "#38bdf8") for _ in range(8)]
+auto_frames += [card("自動描圖", "Ctrl+A 全選", frame, "#38bdf8") for frame in tween(auto_corner, auto_anchors, 6)]
+auto_frames += [card("自動描圖", f"{anchor_count} 個可編輯錨點", auto_anchors, "#38bdf8") for _ in range(12)]
+auto_frames += [card("自動描圖", "重新播放", frame, "#38bdf8") for frame in tween(auto_anchors, auto_blank, 6)]
 save_gif("feature-auto-trace.gif", auto_frames)
 
 # 3. Precomputed regions fill the same brain with seven colors in under one second.

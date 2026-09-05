@@ -135,23 +135,33 @@ try {
     await capture(`trace-${String(frameIndex).padStart(2, '0')}.png`);
   }
 
-  // 2. Auto trace: same brain image, real preview, apply, then Ctrl+A shows every anchor.
-  await evaluate(`traceSnapTarget=null;setTracePen(false);items=[deepCopy(items.find(item=>item.referenceOnly))];clearSelectionState();render();fitView()`);
+  // 2. Auto trace: blank page, import reference, apply, move the reference aside, then reveal anchors.
+  await evaluate(`window.__autoReference=deepCopy(items.find(item=>item.referenceOnly));traceSnapTarget=null;setTracePen(false);items=[];clearSelectionState();render();fitView();document.getElementById('status').textContent='從空白工作區開始'`);
   await delay(250);
-  await capture('auto-00-source.png');
+  await capture('auto-00-blank.png');
+  await evaluate(`items=[deepCopy(window.__autoReference)];clearSelectionState();render();document.getElementById('status').textContent='已匯入底圖'`);
+  await delay(250);
+  await capture('auto-01-imported.png');
   await evaluate(`document.getElementById('auto-trace').click()`);
   await waitFor(`document.getElementById('auto-trace-dialog').open`);
-  await capture('auto-01-opening.png');
+  await capture('auto-02-opening.png');
   await waitFor(`document.getElementById('auto-trace-svg').getAttribute('aria-busy')==='false'&&!document.getElementById('auto-trace-apply').disabled`, 45000);
-  await capture('auto-02-preview.png');
+  await capture('auto-03-preview.png');
   await evaluate(`document.getElementById('auto-trace-apply').click()`);
   await waitFor(`!document.getElementById('auto-trace-dialog').open`);
   await delay(250);
-  await capture('auto-03-applied.png');
+  await capture('auto-04-applied.png');
+  await evaluate(`window.__autoReferenceStart=deepCopy(items.find(item=>item.referenceOnly))`);
+  for (let step = 0; step < 12; step += 1) {
+    await evaluate(`(() => {const ref=items.find(item=>item.referenceOnly),from=window.__autoReferenceStart,progress=${step}/11,t=progress*progress*(3-2*progress),targetW=230,targetH=from.h*targetW/from.w,targetX=45,targetY=canvasSize().height-targetH-35;
+      ref.x=from.x+(targetX-from.x)*t;ref.y=from.y+(targetY-from.y)*t;ref.w=from.w+(targetW-from.w)*t;ref.h=from.h+(targetH-from.h)*t;ref.opacity=from.opacity+(.42-from.opacity)*t;
+      clearSelectionState(false);render();document.getElementById('status').textContent='底圖縮到左下角，露出無填色線稿';})()`);
+    await capture(`auto-05-shrink-${String(step).padStart(2, '0')}.png`);
+  }
   const anchorCount = await evaluate(`document.getElementById('select-all').click();items.filter(item=>item.points&&!item.referenceOnly).reduce((sum,item)=>sum+item.points.length,0)`);
   metadata.autoTraceAnchors = anchorCount;
   await delay(250);
-  await capture('auto-04-all-anchors.png');
+  await capture('auto-06-all-anchors.png');
 
   // 3. Rainbow speed fill: reveal precomputed brain regions in a fast sweep.
   const fillInfo = await evaluate(`(() => {
