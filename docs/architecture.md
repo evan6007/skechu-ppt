@@ -26,6 +26,6 @@ The bridge keeps a bounded LRU of six app-owned hidden presentation caches keyed
 
 ## Trust boundary
 
-The server binds to `127.0.0.1` and serves only the checked-out `app/` directory. Project images and JSON stay in the browser or local downloads. There is no telemetry, remote API, account, or background upload.
+The server binds to `127.0.0.1` and serves only the checked-out `app/` directory. Project images and JSON stay in the browser or local downloads. Drawing has no telemetry, account requirement, or background upload. The optional [GitHub Star authorization service](github-star-auth.md) handles GitHub identity and Star state separately; it never receives artwork or Windows-bridge data. An empty service URL disables authorization and preserves the repository link.
 
 Remote operations require a matching official/local Origin and the server's loopback Host and port. CORS permits only those origins, never `*`; web requests are size-limited JSON, with type, finite-coordinate and image-path checks before any Office work or cache cancellation. Browser Local Network Access permission remains browser-controlled. No POST is retried automatically after a transport failure because Office may already have written the clipboard.

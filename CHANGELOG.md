@@ -2,6 +2,12 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Optional GitHub App authorization for the hosted Star button: show the authenticated user's actual state, add or remove a star in place, and keep drawing available without login. The dedicated service has fixed repository access, PKCE/state validation and encrypted short-lived sessions; client secrets and raw GitHub tokens never enter the static editor.
+
 ## [0.1.5] - 2026-09-05
 
 ### Fixed

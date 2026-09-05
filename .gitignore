@@ -4,6 +4,10 @@ __pycache__/
 .idea/
 .vscode/
 .codex-tmp/
+.dev.vars
+.dev.vars.*
+.wrangler/
+node_modules/
 build/
 dist/
 dist-installer/

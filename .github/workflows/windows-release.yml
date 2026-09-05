@@ -29,6 +29,9 @@ jobs:
             --add-data "app/local-smoothing.js;." `
             --add-data "app/theme-controls.js;." `
             --add-data "app/theme-controls.css;." `
+            --add-data "app/github-star.js;." `
+            --add-data "app/github-star.css;." `
+            --add-data "app/github-star-config.json;." `
             --add-data "app/region-fill.js;." `
             --add-data "app/paint-layers.js;." `
             --add-data "app/paint-tools.js;." `

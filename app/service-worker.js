@@ -1,9 +1,11 @@
-const CACHE_NAME = 'skechu-ppt-v60-keyboard-copy';
+const CACHE_NAME = 'skechu-ppt-v61-star-auth';
 const APP_SHELL = [
   './',
   './index.html',
   './theme-controls.js?v=46-canvas-shapes',
   './theme-controls.css?v=55-canvas-color-menu',
+  './github-star.js?v=61-star-auth',
+  './github-star.css?v=61-star-auth',
   './local-smoothing.js',
   './region-fill.js',
   './paint-layers.js?v=22-visibility-web-native',
@@ -47,6 +49,9 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
+  // OAuth codes and deployment config must never enter the offline cache.
+  const path = new URL(event.request.url).pathname;
+  if (path.endsWith('/github-star-config.json') || path.endsWith('/github-callback.html') || path.endsWith('/github-callback.js')) return;
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       if (response.ok) {

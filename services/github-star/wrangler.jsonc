@@ -1,0 +1,12 @@
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "skechu-github-star",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "observability": { "enabled": false },
+  "vars": {
+    "APP_ORIGIN": "https://evan6007.github.io",
+    "CALLBACK_URL": "https://evan6007.github.io/skechu-ppt/github-callback.html"
+  }
+}

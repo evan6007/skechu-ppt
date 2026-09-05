@@ -32,6 +32,8 @@ jobs:
         run: node tests/check_clipboard.mjs
       - name: Check web-native PowerPoint connection
         run: node tests/check_web_ppt.mjs
+      - name: Check GitHub Star authorization boundaries
+        run: node --test tests/github_star_service.test.mjs tests/github_star_client.test.mjs
       - name: Check incremental background preparation
         run: node tests/check_preparation.mjs
       - name: Check connected-region filling
