@@ -92,6 +92,16 @@ def tween(first, second, count):
     return [Image.blend(first, second, (step + 1) / count) for step in range(count)]
 
 
+def zoom_sequence(image, start_bounds, end_bounds, count):
+    frames = []
+    for step in range(count):
+        t = (step + 1) / count
+        eased = t * t * (3 - 2 * t)
+        bounds = tuple(a + (b - a) * eased for a, b in zip(start_bounds, end_bounds))
+        frames.append(fixed_view(image, bounds))
+    return frames
+
+
 def save_gif(name, frames):
     sampled = frames[::4]
     palette_sheet = Image.new("RGB", (180, 101 * len(sampled) + 36))
@@ -130,7 +140,10 @@ auto_bounds = (0.04, 0.02, 0.96, 0.84)
 auto_blank = fixed_view(open_frame("auto-00-blank.png"), auto_bounds)
 auto_imported = fixed_view(open_frame("auto-01-imported.png"), auto_bounds)
 auto_opening = fixed_view(open_frame("auto-02-opening.png"), auto_bounds)
-auto_preview = fixed_view(open_frame("auto-03-preview.png"), auto_bounds)
+auto_preview_source = open_frame("auto-03-preview.png")
+auto_preview = fixed_view(auto_preview_source, auto_bounds)
+auto_preview_close_bounds = (0.36, 0.32, 0.64, 0.59)
+auto_preview_close = fixed_view(auto_preview_source, auto_preview_close_bounds)
 auto_applied = fixed_view(open_frame("auto-04-applied.png"), auto_bounds)
 auto_shrink = [fixed_view(open_frame(f"auto-05-shrink-{step:02d}.png"), auto_bounds) for step in range(12)]
 auto_corner = auto_shrink[-1]
@@ -141,7 +154,10 @@ auto_frames += [card("自動描圖", "匯入底圖", frame, "#38bdf8", (162, 8),
 auto_frames += [card("自動描圖", "底圖已就緒", auto_imported, "#38bdf8") for _ in range(5)]
 auto_frames += [card("自動描圖", "點自動描圖", frame, "#38bdf8") for frame in tween(auto_imported, auto_opening, 6)]
 auto_frames += [card("自動描圖", "即時辨識輪廓", frame, "#38bdf8") for frame in tween(auto_opening, auto_preview, 7)]
-auto_frames += [card("自動描圖", "預覽描圖結果", auto_preview, "#38bdf8") for _ in range(36)]
+auto_frames += [card("自動描圖", "預覽描圖結果", auto_preview, "#38bdf8") for _ in range(8)]
+auto_frames += [card("自動描圖", "放大檢查局部描邊", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_close_bounds, 12)]
+auto_frames += [card("自動描圖", "局部確實沿線描邊", auto_preview_close, "#38bdf8") for _ in range(36)]
+auto_frames += [card("自動描圖", "返回完整預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_close_bounds, auto_bounds, 10)]
 auto_frames += [card("自動描圖", "線稿蹦出來", frame, "#38bdf8", (522, 327)) for frame in tween(auto_preview, auto_applied, 4)]
 auto_frames += [card("自動描圖", "底圖縮到左下角", frame, "#38bdf8") for frame in auto_shrink]
 auto_frames += [card("自動描圖", "無填色向量線稿", auto_corner, "#38bdf8") for _ in range(8)]

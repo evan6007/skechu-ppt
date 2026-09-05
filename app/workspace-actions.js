@@ -59,7 +59,7 @@ function runPageAction(action, target = pageMenuTarget) {
   }
   if (['paste','duplicate','new'].includes(action)) {
     const source = action === 'paste' ? pageClipboard : page;
-    const created = makePage(action === 'new' ? '空白圖頁' : `${source.name} 複本`, action === 'new' ? [] : clonePageItems(source.items || []), {width:source.canvasWidth,height:source.canvasHeight});
+    const created = makePage(action === 'new' ? '空白圖頁' : `${source.name} 複本`, action === 'new' ? [] : clonePageItems(source.items || []), {width:source.canvasWidth,height:source.canvasHeight,color:source.canvasColor,opacity:source.canvasOpacity});
     project.pages.splice(index+1,0,created); openPage(created.id);
     document.getElementById('status').textContent = action === 'new' ? '已在下方新增空白圖頁' : '已建立獨立圖頁副本，原圖頁不會被修改';
     return;

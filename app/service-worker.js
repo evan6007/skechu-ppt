@@ -1,9 +1,9 @@
-const CACHE_NAME = 'skechu-ppt-v52-white-canvas';
+const CACHE_NAME = 'skechu-ppt-v53-page-canvas-style';
 const APP_SHELL = [
   './',
   './index.html',
   './theme-controls.js?v=46-canvas-shapes',
-  './theme-controls.css?v=52-white-canvas',
+  './theme-controls.css?v=53-page-canvas-style',
   './local-smoothing.js',
   './region-fill.js',
   './paint-layers.js?v=22-visibility-web-native',

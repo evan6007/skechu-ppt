@@ -88,7 +88,7 @@ try {
   await evaluate(`window.__brainItems=deepCopy(items);window.__brainCanvas=canvasSize();pptAutoPrepareDisabled=true;clearTimeout(pptPrepareTimer);pptPrepareTimer=null;
     const reference=deepCopy(items.find(item=>item.referenceOnly));
     Object.assign(reference,{x:275,y:65,w:950,h:675,opacity:1,hidden:false});
-    const page=activePage();page.canvasWidth=1500;page.canvasHeight=850;items=[reference];
+    const page=activePage();page.canvasWidth=1500;page.canvasHeight=850;page.canvasColor='#ffffff';page.canvasOpacity=1;items=[reference];
     clearSelectionState();applyCanvasSize();render();fitView();setTracePen(true);prepareReferenceEdges()`);
   await waitFor(`(() => {const r=items.find(x=>x.referenceOnly),c=r&&referenceEdgeCache.get(r.id);return !!c?.edges&&!c.loading})()`, 30000);
 

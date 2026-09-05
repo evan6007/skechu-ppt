@@ -13,13 +13,13 @@ const seed=[{id:'stroke',type:'arrow',points:[{x:5,y:6},{x:9,y:10}],pointJunctio
 const ctx=vm.createContext({console,Map,Set,Promise,Math,Array,Number,JSON,Date,
   items:plain(seed),selected:'stroke',selectedIds:new Set(['stroke']),selectedPoint:0,selectedPoints:new Set([0]),selectedSegment:0,editPoints:true,
   activeProjectId:'project',activePageId:'p1',traceDraft:null,drag:null,history:[],internalClipboard:[{id:'old'}],
-  project:{id:'project',pages:[{id:'p1',name:'第一頁',canvasWidth:300,canvasHeight:500,items:plain(seed)},{id:'p2',name:'第二頁',canvasWidth:900,canvasHeight:500,items:[]}]},
+  project:{id:'project',pages:[{id:'p1',name:'第一頁',canvasWidth:300,canvasHeight:500,canvasColor:'#f4efe8',canvasOpacity:.65,items:plain(seed)},{id:'p2',name:'第二頁',canvasWidth:900,canvasHeight:500,items:[]}]},
   setTimeout:fn=>{fn();return 1},document:{body:{insertAdjacentHTML(){},appendChild(node){bodyChildren.push(node)}},getElementById:node,addEventListener(type,fn){events.set('document:'+type,fn)},elementFromPoint(){return hoveredPage}},
   window:{innerWidth:1200,innerHeight:800,addEventListener(type,fn,capture){events.set('window:'+type+':'+!!capture,fn)}},
   stageWrap:{classList:{add(){},remove(){}}},svgPt:event=>({x:event.clientX,y:event.clientY}),clamp:(value,min,max)=>Math.max(min,Math.min(max,value)),
   deepCopy:plain,id:()=>`item-${++sequence}`,uid:prefix=>`${prefix}-${++sequence}`,esc:String,
   cloneLayerGroups:clones=>{const keys=new Map();for(const it of clones)if(it.layerGroup){const old=it.layerGroup.id;if(!keys.has(old))keys.set(old,`group-${++sequence}`);it.layerGroup.id=keys.get(old)}},
-  makePage:(name,items,size)=>({id:`page-${++sequence}`,name,items:plain(items),canvasWidth:size.width,canvasHeight:size.height}),
+  makePage:(name,items,size)=>({id:`page-${++sequence}`,name,items:plain(items),canvasWidth:size.width,canvasHeight:size.height,canvasColor:size.color,canvasOpacity:size.opacity}),
   prompt:()=>promptAnswer,confirm:()=>confirmAnswer,renderProjectNav(){},renderWorkspacePages(){},queueAutosave(){autosaves++},
   activateSelectTool(){},render(){},pasteInternalSelection(){internalPastes++},setAutosaveStatus(){},repairItemSequence(){},
   normalizeProject:(raw,name)=>({id:`project-${++sequence}`,name:raw?.name||name,pages:[{id:`page-${++sequence}`,name:'圖 1',canvasWidth:300,canvasHeight:500,items:plain(raw?.items||[])}]}),
@@ -37,6 +37,7 @@ const target=id=>({projectId:'project',pageId:id});
 ctx.items[0].points[0].x=99;ctx.runPageAction('copy',target('p1'));
 ctx.runPageAction('paste',target('p2'));const pasted=ctx.activePage();
 assert.equal(pasted.canvasWidth,300);assert.equal(pasted.canvasHeight,500);assert.equal(pasted.items[0].points[0].x,99,'Page clipboard uses current unsaved edits');
+assert.equal(pasted.canvasColor,'#f4efe8');assert.equal(pasted.canvasOpacity,.65,'Page copies preserve their canvas color and opacity');
 assert.ok(pasted.items.every(it=>!seed.some(old=>old.id===it.id)));
 assert.equal(pasted.items[1].attachments.start.owner,pasted.items[0].id);assert.deepEqual(plain(pasted.items[2].regionFill.sources),[pasted.items[0].id,pasted.items[1].id]);
 assert.equal(pasted.items[0].pointJunctions[1],pasted.items[1].pointJunctions[0]);assert.notEqual(pasted.items[0].pointJunctions[1],'j1');
