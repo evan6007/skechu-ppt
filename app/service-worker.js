@@ -1,9 +1,9 @@
-const CACHE_NAME = 'skechu-ppt-v50-mobile-github-actions';
+const CACHE_NAME = 'skechu-ppt-v51-mobile-workspace';
 const APP_SHELL = [
   './',
   './index.html',
   './theme-controls.js?v=46-canvas-shapes',
-  './theme-controls.css?v=50-mobile-github-actions',
+  './theme-controls.css?v=51-mobile-workspace',
   './local-smoothing.js',
   './region-fill.js',
   './paint-layers.js?v=22-visibility-web-native',

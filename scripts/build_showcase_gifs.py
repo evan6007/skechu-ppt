@@ -141,6 +141,7 @@ auto_frames += [card("自動描圖", "匯入底圖", frame, "#38bdf8", (162, 8),
 auto_frames += [card("自動描圖", "底圖已就緒", auto_imported, "#38bdf8") for _ in range(5)]
 auto_frames += [card("自動描圖", "點自動描圖", frame, "#38bdf8") for frame in tween(auto_imported, auto_opening, 6)]
 auto_frames += [card("自動描圖", "即時辨識輪廓", frame, "#38bdf8") for frame in tween(auto_opening, auto_preview, 7)]
+auto_frames += [card("自動描圖", "預覽描圖結果", auto_preview, "#38bdf8") for _ in range(36)]
 auto_frames += [card("自動描圖", "線稿蹦出來", frame, "#38bdf8", (522, 327)) for frame in tween(auto_preview, auto_applied, 4)]
 auto_frames += [card("自動描圖", "底圖縮到左下角", frame, "#38bdf8") for frame in auto_shrink]
 auto_frames += [card("自動描圖", "無填色向量線稿", auto_corner, "#38bdf8") for _ in range(8)]

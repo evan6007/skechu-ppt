@@ -96,7 +96,7 @@ context.deepCopy=x=>JSON.parse(JSON.stringify(x));context.autoJunctionPositions=
 vm.runInContext(app.split('\n').find(l=>l.startsWith('function tracePenStrokeStyle(')),context);
 for(const name of ['transformAutoTraceItems','autoJunctionMembers','syncAutoJunctions'])loadFunction(ui,name);
 let seq=0;const transformed=context.transformAutoTraceItems(result,{x:10,y:20,w:200,h:100,r:30},100,100,'test',()=>`test-${seq++}`);
-for(const it of transformed){assert.equal(it.color,'#123f8c');assert.equal(it.width,2.5,'Applied curves use the manual pen style')}
+for(const it of transformed){assert.equal(it.color,'#123f8c');assert.equal(it.width,3.5,'Applied curves use the clearer manual pen style')}
 context.items=transformed;context.syncAutoJunctions();
 const members=[...context.autoJunctionMembers().values()][0];context.selected=members[1].it.id;
 members[1].it.points[members[1].index]={x:80,y:90};context.syncAutoJunctions();

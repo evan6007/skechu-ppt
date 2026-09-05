@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 
 const html = fs.readFileSync(new URL('../app/index.html', import.meta.url), 'utf8');
-for(const marker of ['class="repo-actions"','href="https://github.com/evan6007/skechu-ppt"','id="github-star"','開啟 GitHub，登入後按右上角 Star'])if(!html.includes(marker))throw new Error(`Missing GitHub action: ${marker}`);
+for(const marker of ['class="brand" href="https://github.com/evan6007/skechu-ppt"','class="repo-actions"','id="github-star"','開啟 GitHub 專案並按 Star','<span>Star</span>'])if(!html.includes(marker))throw new Error(`Missing GitHub action: ${marker}`);
+if(html.includes('幫我按 Star'))throw new Error('Star action must use the concise label Star');
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 if (!scripts.length) throw new Error('No inline application script found.');
 
