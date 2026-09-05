@@ -157,9 +157,9 @@ try {
   await capture('auto-03-preview.png');
   await evaluate(`document.getElementById('auto-trace-apply').click();autoTraceDialogMotion?.animation.pause()`);
   await waitFor(`autoTraceDialogMotion?.animation`);
-  const autoCloseFrames=10;
+  const autoCloseFrames=28;
   for(let step=0;step<autoCloseFrames;step+=1){
-    const time=Math.min(359,Math.round(step/(autoCloseFrames-1)*359));
+    const time=Math.min(359,step/(autoCloseFrames-1)*359);
     await evaluate(`autoTraceDialogMotion.animation.currentTime=${time};new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`);
     await capture(`auto-04-closing-${String(step).padStart(2,'0')}.png`);
   }
