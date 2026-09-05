@@ -15,7 +15,7 @@ assert.equal(document.documentElement.dataset.theme,'linen');assert.equal(button
 events.get('click')({target:{closest:()=>buttons[1]}});assert.equal(stored.get('skechu-ui-theme'),'mist');assert.equal(meta.content,'#eceef1');assert.equal(buttons[1].active,true);
 ctx.applySkechuTheme('invalid');assert.equal(document.documentElement.dataset.theme,'graphite','Unknown themes safely fall back to graphite');
 for(const theme of ['graphite','mist','linen']){assert.ok(css.includes(`[data-theme="${theme}"]`));assert.ok(html.includes(`data-ui-theme="${theme}"`))}
-for(const marker of ['--surface','--canvas-desk','--glass-surface','--range-track','.stage-shell{position:relative','data-ui-theme="graphite"','theme-controls.js?v=46-canvas-shapes','theme-controls.css?v=54-white-canvas-star-order','--paper-fill:#fff','fill-opacity:1','.action-menu-popover{position:fixed','input[type="range"]::-webkit-slider-runnable-track','grid-template-rows:48px 58px minmax(0,1fr)','height:min(48dvh,420px)'])assert.ok(css.includes(marker)||html.includes(marker),'Missing theme marker '+marker);
+for(const marker of ['--surface','--canvas-desk','--glass-surface','--range-track','.stage-shell{position:relative','data-ui-theme="graphite"','theme-controls.js?v=46-canvas-shapes','theme-controls.css?v=55-canvas-color-menu','--paper-fill:#fff','fill-opacity:1','.action-menu-popover{position:fixed','input[type="range"]::-webkit-slider-runnable-track','grid-template-rows:48px 58px minmax(0,1fr)','height:min(48dvh,420px)'])assert.ok(css.includes(marker)||html.includes(marker),'Missing theme marker '+marker);
 assert.ok(css.includes('.stage-shell::before,.stage-shell::after{display:none}')&&css.includes('backdrop-filter:none'),'Canvas paper must not wash out line art with a translucent glass overlay');
 assert.ok(css.includes('border-radius:10px;background:transparent'),'Transparent or partially opaque page colors must reveal the aligned checkerboard beneath them');
 assert.ok(!css.includes('.workspace-page-preview>rect:first-child{fill:'),'Theme CSS must not override each page thumbnail canvas color');
@@ -25,7 +25,7 @@ for(const marker of ['class="sr-only">複製到 PPT','class="action-menu export-
 assert.ok(html.includes('class="page-settings-icon"'),'Workspace menu must use a page settings icon, not a sun-like gear');
 assert.ok(html.includes('class="project-files-icon"'),'Export menu must use a project files icon, not a hamburger');
 assert.ok(html.includes('M13 4h7v7M20 4l-9 9'),'Export icon must use a clear outward share arrow');
-assert.ok(css.includes('.projectbar:has(.export-menu[open]){overflow:visible}'),'Open export menu must escape project bar clipping');
+assert.ok(css.includes('.projectbar:has(.export-menu[open]),.topbar:has(.canvas-color-menu[open]){overflow:visible}'),'Open export and canvas color menus must escape toolbar clipping');
 assert.ok(!html.includes('M12 3.5v2M12 18.5v2'),'Sun-like workspace menu icon must be removed');
 assert.ok(!html.includes('M5 7h14M5 12h14M5 17h14'),'Hamburger export icon must be removed');
 assert.ok(!css.includes('repeating-linear-gradient'),'Canvas glass must not use diagonal line bands');
@@ -43,10 +43,12 @@ assert.match(html,/id="shape-menu-popover"[\s\S]*?data-shape-kind="rectangle"[\s
 assert.ok(!html.includes('id="shape-kind"'),'Shape type selector must remain hidden until the shape button is opened');
 assert.ok(html.includes('<span class="tool-text">新增底圖</span>'),'Reference toolbar label must say 新增底圖');
 assert.ok(autoTraceUi.includes("insertAdjacentHTML('afterend'")&&autoTraceUi.includes('<span class="tool-text">自動描圖</span>'),'Add reference must stay left of auto trace in workflow order');
-assert.ok(html.includes('M19 3v6M16 6h6')&&autoTraceUi.includes('M4 17c3-7 7-8 10-4s4 3 6-2'),'Reference and auto trace must use precise add-image and editable-curve SVG icons');
+assert.ok(html.includes('class="reference-hatch"')&&html.includes('class="reference-plus"')&&autoTraceUi.includes('M4 17c3-7 7-8 10-4s4 3 6-2'),'Reference and auto trace must use precise hatched-image-plus and editable-curve SVG icons');
 for(const id of ['canvas-width','canvas-height'])assert.ok(html.includes(`id="${id}"`),'Missing canvas dimension control '+id);
 assert.ok(html.includes('function updateCanvasSize()')&&html.includes('page.canvasWidth=width;page.canvasHeight=height'),'Canvas dimensions must update the active page model');
 for(const marker of ['id="canvas-paper-color"','id="canvas-paper-opacity"','id="canvas-paper-white"','id="canvas-paper-transparent"','function canvasAppearance(','function updateCanvasAppearance()'])assert.ok(html.includes(marker),'Missing per-page canvas appearance marker '+marker);
+for(const marker of ['class="action-menu canvas-color-menu"','class="canvas-color-icon"','data-canvas-paper-preset="glass"','data-canvas-paper-preset="white"','data-canvas-paper-preset="gray"','id="toolbar-canvas-paper-color"','id="toolbar-canvas-paper-opacity"','const CANVAS_PAPER_PRESETS','function setCanvasAppearance('])assert.ok(html.includes(marker),'Missing toolbar canvas color control '+marker);
+assert.ok(css.includes('.canvas-color-icon .canvas-color-swatch')&&css.includes('.canvas-color-presets button.active'),'Canvas color icon and active preset must reflect the current page');
 assert.ok(html.includes('id="canvas-paper-opacity" type="range" min="0" max="100" value="100"')&&html.includes('Number.isFinite(rawOpacity)?clamp(rawOpacity,0,1):1'),'Drawing pages must default to an opaque white canvas while remaining configurable');
 assert.ok(html.includes('canvasColor:paper.color,canvasOpacity:paper.opacity'),'Canvas appearance must survive page normalization and saving');
 assert.ok(source.includes("shapePopover.hidden=!opening")&&source.includes('requestAnimationFrame(positionShapeMenu)'),'Shape menu must escape toolbar clipping through a separately positioned overlay');

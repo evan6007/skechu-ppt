@@ -1,9 +1,9 @@
-const CACHE_NAME = 'skechu-ppt-v57-auto-trace-contain-coordinates';
+const CACHE_NAME = 'skechu-ppt-v58-canvas-color-menu';
 const APP_SHELL = [
   './',
   './index.html',
   './theme-controls.js?v=46-canvas-shapes',
-  './theme-controls.css?v=54-white-canvas-star-order',
+  './theme-controls.css?v=55-canvas-color-menu',
   './local-smoothing.js',
   './region-fill.js',
   './paint-layers.js?v=22-visibility-web-native',
