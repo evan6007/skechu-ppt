@@ -53,6 +53,7 @@
 </style>
 <link rel="stylesheet" href="theme-controls.css?v=55-canvas-color-menu">
 <link rel="stylesheet" href="github-star.css?v=63-instant-star">
+<link rel="stylesheet" href="mobile-controls.css?v=67-touch-shell">
 <script>try{const savedTheme=localStorage.getItem('skechu-ui-theme');if(['graphite','mist','linen'].includes(savedTheme))document.documentElement.dataset.theme=savedTheme}catch{}</script>
 </head>
 <body>
@@ -150,15 +151,16 @@
 <script src="paint-layers.js?v=22-visibility-web-native"></script>
 <script src="paint-tools.js?v=41-liquid-paper"></script>
 <script src="pan-tool.js"></script>
-<script src="selection-controls.js?v=26-left-marquee"></script>
-<script src="workspace-actions.js?v=36-page-click"></script>
-<script src="layer-controls.js?v=35-stable-motion"></script>
+<script src="selection-controls.js?v=67-touch-shell"></script>
+<script src="workspace-actions.js?v=67-touch-shell"></script>
+<script src="layer-controls.js?v=67-touch-shell"></script>
 <script src="panel-layout.js?v=1-resizable"></script>
 <script src="clipboard-controls.js?v=60-keyboard-copy"></script>
 <script src="web-ppt-client.js?v=60-keyboard-copy"></script>
 <script src="ppt-preparation.js?v=59-inline-ppt"></script>
 <script src="auto-trace.js?v=26-photo-trace"></script>
 <script src="auto-trace-ui.js?v=47-contain-coordinates"></script>
+<script src="mobile-controls.js?v=67-touch-shell"></script>
 <script>
 const svg=document.getElementById('stage'), scene=document.getElementById('scene'), selection=document.getElementById('selection'), gridLayer=document.getElementById('grid-layer'),stageWrap=document.querySelector('.stage-wrap'),stageShell=document.querySelector('.stage-shell');
 const workspace=document.querySelector('.workspace');
@@ -459,7 +461,7 @@ svg.addEventListener('pointermove',handleCanvasPointerMove);
 svg.addEventListener('pointerup',e=>finishSelectionGesture(e));
 svg.addEventListener('dblclick',e=>{if(traceDraft){e.preventDefault();finishTraceDraft();return}const g=e.target.closest('[data-id]');if(!g)return;selected=g.dataset.id;selectedIds=new Set([selected]);selectedPoint=null;selectedPoints.clear();editPoints=true;render();document.getElementById('status').textContent='控制點模式：Shift 可累加選取頂點'});
 // Layer selection, folders and drag order are handled by layer-controls.js.
-function syncControls(){restoreLayerInspectorFields();syncAutoJunctionControls();syncLocalSmoothing();const it=byId(selected),empty=document.getElementById('empty'),controls=document.getElementById('controls');empty.hidden=!!it;controls.hidden=!it;if(!it)return;
+function syncControls(){restoreLayerInspectorFields();syncAutoJunctionControls();syncLocalSmoothing();syncMobileControls();const it=byId(selected),empty=document.getElementById('empty'),controls=document.getElementById('controls');empty.hidden=!!it;controls.hidden=!it;if(!it)return;
  document.getElementById('merge-selected').disabled=!(selectedMergePlan()?.distance<=10);
  document.getElementById('name').value=it.name;document.getElementById('image-controls').hidden=it.type==='arrow'||it.type==='polygon';document.getElementById('text-controls').hidden=it.type!=='text';document.getElementById('box-controls').hidden=!['box','ellipse'].includes(it.type);document.getElementById('arrow-controls').hidden=it.type!=='arrow';document.getElementById('polygon-controls').hidden=it.type!=='polygon';
  if(it.type==='image'||it.type==='text'||it.type==='box'||it.type==='ellipse'){for(const k of ['x','y'])document.getElementById(k).value=Math.round(it[k]);if(it.type==='box'||it.type==='ellipse'||(it.type==='text'&&it.box)){document.getElementById('w').value=Math.round(it.w);document.getElementById('h').value=Math.round(it.h)}document.getElementById('rot').value=it.r||0;document.getElementById('rot-v').textContent=(it.r||0)+'°'}
@@ -519,14 +521,15 @@ document.getElementById('select-tool').onclick=activateSelectTool;document.getEl
 document.getElementById('canvas-paper-color').oninput=updateCanvasAppearance;document.getElementById('canvas-paper-opacity').oninput=updateCanvasAppearance;document.getElementById('canvas-paper-white').onclick=()=>{document.getElementById('canvas-paper-color').value='#ffffff';document.getElementById('canvas-paper-opacity').value='100';updateCanvasAppearance()};document.getElementById('canvas-paper-transparent').onclick=()=>{document.getElementById('canvas-paper-opacity').value='0';updateCanvasAppearance()};
 document.querySelector('.canvas-color-presets').onclick=e=>{const button=e.target.closest('[data-canvas-paper-preset]'),preset=button&&CANVAS_PAPER_PRESETS[button.dataset.canvasPaperPreset];if(preset)setCanvasAppearance(preset.color,preset.opacity)};document.getElementById('toolbar-canvas-paper-color').oninput=e=>setCanvasAppearance(e.target.value,Number(document.getElementById('toolbar-canvas-paper-opacity').value)/100);document.getElementById('toolbar-canvas-paper-opacity').oninput=e=>setCanvasAppearance(document.getElementById('toolbar-canvas-paper-color').value,Number(e.target.value)/100);
 document.getElementById('add-arrow-point').onclick=()=>addNodeToSelected(false);document.getElementById('remove-arrow-point').onclick=()=>removeNodeFromSelected(2);document.getElementById('add-poly-point').onclick=()=>addNodeToSelected(true);document.getElementById('remove-poly-point').onclick=()=>removeNodeFromSelected(3);
-function closeMobilePanels(){workspace.classList.remove('show-assets','show-inspector');for(const panelButton of [document.getElementById('show-assets'),document.getElementById('show-inspector')]){panelButton.classList.remove('active');panelButton.setAttribute('aria-pressed','false')}}
+function closeMobilePanels(){workspace.classList.remove('show-assets','show-inspector');for(const panelButton of [document.getElementById('show-assets'),document.getElementById('show-inspector')]){panelButton.classList.remove('active');panelButton.setAttribute('aria-pressed','false')}syncMobilePanels()}
 function toggleMobilePanel(name){const className=`show-${name}`,open=!workspace.classList.contains(className);closeMobilePanels();if(!open)return;workspace.classList.add(className);const button=document.getElementById(name==='assets'?'show-assets':'show-inspector');button.classList.add('active');button.setAttribute('aria-pressed','true')}
 document.getElementById('show-assets').onclick=()=>toggleMobilePanel('assets');
 document.getElementById('show-inspector').onclick=()=>toggleMobilePanel('inspector');
 stageWrap.addEventListener('pointerdown',()=>{if(innerWidth<=900)closeMobilePanels()},{capture:true});
 function renderCanvasGrid(){const size=canvasSize(),step=CANVAS_GRID_STEP;gridLayer.innerHTML=gridOn?Array.from({length:Math.floor(size.width/step)-1},(_,i)=>{const x=(i+1)*step;return`<line class="guide${x%100===0?' major':''}" x1="${x}" y1="0" x2="${x}" y2="${size.height}"/>`}).join('')+Array.from({length:Math.floor(size.height/step)-1},(_,i)=>{const y=(i+1)*step;return`<line class="guide${y%100===0?' major':''}" x1="0" y1="${y}" x2="${size.width}" y2="${y}"/>`}).join(''):'';syncCheckerGrid()}
 document.getElementById('toggle-grid').onclick=()=>{gridOn=!gridOn;const button=document.getElementById('toggle-grid');button.classList.toggle('active',gridOn);button.setAttribute('aria-pressed',String(gridOn));renderCanvasGrid();document.getElementById('status').textContent=gridOn?'畫布格線已開啟':'畫布格線已關閉'};
-document.getElementById('delete').onclick=()=>{const ids=new Set(items.filter(it=>selectedIds.has(it.id)&&!it.locked).map(it=>it.id));if(!ids.size)return;commit();items=items.filter(x=>!ids.has(x.id));selected=null;selectedIds.clear();selectedPoints.clear();render()};
+function deleteSelectedObjects(){const ids=new Set(items.filter(it=>selectedIds.has(it.id)&&!it.locked).map(it=>it.id));if(!ids.size)return;commit();items=items.filter(x=>!ids.has(x.id));selected=null;selectedIds.clear();selectedPoints.clear();render()}
+document.getElementById('delete').onclick=deleteSelectedObjects;
 document.getElementById('duplicate').onclick=()=>{if(copyInternalSelection())pasteInternalSelection()};
 function copyInternalSelection(){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]);if(!ids.length){document.getElementById('status').textContent='請先選取要複製的線段或物件';return false}internalClipboard=deepCopy(items.filter(it=>ids.includes(it.id)));noteInternalCopy();document.getElementById('status').textContent=`已複製 ${internalClipboard.length} 個物件；按 Ctrl+V 貼上`;return true}
 function copySelectedObjects(){if(pptCopyRunning)return;copyInternalSelection();return copySelectionToClipboard()}
@@ -602,6 +605,7 @@ initializePanelLayout();
 initializeClipboardControls();
 initializeWebPptClient();
 initializeWorkspaceActions();
+initializeMobileControls();
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./service-worker.js').catch(error=>console.info('Offline install unavailable.',error));
 initializeWorkspace().then(stabilizeTypography);
 </script>

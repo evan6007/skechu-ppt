@@ -98,7 +98,7 @@ ctx.noteInternalCopy();e=press();key(e);assert.ok(e.prevented);assert.equal(inte
 const html=fs.readFileSync(new URL('../app/index.html',import.meta.url),'utf8');assert.ok(html.includes('initializeWorkspaceActions();')&&html.includes('noteInternalCopy();'));
 console.log('Image/file import OK: clipboard images, SVG/JPG/PNG drops, Skechu JSON projects, placement, Undo and draft safety.');
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
-assert.ok(html.includes('workspace-page-ghost')&&html.includes('workspace-actions.js?v=36-page-click'));assert.ok(worker.includes('workspace-actions.js?v=36-page-click'));
+assert.ok(html.includes('workspace-page-ghost')&&html.includes('workspace-actions.js?v=67-touch-shell'));assert.ok(worker.includes('workspace-actions.js?v=67-touch-shell'));
 
 // First-run reference and image import defaults use production constructors.
 let starterSequence=0;

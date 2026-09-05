@@ -48,7 +48,7 @@ function imageSelectionMarkup(it) {
 function ownsSelectionPointer(event) { return !drag || drag.pointerId === event.pointerId; }
 function registerSelectionGesture(event, before, capture = svg) {
   Object.assign(drag, {pointerId: event.pointerId, startClient: {x: event.clientX, y: event.clientY},
-    selectionBefore: before, capture, moved: false});
+    selectionBefore: before, capture, moved: false, dragThreshold: event.pointerType === 'touch' ? 8 : SELECTION_DRAG_PX});
   capture.setPointerCapture(event.pointerId);
 }
 function beginBackgroundSelection(event, capture = svg) {
@@ -145,7 +145,7 @@ function beginSelectionPointerDown(event, {action, h, g, before}) {
 function advanceSelectionGesture(event) {
   if (!drag || !ownsSelectionPointer(event)) return false;
   if (!drag.moved) {
-    if (Math.hypot(event.clientX - drag.startClient.x, event.clientY - drag.startClient.y) < SELECTION_DRAG_PX) return false;
+    if (Math.hypot(event.clientX - drag.startClient.x, event.clientY - drag.startClient.y) < (drag.dragThreshold || SELECTION_DRAG_PX)) return false;
     drag.moved = true;
     if (drag.kind === 'marquee' && !drag.additive) { clearSelectionState(false); refreshSelectionUI(); }
     if (!['pan', 'marquee', 'blank'].includes(drag.kind)) {

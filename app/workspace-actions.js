@@ -232,6 +232,7 @@ function initializeWorkspaceActions() {
   const menu = document.getElementById('page-context-menu'), pages = document.getElementById('workspace-pages');
   pages.addEventListener('click',event=>{if(!suppressPageClick)return;suppressPageClick=false;event.preventDefault();event.stopImmediatePropagation()},true);
   pages.addEventListener('pointerdown',event=>{const card=event.target.closest('[data-page-id]');if(event.button!==0||!card||pagePointerDrag)return;
+    if(event.pointerType==='touch'&&!event.target.closest('.workspace-page-number'))return;
     pagePointerDrag={pointerId:event.pointerId,source:card.dataset.pageId,x:event.clientX,y:event.clientY,moved:false,target:null,card};card.setPointerCapture?.(event.pointerId)});
   pages.addEventListener('pointermove',event=>{const gesture=pagePointerDrag;if(!gesture||gesture.pointerId!==event.pointerId)return;
     if(!gesture.moved&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<8)return;

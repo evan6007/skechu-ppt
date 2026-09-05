@@ -200,18 +200,22 @@ function initializeLayerControls() {
   host.addEventListener('pointerdown',event=>{
     suppressLayerClick=false;
     const dragTarget=event.target.closest('[data-layer-drag]');if(event.button!==0||!dragTarget||dragTarget.disabled)return;
+    // Touching a row scrolls/selects; only its grip starts reordering.
+    if(event.pointerType==='touch'&&!event.target.closest('.layer-grip'))return;
     const key=dragTarget.dataset.layerDrag;if(layerMembers(key).some(it=>it.locked))return;
-    const row=event.target.closest('[data-layer-key]');layerPointerDrag={key,pointerId:event.pointerId,x:event.clientX,y:event.clientY,moved:false,row:row?.dataset?.layerKey===key?row:null};host.setPointerCapture(event.pointerId);
+    // Capture only once a drag starts; stationary clicks must reach the name.
+    const row=event.target.closest('[data-layer-key]');layerPointerDrag={key,pointerId:event.pointerId,x:event.clientX,y:event.clientY,moved:false,row:row?.dataset?.layerKey===key?row:null};
   });
   host.addEventListener('pointermove',event=>{
     const gesture=layerPointerDrag;if(!gesture||gesture.pointerId!==event.pointerId)return;
     if(!gesture.moved&&Math.hypot(event.clientX-gesture.x,event.clientY-gesture.y)<8)return;
-    event.preventDefault();gesture.moved=true;if(!gesture.ghost)beginLayerDragVisual(gesture,event);const bounds=host.getBoundingClientRect();
+    event.preventDefault();if(!gesture.moved)host.setPointerCapture(event.pointerId);gesture.moved=true;if(!gesture.ghost)beginLayerDragVisual(gesture,event);const bounds=host.getBoundingClientRect();
     if(event.clientY<bounds.top+28)host.scrollTop-=18;else if(event.clientY>bounds.bottom-28)host.scrollTop+=18;
     const drop=layerDropAt(gesture,event);gesture.target=drop?.target||null;gesture.position=drop?.position||null;gesture.insertIndex=drop?.insertIndex??null;
     const dropSignature=drop?`${drop.target}:${drop.position}`:'';if(gesture.dropSignature!==dropSignature){host.querySelectorAll('[data-drop]').forEach(el=>el.removeAttribute('data-drop'));if(drop?.row)drop.row.dataset.drop=drop.position;gesture.dropSignature=dropSignature}updateLayerDragVisual(gesture,event);
   });
   host.addEventListener('pointerup',event=>{if(layerPointerDrag?.pointerId===event.pointerId)finishLayerPointer();});
+  window.addEventListener('pointerup',event=>{if(layerPointerDrag?.pointerId===event.pointerId)finishLayerPointer();});
   for(const event of ['pointercancel','lostpointercapture'])host.addEventListener(event,()=>finishLayerPointer(true));
   window.addEventListener('blur',()=>finishLayerPointer(true));
   window.addEventListener('keydown',event=>{

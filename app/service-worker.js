@@ -1,7 +1,9 @@
-const CACHE_NAME = 'skechu-ppt-v66-reference-opacity';
+const CACHE_NAME = 'skechu-ppt-v67-touch-shell';
 const APP_SHELL = [
   './',
   './index.html',
+  './mobile-controls.js?v=67-touch-shell',
+  './mobile-controls.css?v=67-touch-shell',
   './starter-brain.png',
   './theme-controls.js?v=46-canvas-shapes',
   './theme-controls.css?v=55-canvas-color-menu',
@@ -12,9 +14,9 @@ const APP_SHELL = [
   './paint-layers.js?v=22-visibility-web-native',
   './paint-tools.js?v=41-liquid-paper',
   './pan-tool.js',
-  './selection-controls.js?v=26-left-marquee',
-  './workspace-actions.js?v=36-page-click',
-  './layer-controls.js?v=35-stable-motion',
+  './selection-controls.js?v=67-touch-shell',
+  './workspace-actions.js?v=67-touch-shell',
+  './layer-controls.js?v=67-touch-shell',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=35-stable-motion',
   './clipboard-controls.js?v=60-keyboard-copy',

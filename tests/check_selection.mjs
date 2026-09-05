@@ -95,6 +95,12 @@ reset(['a']);down(event(250,250,{target:target('b'),shiftKey:true}));move(event(
 assert.equal(ctx.byId('a').x,180);assert.equal(ctx.byId('b').x,540,'Shift-select and drag moves both in the same gesture');
 
 // References are editable when unlocked; referenceOnly controls export, not locking.
+reset(['a']);const touchBefore=ctx.state();
+down(event(250,250,{target:target('a'),pointerType:'touch'}));
+move(event(255,251,{pointerType:'touch'}));up(event(255,251,{pointerType:'touch'}));
+assert.equal(ctx.state(),touchBefore,'Small touch jitter must select without moving the object');assert.equal(ctx.history.length,0);
+down(event(250,250,{target:target('a'),pointerType:'touch'}));move(event(263,250,{pointerType:'touch'}));up(event(263,250,{pointerType:'touch'}));
+assert.equal(ctx.byId('a').x,173);assert.equal(ctx.history.length,1,'Intentional touch drag remains editable and undoable');
 reset(['ref']);const referenceOriginal=ctx.state();
 down(event(100,100,{target:target('ref')}));move(event(130,120));up(event(130,120));
 assert.equal(ctx.state(),referenceOriginal,'Locked reference cannot move');
@@ -203,7 +209,7 @@ const runtimeVersions={
   'paint-layers.js':'?v=22-visibility-web-native',
   'paint-tools.js':'?v=41-liquid-paper',
   'paint-tools.css':'?v=38-responsive-shell',
-  'selection-controls.js':'?v=26-left-marquee',
+  'selection-controls.js':'?v=67-touch-shell',
 };
 for(const asset of Object.keys(runtimeVersions)) {
   const versioned=asset+runtimeVersions[asset];

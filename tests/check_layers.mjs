@@ -111,10 +111,18 @@ const stableLayerWrites=targetRow.style.writes;events.get('layers:pointermove:fa
 events.get('layers:pointerup:false')(event(50));assert.equal(bodyChildren[0].removed,true,'Floating copy fades and is removed after drop');
 assert.equal(targetRow.style.transform,'');
 for(const asset of ['layer-controls.js','layer-controls.css']){
-  assert.ok(html.includes(asset+'?v=35-stable-motion'));
-  assert.ok(fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes(asset+'?v=35-stable-motion'));
+  const version=asset.endsWith('.js')?'?v=67-touch-shell':'?v=35-stable-motion';
+  assert.ok(html.includes(asset+version));
+  assert.ok(fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes(asset+version));
   assert.ok(fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+asset+';.'));
 }
+reset();let captures=0;el('layers').setPointerCapture=()=>captures++;
+events.get('layers:pointerdown:false')(event(85,{pointerType:'touch',target:name}));
+assert.equal(vm.runInContext('layerPointerDrag',ctx),null,'Touch row names must permit native list scrolling');
+events.get('layers:pointerdown:false')(event(85,{pointerType:'touch',target:{closest:()=>grip}}));
+assert.ok(vm.runInContext('layerPointerDrag',ctx),'Touch grips still allow reorder');ctx.finishLayerPointer(true);
+events.get('layers:pointerdown:false')(event(85,{target:name}));assert.equal(captures,0,'A stationary click cannot be captured by the list container');
+events.get('layers:pointermove:false')(event(95));assert.equal(captures,1,'Pointer capture begins only after drag threshold');ctx.finishLayerPointer(true);
 assert.match(html,/cloneLayerGroups\(clones\)/);assert.match(html,/initializeLayerControls\(\)/);
 console.log('Layer folders OK: legacy auto batches, collapse/save, manual grouping, shared locks, reorder/Undo, fill parity, cloned isolation and drag cancellation.');
 if(process.argv.includes('--fixture')){
