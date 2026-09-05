@@ -89,7 +89,10 @@
         say(starred ? '已加 Star，謝謝支持！' : '已取消 Star');
       }
     } catch (error) {
-      if (session && session !== requestSession) return;
+      if (session !== requestSession) {
+        if (!session && !pending) say(error.message || 'GitHub 授權已失效，請重新連接。');
+        return;
+      }
       cancelIntent(); busy = true; recovering = true; render();
       // An uncertain write may have succeeded. Reconcile once; never retry it.
       if (session) try { await refresh(); } catch { starred = null; }

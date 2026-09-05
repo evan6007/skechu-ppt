@@ -204,6 +204,16 @@ test('reduced motion keeps the instant color response without a bounce', async (
   await f.advance(450); assert.deepEqual(f.writes(), [true]);
 });
 
+test('an old write failure cannot cancel a new login after the session expires', async () => {
+  const f = setup({ stored: true }); await settle();
+  const write = f.holdWrite(); f.rejectWrite(403);
+  await f.click(); await f.advance(450); await f.advance(60000); await f.click();
+  assert.ok(f.popup());
+  write.resolve(); await settle();
+  assert.equal(f.attributes['aria-busy'], 'true', 'the new authorization is still pending');
+  assert.equal(f.attributes['aria-pressed'], undefined);
+});
+
 test('login requires correct origin, source and state and never auto-stars', async () => {
   const f = setup(); await settle();
   assert.equal(await f.click(), true);
