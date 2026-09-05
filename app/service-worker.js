@@ -1,7 +1,8 @@
-const CACHE_NAME = 'skechu-ppt-v64-instant-star';
+const CACHE_NAME = 'skechu-ppt-v65-brain-starter';
 const APP_SHELL = [
   './',
   './index.html',
+  './starter-brain.png',
   './theme-controls.js?v=46-canvas-shapes',
   './theme-controls.css?v=55-canvas-color-menu',
   './github-star.js?v=64-instant-star',

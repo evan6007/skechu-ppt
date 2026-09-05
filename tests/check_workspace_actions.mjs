@@ -99,3 +99,40 @@ const html=fs.readFileSync(new URL('../app/index.html',import.meta.url),'utf8');
 console.log('Image/file import OK: clipboard images, SVG/JPG/PNG drops, Skechu JSON projects, placement, Undo and draft safety.');
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
 assert.ok(html.includes('workspace-page-ghost')&&html.includes('workspace-actions.js?v=36-page-click'));assert.ok(worker.includes('workspace-actions.js?v=36-page-click'));
+
+// First-run reference and image import defaults use production constructors.
+let starterSequence=0;
+const starterContext=vm.createContext({
+  id:()=>`item-${++starterSequence}`,uid:prefix=>`${prefix}-${++starterSequence}`,deepCopy:plain,
+  canvasAppearance:()=>({color:'#ffffff',opacity:1}),
+  FileReader:class {readAsDataURL(){this.result='data:image/png;base64,test';this.onload()}},
+  Image:class {naturalWidth=2048;naturalHeight=1024;set src(value){this.onload()}},
+  document:{getElementById:()=>({})},requestAnimationFrame:fn=>fn(),fitView(){},setTracePen(){},syncActivePage(){},openPage(){},alert:message=>assert.fail(message)
+});
+for(const name of ['makePage','makeProject','makeStarterProject','importReferenceImage'])vm.runInContext(html.match(new RegExp(`^function ${name}\\([^\\n]+`,'m'))[0],starterContext);
+vm.runInContext(html.match(/const STARTER_ITEMS=\[[\s\S]*?\n\];/)[0],starterContext);
+const starter=vm.runInContext('makeStarterProject()',starterContext),page=starter.pages[0],reference=page.items[0];
+assert.equal(page.items.length,1,'Starter contains only the supplied brain reference');
+assert.equal(reference.type,'image');assert.equal(reference.referenceOnly,true);assert.equal(reference.locked,false);
+const png=fs.readFileSync(new URL('../app/'+reference.src,import.meta.url));
+assert.equal(page.canvasWidth,png.readUInt32BE(16));assert.equal(page.canvasHeight,png.readUInt32BE(20));
+assert.equal(reference.w,page.canvasWidth);assert.equal(reference.h,page.canvasHeight);assert.equal(reference.opacity,1);
+assert.ok(worker.includes('./'+reference.src),'Starter must be available offline');
+assert.ok(fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+reference.src+';.'),'Starter must be packaged for Windows');
+starterContext.activeProject=()=>starter;
+reference.locked=true;
+starterContext.importReferenceImage({name:'new-reference.png'});
+const imported=starter.pages.at(-1);
+assert.equal(imported.items[0].locked,false,'New tracing references are unlocked');
+assert.equal(imported.canvasWidth,1600);assert.equal(imported.canvasHeight,800);
+assert.equal(reference.locked,true,'Import does not unlock an existing reference');
+assert.equal(starterContext.makeProject().pages[0].items.length,0,'Explicit new projects still start blank');
+console.log('Starter/import defaults OK: full-size brain, unlocked new references, existing locks preserved, offline/Windows asset.');
+starterContext.stageWrap={clientWidth:1400,clientHeight:750};starterContext.stageShell={style:{}};
+starterContext.canvasSize=()=>({width:1536,height:1024});
+starterContext.resetCanvasPan=starterContext.renderSelection=starterContext.syncCheckerGrid=()=>{};
+vm.runInContext(html.match(/^function fitView\([^\n]+/m)[0],starterContext);
+starterContext.fitView();
+assert.ok(parseFloat(starterContext.stageShell.style.width)*1024/1536<=714,'The whole brain canvas fits vertically');
+starterContext.stageWrap.clientWidth=320;starterContext.fitView();
+assert.ok(parseFloat(starterContext.stageShell.style.width)<=284,'Fit also respects narrow mobile viewports');
