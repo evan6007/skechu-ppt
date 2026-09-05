@@ -2,8 +2,10 @@
   const button = document.getElementById('github-star');
   if (!button) return;
   const storageKey = 'skechu-github-star-session-v1';
+  const debounceMs = 450;
   let service = '', session = null, starred = null, busy = false, pending = null, lastRead = 0;
-  let noticeTimer;
+  let desired = null, writing = false, reading = false, revision = 0, lastIntentAt = 0;
+  let noticeTimer, syncTimer, feedback;
   const notice = document.createElement('div');
   notice.className = 'github-star-notice'; notice.hidden = true;
   notice.setAttribute('role', 'status'); notice.setAttribute('aria-live', 'polite');
@@ -14,14 +16,31 @@
     session = value;
     try { if (value) sessionStorage.setItem(storageKey, JSON.stringify(value)); else sessionStorage.removeItem(storageKey); } catch {}
   }
+  function cancelIntent() {
+    clearTimeout(syncTimer); syncTimer = null; desired = null; revision++;
+  }
+  function expireSession() {
+    cancelIntent(); saveSession(null); starred = null;
+  }
   function render() {
-    button.setAttribute('aria-busy', String(busy));
-    if (starred === null) button.removeAttribute('aria-pressed');
-    else button.setAttribute('aria-pressed', String(starred));
-    button.title = busy ? '正在連接 GitHub…' : !session ? '連接 GitHub 以使用 Star' : starred === null ? '重新讀取 GitHub Star 狀態' : `${starred ? '取消 Star' : 'Star'} · @${session.login}`;
+    const shown = desired ?? starred, syncing = desired !== null || writing;
+    button.setAttribute('aria-busy', String(busy || syncing));
+    button.setAttribute('data-connecting', String(busy));
+    button.setAttribute('data-syncing', String(syncing));
+    if (shown === null) button.removeAttribute('aria-pressed');
+    else button.setAttribute('aria-pressed', String(shown));
+    button.title = busy ? '正在連接 GitHub…' : !session ? '連接 GitHub 以使用 Star' : shown === null ? '重新讀取 GitHub Star 狀態' : `${shown ? '取消 Star' : 'Star'} · @${session.login}${syncing ? '（同步中…）' : ''}`;
     button.setAttribute('aria-label', button.title);
   }
+  function animateToggle() {
+    feedback?.cancel();
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    feedback = button.querySelector('svg')?.animate?.([
+      { transform: 'scale(.82)' }, { transform: 'scale(1.2)', offset: .45 }, { transform: 'scale(1)' }
+    ], { duration: 220, easing: 'ease-out' });
+  }
   async function api(path, data, authenticated = false) {
+    const requestSession = session;
     const response = await fetch(`${service}${path}`, {
       method: data === undefined ? 'GET' : 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(20000),
       headers: { ...(data === undefined ? {} : { 'Content-Type': 'application/json' }), ...(authenticated ? { Authorization: `Bearer ${session?.session || ''}` } : {}) },
@@ -29,17 +48,58 @@
     });
     const result = await response.json();
     if (!response.ok) {
-      if (response.status === 401 && authenticated) { saveSession(null); starred = null; }
+      if (response.status === 401 && authenticated && session === requestSession) expireSession();
       throw new Error(result.error || 'GitHub 暫時無法連線，請稍後再試');
     }
     return result;
   }
   async function refresh() {
     if (!session) return;
-    if (session.expiresAt <= Date.now()) { saveSession(null); starred = null; return; }
+    if (session.expiresAt <= Date.now()) { expireSession(); return; }
+    const requestSession = session, requestRevision = revision;
     const result = await api('/star', undefined, true);
+    // A read started before a click/write must not overwrite that newer intent.
+    if (session !== requestSession || revision !== requestRevision) return;
     if (typeof result.starred !== 'boolean') throw new Error('無法確認 GitHub Star 狀態');
     starred = result.starred; lastRead = Date.now();
+  }
+  function scheduleSync() {
+    clearTimeout(syncTimer);
+    if (desired === null) { syncTimer = null; return; }
+    syncTimer = setTimeout(() => { syncTimer = null; void sync(); }, Math.max(0, lastIntentAt + debounceMs - Date.now()));
+  }
+  async function sync() {
+    if (writing || busy || desired === null) return;
+    if (Date.now() < lastIntentAt + debounceMs) { scheduleSync(); return; }
+    if (!session || session.expiresAt <= Date.now()) {
+      expireSession(); render(); say('GitHub 授權已過期，請重新連接後再按 Star。'); return;
+    }
+    if (desired === starred) { cancelIntent(); render(); return; }
+    const target = desired, requestSession = session;
+    let recovering = false;
+    writing = true; revision++; render();
+    try {
+      const result = await api('/star', { starred: target }, true);
+      if (session !== requestSession) return;
+      if (result.starred !== target) throw new Error('GitHub 未確認這次操作');
+      starred = target; lastRead = Date.now();
+      // Acknowledge the sent value, but preserve clicks made while it was in flight.
+      if (desired === target) {
+        cancelIntent();
+        say(starred ? '已加 Star，謝謝支持！' : '已取消 Star');
+      }
+    } catch (error) {
+      if (session && session !== requestSession) return;
+      cancelIntent(); busy = true; recovering = true; render();
+      // An uncertain write may have succeeded. Reconcile once; never retry it.
+      if (session) try { await refresh(); } catch { starred = null; }
+      say(`${error.message || '無法連接 GitHub'}${starred === null ? '；目前無法確認狀態，請稍後再試。' : '；已重新讀取 GitHub 狀態。'}`);
+    } finally {
+      writing = false;
+      if (recovering) busy = false;
+      if (desired !== null) scheduleSync();
+      render();
+    }
   }
   function finishLogin() {
     if (!pending) return;
@@ -86,31 +146,31 @@
       else pending?.popup?.focus();
       return;
     }
+    if (session && session.expiresAt > Date.now() && starred !== null) {
+      desired = !(desired ?? starred); revision++; lastIntentAt = Date.now();
+      clearTimeout(noticeTimer); notice.hidden = true;
+      render(); animateToggle(); scheduleSync(); return;
+    }
     busy = true; render();
     try {
       if (!session || session.expiresAt <= Date.now()) {
-        saveSession(null); starred = null; await login(); return;
+        expireSession(); await login(); return;
       }
-      // Recheck before deciding direction, including changes made on github.com.
+      // Unknown state needs a read, not a guessed toggle. Login itself never stars.
       await refresh();
-      if (!session || typeof starred !== 'boolean') throw new Error('請重新連接 GitHub');
-      const desired = !starred;
-      const result = await api('/star', { starred: desired }, true);
-      if (result.starred !== desired) throw new Error('GitHub 未確認這次操作');
-      starred = result.starred; lastRead = Date.now();
-      say(starred ? '已加 Star，謝謝支持！' : '已取消 Star');
+      say('已更新 GitHub 狀態，現在可按 Star。');
     } catch (error) {
       finishLogin();
-      // A timed-out write may have succeeded. Read, never repeat the mutation.
-      if (session) try { await refresh(); } catch { starred = null; }
       say(error.message || '無法連接 GitHub，請稍後再試');
     } finally { if (!pending) { busy = false; render(); } }
   });
   button.addEventListener('keydown', event => { if (service && event.key === ' ') { event.preventDefault(); button.click(); } });
   window.addEventListener('focus', async () => {
-    if (!service || !session || busy || Date.now() - lastRead < 10000) return;
-    busy = true; render();
-    try { await refresh(); } catch { starred = null; } finally { busy = false; render(); }
+    if (!service || !session || busy || reading || writing || desired !== null || Date.now() - lastRead < 10000) return;
+    const requestRevision = revision;
+    reading = true;
+    try { await refresh(); } catch { if (revision === requestRevision) starred = null; }
+    finally { reading = false; render(); }
   });
   async function initialize() {
     try {

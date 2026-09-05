@@ -13,7 +13,14 @@ Production configuration uses [Skechu-PPT Star](https://github.com/apps/skechu-p
 3. Deploy `services/github-star/worker.mjs` to a dedicated Cloudflare Worker using its `wrangler.jsonc`. Do not change an existing unrelated Worker.
 4. Set Worker secrets `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `SESSION_SECRET` (32 cryptographically random bytes, base64url encoded). Never put secrets in `vars`, this repository, the static editor, GitHub issue text, or chat. Use Cloudflare secrets or `wrangler secret put` via private input.
 5. Verify `/health` returns `configured: true`. Set `app/github-star-config.json` to `{ "serviceUrl": "https://YOUR-WORKER.workers.dev" }` and publish Pages. Only the HTTPS service origin is configurable; repository and GitHub upstream endpoints are fixed in the service.
-6. In the real hosted editor, click Star, authorize on GitHub, and confirm the actual state is rendered. Authorization by itself never adds or removes a star. A subsequent click sets the opposite state. Check both directions and return a test account to its initial state.
+6. In the real hosted editor, click Star, authorize on GitHub, and confirm the actual state is rendered. Authorization by itself never adds or removes a star. Subsequent clicks immediately toggle the displayed state with a small animation, then synchronize after 450 ms without another click. Check both directions and return a test account to its initial state.
+
+## Immediate feedback and background synchronization
+
+- The button keeps the last confirmed GitHub state separate from the user's pending choice. Yellow/outline feedback is immediate; a small corner dot and the tooltip indicate pending synchronization. Reduced-motion preferences disable the bounce.
+- Repeated clicks restart a 450 ms quiet period. Only the final choice is sent; returning to the confirmed state before sending requires no write. There is no extra blocking GET before each click.
+- Writes are serialized. Clicking during an in-flight write remains responsive, and its response cannot overwrite a newer choice. A necessary follow-up waits for the latest quiet period. Focus refreshes also cannot overwrite newer clicks or writes.
+- Failure discards pending choices and reads GitHub once to reconcile. If that read fails too, the state becomes unknown with an explanation instead of showing a false success. Neither failures nor login automatically retry a write; another deliberate click is required.
 
 ## Security and data boundary
 
@@ -27,7 +34,7 @@ Production configuration uses [Skechu-PPT Star](https://github.com/apps/skechu-p
 
 ## Verification
 
-Run `node --test tests/github_star_service.test.mjs tests/github_star_client.test.mjs` and `node tests/check_app.mjs`. Unit tests use a fake GitHub upstream; they do not log in, add stars, or validate a real deployed GitHub App. Live OAuth acceptance must be checked separately.
+Run `node --test tests/github_star_service.test.mjs tests/github_star_client.test.mjs` and `node tests/check_app.mjs`. Client tests use a controllable clock and delayed responses to cover rapid clicks, quiet periods, serialized writes, stale reads, rollback and reduced motion. Unit tests use a fake GitHub upstream; they do not log in, add stars, or validate a real deployed GitHub App. Live OAuth acceptance must be checked separately.
 
 Cloudflare Workers requires upstream requests to use `redirect: 'manual'` rather than the browser/Node `redirect: 'error'` option. The service rejects unexpected response statuses without following a redirect or forwarding credentials. A regression test covers both the token exchange and authenticated GitHub API requests.
 

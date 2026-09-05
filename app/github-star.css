@@ -1,6 +1,9 @@
 #github-star[aria-pressed="true"] svg{fill:#e3b341;stroke:#e3b341}
 #github-star[aria-pressed="false"] svg{fill:none;stroke:currentColor}
-#github-star[aria-busy="true"]{opacity:.65;cursor:progress}
+#github-star{position:relative}
+#github-star svg{transform-origin:center;transform-box:fill-box;transition:fill .1s,stroke .1s}
+#github-star[data-connecting="true"]{opacity:.65;cursor:progress}
+#github-star[data-syncing="true"]::after{content:"";position:absolute;right:3px;bottom:3px;width:3px;height:3px;border-radius:50%;background:var(--ink);opacity:.55}
 #github-star:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 .github-star-notice{position:fixed;z-index:4000;left:12px;top:70px;max-width:min(340px,calc(100vw - 24px));padding:12px 15px;border:1px solid var(--line,#555);border-radius:10px;background:var(--panel,#222);color:var(--ink,#eee);font:13px/1.6 Arial,"Microsoft JhengHei",sans-serif;box-shadow:0 6px 24px #0003}
 .github-star-notice[hidden]{display:none}
@@ -8,3 +11,4 @@
 .github-callback main{max-width:420px;margin:24px;padding:28px;border:1px solid #3b3e44;border-radius:14px;background:#23262b}
 .github-callback h1{font-size:20px;margin:0 0 12px}.github-callback a{color:inherit}
 @media(max-width:640px){.github-star-notice{top:115px}}
+@media(prefers-reduced-motion:reduce){#github-star svg{transition:none}}
