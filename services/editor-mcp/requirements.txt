@@ -1,0 +1,2 @@
+# Optional connector only; never installed or loaded by the public web editor.
+mcp==1.29.1
