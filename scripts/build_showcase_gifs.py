@@ -102,31 +102,6 @@ def zoom_sequence(image, start_bounds, end_bounds, count):
     return frames
 
 
-def reposition_patch(image, source_box, target_box, background="#ffffff"):
-    """Move one opaque UI subject without crossfade ghosting."""
-    patch = image.crop(source_box)
-    result = image.copy()
-    ImageDraw.Draw(result).rectangle(source_box, fill=background)
-    target_width = target_box[2] - target_box[0]
-    target_height = target_box[3] - target_box[1]
-    patch = patch.resize((target_width, target_height), Image.Resampling.LANCZOS)
-    result.paste(patch, target_box[:2])
-    return result
-
-
-def move_patch_sequence(image, source_box, start_box, end_box, count, background="#ffffff"):
-    """Animate one solid subject so it never appears twice during the move."""
-    aligned = reposition_patch(image, source_box, start_box, background)
-    frames = []
-    current_box = start_box
-    for step in range(count):
-        t = (step + 1) / count
-        eased = t * t * (3 - 2 * t)
-        current_box = tuple(round(a + (b - a) * eased) for a, b in zip(start_box, end_box))
-        frames.append(reposition_patch(aligned, start_box, current_box, background))
-    return frames
-
-
 def save_gif(name, frames):
     sampled = frames[::4]
     palette_sheet = Image.new("RGB", (180, 101 * len(sampled) + 36))
@@ -163,38 +138,36 @@ save_gif("feature-magnetic-trace.gif", trace_frames)
 # 2. Start blank, import a reference, auto trace it, move the reference aside, then reveal all anchors.
 auto_bounds = (0.04, 0.02, 0.96, 0.84)
 auto_blank = fixed_view(open_frame("auto-00-blank.png"), auto_bounds)
-auto_imported = fixed_view(open_frame("auto-01-imported.png"), auto_bounds)
-auto_opening = fixed_view(open_frame("auto-02-opening.png"), auto_bounds)
+auto_imported_source = open_frame("auto-01-imported.png")
+auto_imported = fixed_view(auto_imported_source, auto_bounds)
 auto_preview_source = open_frame("auto-03-preview.png")
 auto_preview = fixed_view(auto_preview_source, auto_bounds)
 auto_preview_close_bounds = (0.452, 0.574, 0.682, 0.780)
 auto_preview_close = fixed_view(auto_preview_source, auto_preview_close_bounds)
+auto_canvas_match_bounds = (0.166, 0.134, 0.813, 0.763)
+auto_preview_match_bounds = (0.212, 0.308, 0.790, 0.872)
+auto_imported_match = fixed_view(auto_imported_source, auto_canvas_match_bounds)
+auto_preview_match = fixed_view(auto_preview_source, auto_preview_match_bounds)
 auto_shrink = [fixed_view(open_frame(f"auto-05-shrink-{step:02d}.png"), auto_bounds) for step in range(12)]
-auto_applied_clean = auto_shrink[0]
-# The modal preview positions the brain lower than the canvas. First remove the
-# modal while keeping both brains perfectly overlaid, then move one solid brain
-# to its real canvas position. A direct screenshot crossfade creates two ghosts.
-auto_brain_source_box = (205, 62, 470, 305)
-auto_brain_preview_box = (230, 138, 468, 348)
-auto_applied_aligned = reposition_patch(auto_applied_clean, auto_brain_source_box, auto_brain_preview_box)
-auto_align_motion = move_patch_sequence(
-    auto_applied_clean, auto_brain_source_box, auto_brain_preview_box,
-    auto_brain_source_box, 10,
-)
+auto_applied_source = open_frame("auto-05-shrink-00.png")
+auto_applied_clean = fixed_view(auto_applied_source, auto_bounds)
+auto_applied_match = fixed_view(auto_applied_source, auto_canvas_match_bounds)
 auto_corner = auto_shrink[-1]
 auto_anchors = fixed_view(open_frame("auto-06-all-anchors.png"), auto_bounds)
 anchor_count = METADATA["autoTraceAnchors"]
 auto_frames = [card("自動描圖", "空白工作區", auto_blank, "#38bdf8") for _ in range(8)]
 auto_frames += [card("自動描圖", "匯入底圖", frame, "#38bdf8", (162, 8), index == 3) for index, frame in enumerate(tween(auto_blank, auto_imported, 7))]
 auto_frames += [card("自動描圖", "底圖已就緒", auto_imported, "#38bdf8") for _ in range(5)]
-auto_frames += [card("自動描圖", "點自動描圖", frame, "#38bdf8") for frame in tween(auto_imported, auto_opening, 6)]
-auto_frames += [card("自動描圖", "即時辨識輪廓", frame, "#38bdf8") for frame in tween(auto_opening, auto_preview, 7)]
+auto_frames += [card("自動描圖", "從底圖進入", frame, "#38bdf8") for frame in zoom_sequence(auto_imported_source, auto_bounds, auto_canvas_match_bounds, 8)]
+auto_frames += [card("自動描圖", "生成描圖預覽", frame, "#38bdf8") for frame in tween(auto_imported_match, auto_preview_match, 5)]
+auto_frames += [card("自動描圖", "展開預覽視窗", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_match_bounds, auto_bounds, 8)]
 auto_frames += [card("自動描圖", "預覽描圖結果", auto_preview, "#38bdf8") for _ in range(8)]
 auto_frames += [card("自動描圖", "放大小腦描邊細節", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_close_bounds, 12)]
 auto_frames += [card("自動描圖", "複雜線條完整描出", auto_preview_close, "#38bdf8") for _ in range(22)]
 auto_frames += [card("自動描圖", "返回完整預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_close_bounds, auto_bounds, 10)]
-auto_frames += [card("自動描圖", "線稿套用到畫布", frame, "#38bdf8") for frame in tween(auto_preview, auto_applied_aligned, 6)]
-auto_frames += [card("自動描圖", "生成可編輯線稿", frame, "#38bdf8") for frame in auto_align_motion]
+auto_frames += [card("自動描圖", "關閉描圖預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_match_bounds, 8)]
+auto_frames += [card("自動描圖", "套用可編輯線稿", frame, "#38bdf8") for frame in tween(auto_preview_match, auto_applied_match, 5)]
+auto_frames += [card("自動描圖", "回到原始底圖", frame, "#38bdf8") for frame in zoom_sequence(auto_applied_source, auto_canvas_match_bounds, auto_bounds, 8)]
 auto_frames += [card("自動描圖", "描圖已套用", auto_applied_clean, "#38bdf8") for _ in range(10)]
 auto_frames += [card("自動描圖", "底圖縮到左下角", frame, "#38bdf8") for frame in auto_shrink[1:]]
 auto_frames += [card("自動描圖", "無填色向量線稿", auto_corner, "#38bdf8") for _ in range(8)]
