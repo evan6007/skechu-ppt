@@ -11,6 +11,9 @@ for (const [, source] of scripts) {
   if (source.trim()) new Function(source);
 }
 const smoothing=fs.readFileSync(new URL('../app/local-smoothing.js',import.meta.url),'utf8');
+const starStyles=fs.readFileSync(new URL('../app/github-star.css',import.meta.url),'utf8');
+if(!starStyles.includes('#github-star[aria-pressed="true"] svg{fill:#e3b341;stroke:#e3b341}'))throw new Error('A confirmed GitHub Star must have a yellow fill and outline');
+if(!starStyles.includes('#github-star[aria-pressed="false"] svg{fill:none;stroke:currentColor}'))throw new Error('An unstarred button must remain an unfilled neutral outline, including hover');
 for (const file of ['github-star.js','github-star.css']) {
   const asset=fs.readFileSync(new URL('../app/'+file,import.meta.url),'utf8');
   if(file.endsWith('.js'))new Function(asset);

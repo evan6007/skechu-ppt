@@ -1,11 +1,11 @@
-const CACHE_NAME = 'skechu-ppt-v61-star-auth';
+const CACHE_NAME = 'skechu-ppt-v62-yellow-star';
 const APP_SHELL = [
   './',
   './index.html',
   './theme-controls.js?v=46-canvas-shapes',
   './theme-controls.css?v=55-canvas-color-menu',
   './github-star.js?v=61-star-auth',
-  './github-star.css?v=61-star-auth',
+  './github-star.css?v=62-yellow-star',
   './local-smoothing.js',
   './region-fill.js',
   './paint-layers.js?v=22-visibility-web-native',
