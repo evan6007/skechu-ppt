@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v71-search';
+const CACHE_NAME = 'skechu-ppt-v71-search-verified';
 const APP_SHELL = [
   './',
   './index.html',

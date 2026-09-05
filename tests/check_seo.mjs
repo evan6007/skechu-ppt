@@ -6,6 +6,7 @@ const base = 'https://evan6007.github.io/skechu-ppt/';
 const html = read('app/index.html'), about = read('app/about.html');
 const pageSources = [html, about];
 const urls = [base, base + 'about.html'];
+assert.ok(html.split('</head>')[0].includes('<meta name="google-site-verification" content="6E2lCAm1MMDeTYtAuHuEr7tIUE_j7eqP7tULN8f7iJo" />'), 'Preserve the owner-approved public Search Console verification token');
 for (const [index, page] of pageSources.entries()) {
   assert.match(page, /<html lang="zh-Hant"/);
   assert.match(page, /<title>Skechu[^<]+(?:描圖|描圖工具)/);
