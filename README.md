@@ -2,13 +2,13 @@
   <img src="assets/brand/logo-banner-skechu-v4.svg" width="620" alt="Skechu-PPT">
 </p>
 
-<p align="center"><strong>Trace images. Refine every curve. Keep editing in PowerPoint.</strong><br>A free, open-source editor for turning flat images into editable artwork.</p>
+<p align="center"><strong>Trace images. Refine every curve. Keep editing in PowerPoint.</strong><br>Skechu (Skechu-PPT) is a free, open-source image tracing and vector editor.</p>
 
 <p align="center">
   <a href="https://evan6007.github.io/skechu-ppt/"><img src="assets/brand/open-web-cta.svg" width="620" alt="Open Web — launch Skechu-PPT free in your browser. No installation or sign-in."></a>
 </p>
 
-<p align="center">免安裝、免登入。匯入圖片，描線、填色，再把每個物件繼續改。</p>
+<p align="center">免安裝、免登入。匯入圖片，描線、填色，再把每個物件繼續改。<br><a href="https://evan6007.github.io/skechu-ppt/about.html">Skechu 功能與使用說明</a></p>
 
 <p align="center">Works on Windows, macOS, Linux, Chromebook, iPhone, iPad, and Android.<br>Need native editable PowerPoint layers? <a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe">Get the Windows installer →</a></p>
 

@@ -26,6 +26,7 @@ jobs:
           pyinstaller --noconfirm --clean --windowed --name Skechu-PPT `
             --icon assets/brand/skechu-ppt-mark.ico `
             --add-data "app/index.html;." `
+            --add-data "app/about.html;." `
             --add-data "app/mobile-controls.js;." `
             --add-data "app/mobile-controls.css;." `
             --add-data "app/automation;automation" `

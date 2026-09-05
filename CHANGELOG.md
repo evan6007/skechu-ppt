@@ -6,6 +6,7 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Added
 
+- Search metadata naming Skechu and Skechu-PPT, stable canonical URLs, application structured data, a static feature guide and a two-page sitemap. Search Console verification and indexing requests remain separate owner actions, not automatic ranking guarantees.
 - Opt-in, current-page command API with 12 named commands and a separately installed official-SDK MCP connector. Includes paginated inspection, batch styles/movement, editable shapes, confirmed deletion, undo/redo, SVG output and staged/cancellable background tracing. Strict schemas, revision guards and one-step history protect interactive work.
 - Automation guide, repository map and optional MCP protocol/security checks. The ordinary static web editor does not require the connector or an AI account.
 

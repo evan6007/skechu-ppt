@@ -4,11 +4,13 @@ const html = fs.readFileSync(new URL('../app/index.html', import.meta.url), 'utf
 for(const marker of ['class="brand" href="https://github.com/evan6007/skechu-ppt"','class="repo-actions"','id="github-star"','開啟 GitHub 專案並按 Star','<span>Star</span>'])if(!html.includes(marker))throw new Error(`Missing GitHub action: ${marker}`);
 if(!(html.indexOf('id="github-star"')>html.indexOf('class="brand"')&&html.indexOf('id="github-star"')<html.indexOf('id="select-tool"')))throw new Error('Desktop Star action must sit between the Skechu-PPT brand and Select tool');
 if(html.includes('幫我按 Star'))throw new Error('Star action must use the concise label Star');
-const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
+const scripts = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)];
 if (!scripts.length) throw new Error('No inline application script found.');
 
-for (const [, source] of scripts) {
-  if (source.trim()) new Function(source);
+for (const [, attributes, source] of scripts) {
+  if (!source.trim()) continue;
+  if (/type="application\/ld\+json"/i.test(attributes)) JSON.parse(source);
+  else new Function(source);
 }
 const smoothing=fs.readFileSync(new URL('../app/local-smoothing.js',import.meta.url),'utf8');
 const starStyles=fs.readFileSync(new URL('../app/github-star.css',import.meta.url),'utf8');
@@ -46,8 +48,11 @@ const forbidden = [
   /Figure\s+[2b]/i,
   /(?:fetch|src|href)\s*[=(]\s*['"]https?:\/\/(?!127\.0\.0\.1|localhost|github\.com\/evan6007\/skechu-ppt(?:[\/"']))/i,
 ];
+// A canonical identity link does not fetch or upload anything. Keep the strict
+// remote-resource boundary for every other tag and every executable script.
+const privacySource = html.replace('<link rel="canonical" href="https://evan6007.github.io/skechu-ppt/">', '');
 for (const pattern of forbidden) {
-  if (pattern.test(html)) throw new Error(`Forbidden private or remote reference: ${pattern}`);
+  if (pattern.test(privacySource)) throw new Error(`Forbidden private or remote reference: ${pattern}`);
 }
 
 for (const required of ['Skechu-PPT', 'magnetic-trace', 'merge-selected', 'copy-ppt', 'palette-grid', 'application/x-skechu-color', 'fillTargetAt']) {

@@ -1,7 +1,8 @@
-const CACHE_NAME = 'skechu-ppt-v70-automation';
+const CACHE_NAME = 'skechu-ppt-v71-search';
 const APP_SHELL = [
   './',
   './index.html',
+  './about.html',
   './automation/core.js?v=70-automation',
   './automation/editor.js?v=70-automation',
   './automation/panel.css?v=70-automation',

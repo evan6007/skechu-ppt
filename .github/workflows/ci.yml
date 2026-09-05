@@ -26,6 +26,8 @@ jobs:
         run: node tests/check_app.mjs
       - name: Check web-first README entry
         run: node tests/check_entry.mjs
+      - name: Check public search metadata and sitemap
+        run: node tests/check_seo.mjs
       - name: Check SVG and native curve parity
         run: node tests/check_curves.mjs
       - name: Check clipboard shortcuts

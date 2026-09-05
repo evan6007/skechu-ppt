@@ -10,6 +10,7 @@
 
 - [Architecture and repository map](architecture.md)
 - [GitHub Star authorization](github-star-auth.md)
+- [Google Search setup and checks](search-discovery.md)
 - [Contributing](../CONTRIBUTING.md)
 - [Security](../SECURITY.md)
 - [Roadmap](../ROADMAP.md) · [Changelog](../CHANGELOG.md)

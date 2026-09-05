@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Skechu 使用說明｜免費圖片描圖、向量編輯與 PPT 匯出</title>
+  <meta name="description" content="認識 Skechu-PPT：免費開源的圖片描圖與向量編輯工具。從自動描圖、磁吸描邊、封閉區域填色，到 SVG 匯出與 Windows 原生 PowerPoint 物件複製。">
+  <link rel="canonical" href="https://evan6007.github.io/skechu-ppt/about.html">
+  <link rel="icon" type="image/svg+xml" href="skechu-mark.svg?v=1">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#fafafa;color:#202124;font:16px/1.8 system-ui,"Microsoft JhengHei",sans-serif}
+    header,main,footer{width:min(100% - 40px,780px);margin:auto}header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0;border-bottom:1px solid #dcdfe2}
+    a{color:inherit;text-underline-offset:4px}a:focus-visible{outline:2px solid currentColor;outline-offset:5px}.brand{display:flex;align-items:center;gap:10px;font-weight:750;text-decoration:none}.brand img{width:30px;height:30px}
+    .open-editor{display:inline-block;padding:9px 16px;background:#24272c;color:#fff;border-radius:8px;text-decoration:none;font-weight:650;white-space:nowrap}main{padding:36px 0 12px}h1{font-size:clamp(28px,5vw,40px);line-height:1.3;letter-spacing:-.025em;margin:0 0 20px}h2{font-size:22px;line-height:1.4;margin:0 0 12px}p{margin:10px 0 18px}section{margin-top:32px;padding-top:28px;border-top:1px solid #dcdfe2}li{margin:12px 0}ol{padding-left:24px}.note{color:#53585f}footer{padding:28px 0 36px}footer nav{display:flex;flex-wrap:wrap;gap:18px}
+    @media(max-width:380px){header,main,footer{width:calc(100% - 28px)}header{gap:8px}.open-editor{padding:9px 12px}}
+  </style>
+</head>
+<body>
+  <header><a class="brand" href="./"><img src="skechu-mark.svg?v=1" alt="">Skechu-PPT</a><a class="open-editor" href="./">開啟編輯器</a></header>
+  <main>
+    <h1>Skechu：把圖片重繪成<br>能繼續修改的線稿</h1>
+    <p>Skechu（完整名稱 Skechu-PPT）是免費、MIT 開源的線上圖片描圖與向量編輯工具。研究插圖、示意圖或 AI 產生的平面圖，不必整張重畫：匯入底圖後，描出線條、調整錨點，再修改需要的局部。</p>
+    <p class="note" lang="en">Skechu is a free, open-source image tracing and vector editor. Turn flat images into editable paths with automatic tracing, magnetic edges and region fills, then export SVG or continue editing native objects in PowerPoint on Windows.</p>
+    <section aria-labelledby="tracing">
+      <h2 id="tracing">從底圖到可編輯線稿</h2>
+      <ol>
+        <li><strong>新增底圖：</strong>匯入圖片，保留原始比例；底圖預設不鎖定，可移動、縮放並調整透明度。</li>
+        <li><strong>自動描圖：</strong>預覽辨識出的線條，調整設定後套用；產生的是能選取和修改錨點的向量路徑，不是另一張平面圖片。</li>
+        <li><strong>磁吸描邊：</strong>手動描線時，吸附點會貼近底圖邊緣，讓滑鼠或手指不必精準壓在線上。</li>
+        <li><strong>封閉區域填色：</strong>用自己畫出的線稿圍出區域；由多條線與 T 字接點組成的封閉範圍也能填色，再分別調整色塊與線條。</li>
+      </ol>
+    </section>
+    <section aria-labelledby="export">
+      <h2 id="export">帶到 SVG 或 PowerPoint 繼續改</h2>
+      <p>網頁版可匯出 SVG，或下載 .skc 專案留待下次編輯。若要貼上<strong>原生可編輯 PowerPoint 物件</strong>，需要 Windows 版 Skechu-PPT 連接服務，以及已安裝的桌面 PowerPoint；選取物件、複製，再到 PPT 貼上，就能分別移動和修改。</p>
+      <p>macOS、Linux、iPhone、iPad、Android 也能使用網頁編輯器，但不提供這項 Windows 原生 PPT 複製功能。</p>
+    </section>
+    <section aria-labelledby="privacy">
+      <h2 id="privacy">免費使用，圖稿留在自己的裝置</h2>
+      <p>畫圖不需要登入或安裝。一般描圖與圖稿儲存在瀏覽器本機，不必上傳圖片；重要作品請下載 .skc 備份，清除瀏覽器資料會影響本機專案。</p>
+      <p>也提供選擇性開啟的程式指令介面與本機 MCP，讓程式或 AI 操作已授權的圖頁。預設關閉，開啟後，連接的 AI 工具可取得你允許讀取的圖稿資料。</p>
+      <p>原始碼採 MIT License，可自行修改、使用或散布，保留授權聲明即可。</p>
+    </section>
+    <section aria-labelledby="start">
+      <h2 id="start">直接開始</h2>
+      <p><a class="open-editor" href="./">免費開啟 Skechu</a></p>
+      <p>進入後點「新增底圖」，再選「自動描圖」，或使用描圖工具手動描邊。手機上可用雙指平移與縮放工作區域。</p>
+    </section>
+  </main>
+  <footer><nav aria-label="專案資源"><a href="https://github.com/evan6007/skechu-ppt">GitHub 與四段功能示範</a><a href="https://github.com/evan6007/skechu-ppt/blob/main/docs/automation.md">API / MCP 設定</a><a href="https://github.com/evan6007/skechu-ppt/blob/main/LICENSE">MIT License</a></nav></footer>
+</body>
+</html>

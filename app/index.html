@@ -6,7 +6,26 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Skechu-PPT — Trace. Shape. Present.</title>
+<title>Skechu-PPT｜免費自動描圖、磁吸描邊與 PowerPoint 向量編輯</title>
+<meta name="description" content="Skechu（Skechu-PPT）是免費、MIT 開源的線上描圖工具。將圖片重繪成可編輯線稿，支援自動描圖、磁吸邊緣、封閉區域填色與 SVG 匯出；搭配 Windows 連接服務可複製成原生 PowerPoint 物件。">
+<link rel="canonical" href="https://evan6007.github.io/skechu-ppt/">
+<link rel="sitemap" type="application/xml" href="sitemap.xml">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": "https://evan6007.github.io/skechu-ppt/#application",
+  "name": "Skechu-PPT",
+  "alternateName": "Skechu",
+  "url": "https://evan6007.github.io/skechu-ppt/",
+  "description": "Skechu is a free, open-source image tracing and vector editor with automatic tracing, magnetic edges, closed-region fills and SVG export. Native editable PowerPoint copying requires the Windows connection service and desktop PowerPoint.",
+  "applicationCategory": "DesignApplication",
+  "operatingSystem": "Windows, macOS, Linux, ChromeOS, iOS, Android",
+  "isAccessibleForFree": true,
+  "license": "https://github.com/evan6007/skechu-ppt/blob/main/LICENSE",
+  "sameAs": "https://github.com/evan6007/skechu-ppt"
+}
+</script>
 <link rel="icon" type="image/svg+xml" href="skechu-mark.svg?v=1">
 <link rel="apple-touch-icon" href="skechu-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -18,6 +37,7 @@
 <link rel="stylesheet" href="vendor/katex/katex.min.css?v=01611-local">
 <script src="vendor/katex/katex.min.js?v=01611-local"></script>
 <style>
+  .brand-name{margin:0;font:inherit}.about-link{display:block;padding:10px;color:var(--ink);text-decoration:none;border-radius:8px}.about-link:hover,.about-link:focus-visible{background:var(--surface-3,#e8ecef)}
   :root{--bg:#eef1f4;--panel:#fff;--ink:#24313a;--muted:#6d7b85;--line:#d7dde2;--accent:#7c3aed;--accent-soft:#f1eafe;--teal:#478e89;--orange:#df8b35;--pink:#ad497d;--shadow:0 8px 30px rgba(20,35,50,.10)}
   *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 Arial,"Microsoft JhengHei",sans-serif;overflow:hidden}
   button,input,select,textarea{font:inherit} button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:8px 10px;cursor:pointer} button:hover{background:#f4f7f9} button.primary{background:var(--accent);color:#fff;border-color:var(--accent)} button.active{background:#5b21b6;color:#fff;border-color:#163f68;box-shadow:0 0 0 3px rgba(25,118,210,.16)} button.danger{color:#a62626}
@@ -58,9 +78,10 @@
 <script>try{const savedTheme=localStorage.getItem('skechu-ui-theme');if(['graphite','mist','linen'].includes(savedTheme))document.documentElement.dataset.theme=savedTheme}catch{}</script>
 </head>
 <body>
+<noscript><p>Skechu-PPT 是免費開源的自動描圖與向量編輯工具。編輯器需要啟用 JavaScript。<a href="about.html">閱讀功能與使用說明</a>。</p></noscript>
 <div class="app">
   <header class="topbar">
-    <a class="brand" href="https://github.com/evan6007/skechu-ppt" target="_blank" rel="noopener" title="前往 Skechu-PPT GitHub 專案" aria-label="前往 Skechu-PPT GitHub 專案"><img class="brand-mark" src="skechu-mark.svg?v=1" alt="" aria-hidden="true"><span>Skechu-PPT</span></a>
+    <a class="brand" href="https://github.com/evan6007/skechu-ppt" target="_blank" rel="noopener" title="前往 Skechu-PPT GitHub 專案" aria-label="前往 Skechu-PPT GitHub 專案"><img class="brand-mark" src="skechu-mark.svg?v=1" alt="" aria-hidden="true"><h1 class="brand-name">Skechu-PPT</h1></a>
     <nav class="repo-actions" aria-label="GitHub 專案連結"><a id="github-star" class="repo-link star" href="https://github.com/evan6007/skechu-ppt" target="_blank" rel="noopener" title="開啟 GitHub 專案並按 Star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg><span>Star</span></a></nav>
     <button class="mobile-only mobile-panel-button" id="show-assets" aria-pressed="false"><span aria-hidden="true">▣</span>圖頁</button><button class="mobile-only mobile-panel-button" id="show-inspector" aria-pressed="false"><span aria-hidden="true">☷</span>圖層</button>
     <div class="tool-group" role="group" aria-label="工具模式"><span class="tool-label">模式</span><button id="select-tool" class="tool-button active" aria-pressed="true" title="選取（V）：左鍵拖物件移動；從空白處拖曳框選；Shift 可增選"><span class="tool-icon" aria-hidden="true">↖</span><span class="tool-text">選取</span></button><button id="pan-tool" class="tool-button" aria-pressed="false" title="拖移畫布（H）：按住左鍵拖動，不會移動物件；Esc／V 回到選取"><span class="tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 13V6a1.5 1.5 0 0 1 3 0v6-8a1.5 1.5 0 0 1 3 0v8-6a1.5 1.5 0 0 1 3 0v6-3a1.5 1.5 0 0 1 3 0v6c0 4-2.5 7-6 7h-1c-2 0-3.5-1-5-3l-4-5a1.5 1.5 0 0 1 2-2l2 1Z"/></svg></span><span class="tool-text">拖移</span></button><button id="trace-pen" class="tool-button" aria-pressed="false" title="點一下放錨點；可直接穿過既有物件開始新線；Enter／雙擊完成；Esc 取消"><span class="tool-icon" aria-hidden="true">✎</span><span class="tool-text">描圖</span></button><button id="magnetic-trace" class="tool-button active" aria-pressed="true" title="吸附參考圖的明暗或顏色交界"><span class="tool-icon magnet-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7v6a6 6 0 0 0 12 0V7"/><path class="magnet-pole" d="M4.8 3.5h5v5h-5zM14.2 3.5h5v5h-5z"/></svg></span><span class="tool-text" data-tool-label>磁吸</span></button></div>
@@ -79,7 +100,7 @@
     <div class="mobile-repo-actions" aria-label="GitHub Star"><a class="repo-link star" href="https://github.com/evan6007/skechu-ppt" target="_blank" rel="noopener" title="開啟 GitHub 專案並按 Star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg><span>Star</span></a></div>
     <div class="project-identity"><strong>專案</strong><select id="project-select" title="切換專案"></select><input id="project-name" type="text" aria-label="專案名稱" placeholder="專案名稱"><button class="compact" id="new-project" type="button">＋ 新專案</button><button class="compact danger" id="delete-project" type="button">刪除專案</button></div>
     <div class="top-page-controls" aria-hidden="true"><div class="page-tabs" id="page-tabs"></div><input id="page-name" type="text" aria-label="目前圖頁名稱" placeholder="圖頁名稱"><button class="compact" id="add-page" type="button">＋ 新增圖頁</button><button class="compact" id="duplicate-page" type="button">複製圖頁</button><button class="compact danger" id="delete-page" type="button">刪除圖頁</button></div>
-    <div class="export-actions"><span class="autosave" id="autosave-status">準備中…</span><progress id="ppt-progress" class="ppt-progress" max="100" value="0" hidden aria-label="PowerPoint 複製進度"></progress><button id="copy-ppt" class="ppt-copy-button" type="button" aria-label="複製可編輯物件到 PowerPoint" title="複製可編輯物件到 PowerPoint"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="7" width="12" height="14" rx="2"/><path d="M15 7V3H4v14h4"/></svg><span class="sr-only">複製到 PPT</span><small id="copy-ppt-mode" class="sr-only"></small></button><details class="action-menu export-menu"><summary aria-label="開啟專案與匯出選單" title="專案與匯出"><svg class="project-files-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8H6.5A3.5 3.5 0 0 0 3 11.5v5A3.5 3.5 0 0 0 6.5 20h10a3.5 3.5 0 0 0 3.5-3.5V14"/><path d="M13 4h7v7M20 4l-9 9"/></svg></summary><div class="action-menu-popover"><button id="copy-all-ppt" type="button" title="全選可輸出的物件並複製，不包含底圖">全選並複製到 PPT</button><button id="save-json">下載專案</button><label><input id="load-json" type="file" accept=".skc,.sktc,.sketchou,.sketchou.json,.json,application/json" hidden><button id="load-button" type="button">載入專案</button></label><button id="export-svg">匯出 SVG</button></div></details></div>
+    <div class="export-actions"><span class="autosave" id="autosave-status">準備中…</span><progress id="ppt-progress" class="ppt-progress" max="100" value="0" hidden aria-label="PowerPoint 複製進度"></progress><button id="copy-ppt" class="ppt-copy-button" type="button" aria-label="複製可編輯物件到 PowerPoint" title="複製可編輯物件到 PowerPoint"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="7" width="12" height="14" rx="2"/><path d="M15 7V3H4v14h4"/></svg><span class="sr-only">複製到 PPT</span><small id="copy-ppt-mode" class="sr-only"></small></button><details class="action-menu export-menu"><summary aria-label="開啟專案與匯出選單" title="專案與匯出"><svg class="project-files-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8H6.5A3.5 3.5 0 0 0 3 11.5v5A3.5 3.5 0 0 0 6.5 20h10a3.5 3.5 0 0 0 3.5-3.5V14"/><path d="M13 4h7v7M20 4l-9 9"/></svg></summary><div class="action-menu-popover"><button id="copy-all-ppt" type="button" title="全選可輸出的物件並複製，不包含底圖">全選並複製到 PPT</button><button id="save-json">下載專案</button><label><input id="load-json" type="file" accept=".skc,.sktc,.sketchou,.sketchou.json,.json,application/json" hidden><button id="load-button" type="button">載入專案</button></label><button id="export-svg">匯出 SVG</button><a class="about-link" href="about.html" target="_blank" rel="noopener">關於 Skechu · 功能說明</a></div></details></div>
   </nav>
   <div id="file-entry-notice" class="file-entry-notice" hidden>目前直接開啟 HTML：描圖可用，但可編輯 PPT 複製需要本機服務。請先下載 .skc 保存圖稿，再雙擊資料夾裡的「啟動Skechu-PPT.cmd」並載入專案。<a href="http://127.0.0.1:8766/" target="_blank" rel="noopener">開啟本機服務 ↗</a></div>
   <section id="clipboard-feedback" class="clipboard-feedback" aria-label="PowerPoint 複製結果" hidden>
