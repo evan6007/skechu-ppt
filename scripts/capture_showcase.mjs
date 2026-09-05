@@ -142,12 +142,28 @@ try {
   await evaluate(`items=[deepCopy(window.__autoReference)];clearSelectionState();render();document.getElementById('status').textContent='已匯入底圖'`);
   await delay(250);
   await capture('auto-01-imported.png');
-  await evaluate(`document.getElementById('auto-trace').click()`);
-  await waitFor(`document.getElementById('auto-trace-dialog').open`);
-  await capture('auto-02-opening.png');
+  await evaluate(`document.getElementById('auto-trace').click();autoTraceDialogMotion?.animation.pause()`);
+  await waitFor(`document.getElementById('auto-trace-dialog').open&&autoTraceDialogMotion?.animation`);
+  await evaluate(`autoTraceDialog.classList.remove('auto-trace-entering')`);
+  const autoOpenFrames=12;
+  for(let step=0;step<autoOpenFrames;step+=1){
+    const time=Math.min(419,Math.round(step/(autoOpenFrames-1)*419));
+    await evaluate(`autoTraceDialogMotion.animation.currentTime=${time};new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`);
+    await capture(`auto-02-opening-${String(step).padStart(2,'0')}.png`);
+  }
+  await evaluate(`autoTraceDialogMotion.animation.finish()`);
+  await waitFor(`!autoTraceDialogMotion`);
   await waitFor(`document.getElementById('auto-trace-svg').getAttribute('aria-busy')==='false'&&!document.getElementById('auto-trace-apply').disabled`, 45000);
   await capture('auto-03-preview.png');
-  await evaluate(`document.getElementById('auto-trace-apply').click()`);
+  await evaluate(`document.getElementById('auto-trace-apply').click();autoTraceDialogMotion?.animation.pause()`);
+  await waitFor(`autoTraceDialogMotion?.animation`);
+  const autoCloseFrames=10;
+  for(let step=0;step<autoCloseFrames;step+=1){
+    const time=Math.min(359,Math.round(step/(autoCloseFrames-1)*359));
+    await evaluate(`autoTraceDialogMotion.animation.currentTime=${time};new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`);
+    await capture(`auto-04-closing-${String(step).padStart(2,'0')}.png`);
+  }
+  await evaluate(`autoTraceDialogMotion.animation.finish()`);
   await waitFor(`!document.getElementById('auto-trace-dialog').open`);
   await delay(250);
   await capture('auto-04-applied.png');
@@ -160,6 +176,7 @@ try {
   }
   const anchorCount = await evaluate(`document.getElementById('select-all').click();items.filter(item=>item.points&&!item.referenceOnly).reduce((sum,item)=>sum+item.points.length,0)`);
   metadata.autoTraceAnchors = anchorCount;
+  metadata.autoTraceMotion = { openingFrames: autoOpenFrames, closingFrames: autoCloseFrames, source: 'real shared-image animation' };
   await delay(250);
   await capture('auto-06-all-anchors.png');
 
