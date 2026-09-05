@@ -26,18 +26,18 @@
 
 ## See it at a glance
 
-<table>
+<table width="100%">
   <tr>
-    <td width="50%" valign="top"><img src="docs/media/features/feature-magnetic-trace.gif" width="720" alt="The cursor moves above a line while the orange tracing point stays snapped to its edge"></td>
-    <td width="50%" valign="top"><img src="docs/media/features/feature-auto-trace.gif" width="720" alt="A reference image becomes unfilled line art with editable anchors"></td>
+    <td width="50%" valign="top"><img src="docs/media/features/feature-magnetic-trace.gif" width="100%" alt="The cursor moves above a line while the orange tracing point stays snapped to its edge"></td>
+    <td width="50%" valign="top"><img src="docs/media/features/feature-auto-trace.gif" width="100%" alt="A reference image becomes unfilled line art with editable anchors"></td>
   </tr>
   <tr>
     <td valign="top"><strong>Magnetic tracing</strong><br>Move near an image boundary. The orange point follows the edge.</td>
     <td valign="top"><strong>Auto trace</strong><br>Turn a reference into line art. Every anchor stays editable.</td>
   </tr>
   <tr>
-    <td width="50%" valign="top"><img src="docs/media/features/feature-rainbow-fill.gif" width="720" alt="Line-art regions receive color, including areas enclosed by T-junctions"></td>
-    <td width="50%" valign="top"><img src="docs/media/features/feature-powerpoint.gif" width="720" alt="Traced artwork is pasted into PowerPoint and its editable parts are spread across a slide"></td>
+    <td width="50%" valign="top"><img src="docs/media/features/feature-rainbow-fill.gif" width="100%" alt="Line-art regions receive color, including areas enclosed by T-junctions"></td>
+    <td width="50%" valign="top"><img src="docs/media/features/feature-powerpoint.gif" width="100%" alt="Traced artwork is pasted into PowerPoint and its editable parts are spread across a slide"></td>
   </tr>
   <tr>
     <td valign="top"><strong>Connected-region fill</strong><br>Fill areas enclosed by your line art—even at T-junctions.</td>
