@@ -17,6 +17,7 @@ const EDITOR_ICONS = {
   palette: '<path d="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-3.7 1.7 1.7 0 0 1 1-3.1h2A4 4 0 0 0 21 10c0-4-4-7-9-7Z"/><circle cx="7" cy="11" r=".8"/><circle cx="10" cy="7" r=".8"/><circle cx="15" cy="7" r=".8"/>',
   properties: '<path d="M4 7h5m4 0h7M4 17h9m4 0h3"/><circle cx="11" cy="7" r="2"/><circle cx="15" cy="17" r="2"/>',
   copy: '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3"/>',
+  paste: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2 M8 11h8M8 16h6"/>',
   delete: '<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',
   close: '<path d="m6 6 12 12M18 6 6 18"/>',
   plus: '<path d="M5 12h14M12 5v14"/>',
@@ -60,15 +61,36 @@ function syncMobileControls() {
   if (!mobileEditorUi) return;
   const chosen = items.filter(it => selectedIds.has(it.id));
   const editable = chosen.filter(it => !it.locked);
-  mobileEditorUi.actions.hidden = !chosen.length && !traceDraft;
-  mobileEditorUi.count.textContent = traceDraft ? '描圖中' : `${chosen.length} 個物件${editable.length ? '' : '・已鎖定'}`;
+  const hasClipboard = internalClipboard.length > 0;
+  mobileEditorUi.actions.hidden = !chosen.length && !traceDraft && !hasClipboard;
+  mobileEditorUi.count.textContent = traceDraft ? '描圖中' : chosen.length
+    ? `${chosen.length} 個物件${editable.length ? '' : '・已鎖定'}` : `可貼上 ${internalClipboard.length} 個`;
   mobileEditorUi.remove.disabled = !editable.length || !!traceDraft;
-  mobileEditorUi.duplicate.disabled = !editable.length || !!traceDraft;
-  mobileEditorUi.remove.hidden = mobileEditorUi.duplicate.hidden = !!traceDraft;
+  mobileEditorUi.copy.disabled = !chosen.length || !!traceDraft;
+  mobileEditorUi.paste.disabled = !hasClipboard || !!traceDraft;
+  mobileEditorUi.remove.hidden = mobileEditorUi.copy.hidden = !chosen.length || !!traceDraft;
+  mobileEditorUi.paste.hidden = !!traceDraft;
+  mobileEditorUi.clear.hidden = !chosen.length && !traceDraft;
   mobileEditorUi.finish.hidden = !traceDraft;
   mobileEditorUi.tabs.properties.disabled = !chosen.length;
   mobileEditorUi.undo.disabled = !history.length;
   mobileEditorUi.redo.disabled = !future.length;
+}
+function copyMobileSelection() {
+  if (canvasPasteBlocked() || canvasTouchNavigation) return;
+  if (!copyInternalSelection()) return;
+  syncMobileControls();
+  mobileEditorUi.count.textContent = `已複製 ${internalClipboard.length} 個`;
+  document.getElementById('status').textContent = '已複製到編輯器；按「貼上」才會新增物件';
+}
+function pasteMobileSelection() {
+  if (canvasPasteBlocked() || canvasTouchNavigation || !internalClipboard.length) return;
+  pasteInternalSelection();
+  syncMobileControls();
+}
+function duplicateForViewport(event, desktopDuplicate) {
+  if (mobileEditorUi.media.matches) copyMobileSelection();
+  else desktopDuplicate.call(event.currentTarget, event);
 }
 function initializeMobileControls() {
   // These replace OS-dependent text glyphs on every platform, without changing
@@ -125,15 +147,18 @@ function initializeMobileControls() {
   const actions = document.createElement('div'); actions.className = 'mobile-selection-actions';
   actions.setAttribute('role','group'); actions.setAttribute('aria-label','選取物件操作');
   const count = document.createElement('span'); count.className = 'mobile-selection-count';
-  const duplicate = makeButton('mobile-duplicate','copy','複製');
+  count.setAttribute('role', 'status');
+  const copy = makeButton('mobile-copy','copy','複製');
+  const paste = makeButton('mobile-paste','paste','貼上');
   const remove = makeButton('mobile-delete','delete','刪除'); remove.className = 'danger';
   const finish = makeButton('mobile-finish-trace','done','完成');
   const clear = makeButton('mobile-clear-selection','close','取消');
-  duplicate.onclick = () => { document.getElementById('duplicate').click(); syncMobileControls(); };
+  copy.onclick = copyMobileSelection;
+  paste.onclick = pasteMobileSelection;
   remove.onclick = () => { deleteSelectedObjects(); syncMobileControls(); };
   finish.onclick = () => { finishTraceDraft(); syncMobileControls(); };
   clear.onclick = () => { if (traceDraft) cancelTraceDraft(); else clearSelectionState(); syncMobileControls(); };
-  actions.append(count, duplicate, remove, finish, clear); workspace.append(actions);
+  actions.append(count, copy, paste, remove, finish, clear); workspace.append(actions);
   const zoomTools = document.createElement('div'); zoomTools.className = 'mobile-zoom-controls';
   zoomTools.setAttribute('role','group'); zoomTools.setAttribute('aria-label','畫布縮放');
   for (const [id, icon, label, action] of [
@@ -143,7 +168,12 @@ function initializeMobileControls() {
   ]) { const button = makeButton(id,icon,label); button.onclick = action; zoomTools.append(button); }
   workspace.append(zoomTools);
   const media = window.matchMedia('(max-width: 900px)');
-  mobileEditorUi = {media, sidebar, inspector, tabs, actions, count, duplicate, remove, finish, undo:undoButton, redo:redoButton};
+  mobileEditorUi = {media, sidebar, inspector, tabs, actions, count, copy, paste, clear, remove, finish, undo:undoButton, redo:redoButton};
+  // The shared properties panel must also copy only on phones. Keep its
+  // established desktop duplicate command unchanged when the viewport widens.
+  const duplicateButton = document.getElementById('duplicate');
+  const desktopDuplicate = duplicateButton.onclick;
+  duplicateButton.onclick = event => duplicateForViewport(event, desktopDuplicate);
   media.addEventListener('change', () => { closeMobilePanels(); syncMobileControls(); });
   let viewportWidth = window.innerWidth;
   window.addEventListener('resize', () => {

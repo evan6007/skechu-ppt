@@ -58,9 +58,10 @@
   .workspace .actions button{min-height:44px}
   .workspace input[type="range"]{height:36px!important;touch-action:pan-y}
   .mobile-selection-actions:not([hidden]){position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:3px;max-width:calc(100% - 16px);padding:3px 4px 3px 9px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface);box-shadow:0 3px 12px rgba(0,0,0,.16);z-index:20}
-  .mobile-selection-count{font-size:12px;color:var(--muted);margin-right:3px;white-space:nowrap}
+  .mobile-selection-count{font-size:12px;color:var(--muted);margin-right:3px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
   .mobile-selection-actions button,.mobile-zoom-controls button{display:grid;place-items:center;gap:2px;min-width:44px;min-height:44px;padding:3px;border:0;background:transparent;box-shadow:none;touch-action:manipulation}
-  .mobile-selection-actions button span{font-size:11px;line-height:13px}
+  .mobile-selection-actions button{flex-shrink:0}
+  .mobile-selection-actions button span{font-size:12px;line-height:14px}
   .mobile-selection-actions button:disabled{opacity:.35}
   .mobile-selection-actions button[hidden]{display:none}
   .mobile-zoom-controls{position:absolute;bottom:8px;left:8px;display:flex;padding:2px;gap:2px;border:1px solid var(--line);border-radius:10px;background:var(--surface);z-index:20}
