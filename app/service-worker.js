@@ -1,10 +1,10 @@
-const CACHE_NAME = 'skechu-ppt-v63-instant-star';
+const CACHE_NAME = 'skechu-ppt-v64-instant-star';
 const APP_SHELL = [
   './',
   './index.html',
   './theme-controls.js?v=46-canvas-shapes',
   './theme-controls.css?v=55-canvas-color-menu',
-  './github-star.js?v=63-instant-star',
+  './github-star.js?v=64-instant-star',
   './github-star.css?v=63-instant-star',
   './local-smoothing.js',
   './region-fill.js',
