@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const read=name=>fs.readFileSync(new URL('../'+name,import.meta.url),'utf8');
-const readme=read('README.md'),asset='assets/brand/open-web-cta.svg',svg=read(asset),gifBuilder=read('scripts/build_showcase_gifs.py'),pptCapture=read('scripts/capture_powerpoint_demo.py'),browserCapture=read('scripts/capture_showcase.mjs');
+const readme=read('README.md'),asset='assets/brand/open-web-cta.svg',svg=read(asset),gifBuilder=read('scripts/showcase/build_showcase_gifs.py'),pptCapture=read('scripts/showcase/capture_powerpoint_demo.py'),browserCapture=read('scripts/showcase/capture_showcase.mjs');
 const primary=readme.match(/<a href="([^"]+)"><img src="assets\/brand\/open-web-cta.svg"[^>]+><\/a>/);
 assert.ok(primary,'A large linked Open Web card is the primary entry');
 assert.equal(primary[1],'https://evan6007.github.io/skechu-ppt/');
@@ -15,11 +15,15 @@ assert.ok(!/<script|foreignObject|(?:href|src)=/i.test(svg),'The entry card is a
 assert.ok(readme.includes('Copy to PPT is Windows-only'),'Platform limitations remain explicit');
 const featureGifs=['feature-magnetic-trace.gif','feature-auto-trace.gif','feature-rainbow-fill.gif','feature-powerpoint.gif'];
 for(const name of featureGifs){
-  const path=`docs/media/${name}`,data=fs.readFileSync(new URL('../'+path,import.meta.url));
+  const path=`docs/media/features/${name}`,data=fs.readFileSync(new URL('../'+path,import.meta.url));
   assert.ok(readme.includes(path),`README must display ${name}`);
   assert.equal(data.subarray(0,3).toString(),'GIF',`${name} must be a real GIF`);
   assert.ok(data.length>50000,`${name} must contain a meaningful UI recording`);
+  assert.equal(data.readUInt16LE(6),720);assert.equal(data.readUInt16LE(8),405);
 }
+const demoRows=[...readme.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(match=>match[1]).filter(row=>row.includes('media/features/'));
+assert.equal(demoRows.length,2);for(const row of demoRows){assert.equal((row.match(/<img /g)||[]).length,2);assert.ok(!row.includes('<strong>'),'Videos and captions must occupy separate rows');assert.equal((row.match(/valign="top"/g)||[]).length,2);}
+assert.ok(readme.includes('docs/automation.md'),'Automation has a real setup guide, not an unsupported badge');
 assert.ok(!readme.includes('editor-workflow.gif'),'The obsolete combined montage must not replace four focused demos');
 assert.ok(gifBuilder.includes('fixed_view')&&gifBuilder.includes('trace_view')&&gifBuilder.includes('aero_arrow.cur')&&gifBuilder.includes('ppt_all_selected')&&gifBuilder.includes('ppt_explode'),'Feature demos must use fixed views, a normal system cursor, real magnetic snapping, full PowerPoint selection and independently editable objects');
 assert.ok(browserCapture.includes("auto-00-blank.png")&&browserCapture.includes("auto-01-imported.png")&&browserCapture.includes("auto-05-shrink-")&&browserCapture.includes("auto-06-all-anchors.png")&&gifBuilder.includes('auto_blank')&&gifBuilder.includes('auto_shrink')&&gifBuilder.includes('無填色向量線稿'),'Auto trace demo must start blank, import a reference, reveal unfilled line art after moving the source to the lower-left, then select every editable anchor');

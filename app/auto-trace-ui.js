@@ -4,6 +4,9 @@ let autoTraceReviewCursor=0,autoTracePreviewSelection=null;
 let autoTraceDialogMotion=null,autoTraceDialogClosing=false;
 const autoJunctionPositions=new Map();
 function createAutoTraceJob() {
+ // Some embedded browsers restrict Blob URLs. HTTP editions can use the
+ // packaged worker directly without moving expensive tracing onto the UI thread.
+ if(typeof URL.createObjectURL!=='function' && location.protocol!=='file:')return new Worker('auto-trace-worker.js?v=70-automation');
  // The worker contains the already-loaded engine, with no file:// fetch or importScripts.
  // This also keeps the preview worker and editable-anchor engine on the same version.
  const url=URL.createObjectURL(new Blob([AutoTrace.workerSource()],{type:'text/javascript'}));

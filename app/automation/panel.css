@@ -1,0 +1,11 @@
+.automation-panel{position:absolute;z-index:65;right:12px;top:12px;width:min(360px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;padding:16px;background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 8px 30px #0003;font-size:14px;line-height:1.5;overscroll-behavior:contain}
+.automation-panel[hidden]{display:none}
+.automation-indicator{min-width:44px;min-height:36px;font-weight:700}.automation-indicator[hidden]{display:none!important}
+.automation-panel header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.automation-panel header button{font-size:22px;min-width:44px;min-height:44px}
+.automation-panel p{margin:10px 0}.automation-panel .automation-status{font-weight:600}
+.automation-actions{display:flex;gap:8px;flex-wrap:wrap}.automation-panel button{min-height:44px}
+.automation-panel summary{cursor:pointer;padding:10px 0}.automation-panel label{display:block;margin:8px 0}
+.automation-panel textarea,.automation-panel select{display:block;width:100%;font-size:16px;margin-top:5px}
+.automation-panel textarea{height:100px;resize:vertical}.automation-panel pre{max-height:200px;overflow:auto;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:900px){.automation-panel{top:auto;bottom:8px;max-height:42dvh;padding:12px}}

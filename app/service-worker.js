@@ -1,7 +1,11 @@
-const CACHE_NAME = 'skechu-ppt-v69-copy-paste';
+const CACHE_NAME = 'skechu-ppt-v70-automation';
 const APP_SHELL = [
   './',
   './index.html',
+  './automation/core.js?v=70-automation',
+  './automation/editor.js?v=70-automation',
+  './automation/panel.css?v=70-automation',
+  './automation/commands.json',
   './mobile-controls.js?v=69-copy-paste',
   './mobile-controls.css?v=69-copy-paste',
   './touch-gestures.js?v=68-touch-gestures',
@@ -28,8 +32,10 @@ const APP_SHELL = [
   './clipboard-controls.css?v=59-inline-ppt',
   './paint-tools.css?v=38-responsive-shell',
   './auto-trace.js?v=26-photo-trace',
-  './auto-trace-ui.js?v=47-contain-coordinates',
+  './auto-trace.js',
+  './auto-trace-ui.js?v=70-worker-fallback',
   './auto-trace-worker.js',
+  './auto-trace-worker.js?v=70-automation',
   './auto-trace.css?v=28-shared-image',
   './manifest.webmanifest',
   './skechu-mark.svg',

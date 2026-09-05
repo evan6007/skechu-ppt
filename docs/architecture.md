@@ -12,7 +12,7 @@ Python bridge (ThreadingHTTPServer)
 Microsoft PowerPoint native shapes
 ```
 
-The browser editor is a dependency-light single-page application. It performs hit testing, Bézier routing, magnetic reference analysis, project persistence, and SVG export locally.
+The browser editor is a dependency-light single-page application. It performs hit testing, Bézier routing, magnetic reference analysis, project persistence, and SVG export locally. An optional, separately installed [command/MCP interface](automation.md) now reuses that editor rather than maintaining a second drawing engine.
 
 The Python bridge serves the static editor and handles `/prepare` and `/copy`. HTTP requests remain concurrent, while every PowerPoint COM operation is routed through one permanent `ThreadPoolExecutor(max_workers=1)`. That matters because Office COM objects are apartment-threaded and cached groups are only safe to reuse from their owning worker.
 
@@ -26,6 +26,24 @@ The bridge keeps a bounded LRU of six app-owned hidden presentation caches keyed
 
 ## Trust boundary
 
+Automation is disabled by default and scoped to one explicitly approved page. `app/automation/core.js` validates bounded commands, checks document revisions and locks, and stages tracing results. `editor.js` adapts those commands to the existing history, render and worker paths. The stdio MCP adapter under `services/editor-mcp/` serves its own local editor and forwards single-flight commands through an authenticated same-origin channel. It never attaches silently to another tab. See [automation privacy and safety](automation.md#safety-and-privacy) for the explicit AI data-sharing boundary.
+
 The server binds to `127.0.0.1` and serves only the checked-out `app/` directory. Project images and JSON stay in the browser or local downloads. Drawing has no telemetry, account requirement, or background upload. The optional [GitHub Star authorization service](github-star-auth.md) handles GitHub identity and Star state separately; it never receives artwork or Windows-bridge data. An empty service URL disables authorization and preserves the repository link.
 
 Remote operations require a matching official/local Origin and the server's loopback Host and port. CORS permits only those origins, never `*`; web requests are size-limited JSON, with type, finite-coordinate and image-path checks before any Office work or cache cancellation. Browser Local Network Access permission remains browser-controlled. No POST is retried automatically after a transport failure because Office may already have written the clipboard.
+
+## Repository map
+
+| Path | Responsibility |
+| --- | --- |
+| `app/` | Static editor, vendored assets and Windows bridge |
+| `app/automation/` | Command schemas, validation/transactions, editor adapter and opt-in panel |
+| `services/editor-mcp/` | Optional Python MCP connector and its isolated dependencies |
+| `services/github-star/` | GitHub identity/Star service; unrelated to artwork commands |
+| `docs/` | User, architecture, security-boundary and integration guides |
+| `docs/media/features/` | Four published feature GIFs |
+| `scripts/showcase/` | Showcase capture/build scripts; not application runtime |
+| `tests/` | Geometry, UI, transport and security regressions |
+| `packaging/` | Windows installer assets and configuration |
+
+Generated captures, local projects, virtual environments and installer outputs stay ignored. No runtime path depends on a showcase file.

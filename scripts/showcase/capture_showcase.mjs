@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const [projectFile, outputDir = 'docs/media/showcase-frames'] = process.argv.slice(2);
 if (!projectFile) {
-  console.error('Usage: node scripts/capture_showcase.mjs <project.skc> [output-dir]');
+  console.error('Usage: node scripts/showcase/capture_showcase.mjs <project.skc> [output-dir]');
   process.exit(2);
 }
 

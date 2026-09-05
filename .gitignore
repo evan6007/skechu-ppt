@@ -8,6 +8,7 @@ __pycache__/
 .dev.vars.*
 .wrangler/
 node_modules/
+.venv*/
 build/
 dist/
 dist-installer/

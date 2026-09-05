@@ -8,7 +8,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 
 FRAMES_DIR = Path(sys.argv[1] if len(sys.argv) > 1 else "docs/media/showcase-frames")
-OUTPUT_DIR = Path(sys.argv[2] if len(sys.argv) > 2 else "docs/media")
+OUTPUT_DIR = Path(sys.argv[2] if len(sys.argv) > 2 else "docs/media/features")
 SIZE = (720, 405)
 CONTENT = (696, 351)
 FRAME_DURATION_MS = 40

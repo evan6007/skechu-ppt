@@ -6,6 +6,20 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Added
 
+- Opt-in, current-page command API with 12 named commands and a separately installed official-SDK MCP connector. Includes paginated inspection, batch styles/movement, editable shapes, confirmed deletion, undo/redo, SVG output and staged/cancellable background tracing. Strict schemas, revision guards and one-step history protect interactive work.
+- Automation guide, repository map and optional MCP protocol/security checks. The ordinary static web editor does not require the connector or an AI account.
+
+### Changed
+
+- README feature recordings now occupy separate, top-aligned rows from their captions. All four retain their original 720 × 405 dimensions and colors.
+- Published feature GIFs moved to `docs/media/features/`; showcase tooling moved to `scripts/showcase/`. Existing local projects, MP4 exports and generated files were not removed.
+
+### Fixed
+
+- Embedded browsers without Blob URL support can load the packaged automatic-tracing worker over HTTP instead of running the heavy operation on the UI thread.
+
+### Previously added
+
 - Optional GitHub App authorization for the hosted Star button: show the authenticated user's actual state, add or remove a star in place, and keep drawing available without login. The dedicated service has fixed repository access, PKCE/state validation and encrypted short-lived sessions; client secrets and raw GitHub tokens never enter the static editor.
 - Instant yellow Star feedback with a reduced-motion-aware animation. Repeated clicks coalesce after 450 ms; background writes are serialized, preserve the latest choice and reconcile failures without automatic retries.
 - A full-size brain reference on the first-run canvas, replacing the generic demo shapes. Newly imported tracing references start unlocked; saved projects and existing lock choices are preserved.

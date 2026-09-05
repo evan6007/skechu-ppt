@@ -44,6 +44,8 @@ jobs:
         run: node tests/check_selection.mjs
       - name: Check mobile controls and compact panels
         run: node tests/check_mobile.mjs
+      - name: Check opt-in automation commands
+        run: node tests/check_automation.mjs
       - name: Check two-finger canvas navigation
         run: node tests/check_touch_gestures.mjs
       - name: Check page actions and image paste
@@ -54,3 +56,7 @@ jobs:
         run: node tests/check_auto_trace.mjs
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
+      - name: Install optional MCP test dependency
+        run: python -m pip install -r services/editor-mcp/requirements.txt
+      - name: Check real MCP protocol round trip
+        run: python tests/check_mcp_protocol.py

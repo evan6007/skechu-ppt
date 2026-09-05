@@ -14,7 +14,7 @@ import win32gui
 import win32ui
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "app"))
 import bridge  # noqa: E402
 

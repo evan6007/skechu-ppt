@@ -54,6 +54,7 @@
 <link rel="stylesheet" href="theme-controls.css?v=55-canvas-color-menu">
 <link rel="stylesheet" href="github-star.css?v=63-instant-star">
 <link rel="stylesheet" href="mobile-controls.css?v=69-copy-paste">
+<link rel="stylesheet" href="automation/panel.css?v=70-automation">
 <script>try{const savedTheme=localStorage.getItem('skechu-ui-theme');if(['graphite','mist','linen'].includes(savedTheme))document.documentElement.dataset.theme=savedTheme}catch{}</script>
 </head>
 <body>
@@ -159,9 +160,11 @@
 <script src="web-ppt-client.js?v=60-keyboard-copy"></script>
 <script src="ppt-preparation.js?v=59-inline-ppt"></script>
 <script src="auto-trace.js?v=26-photo-trace"></script>
-<script src="auto-trace-ui.js?v=47-contain-coordinates"></script>
+<script src="auto-trace-ui.js?v=70-worker-fallback"></script>
 <script src="mobile-controls.js?v=69-copy-paste"></script>
 <script src="touch-gestures.js?v=68-touch-gestures"></script>
+<script src="automation/core.js?v=70-automation"></script>
+<script src="automation/editor.js?v=70-automation"></script>
 <script>
 const svg=document.getElementById('stage'), scene=document.getElementById('scene'), selection=document.getElementById('selection'), gridLayer=document.getElementById('grid-layer'),stageWrap=document.querySelector('.stage-wrap'),stageShell=document.querySelector('.stage-shell');
 const workspace=document.querySelector('.workspace');
@@ -234,6 +237,7 @@ function nativeBody(sourceItems=items){return JSON.stringify({items:paintSceneIt
 async function readNativeStream(response,onProgress){if(!response.ok)throw new Error((await response.json().catch(()=>null))?.error||`PowerPoint bridge ${response.status}`);if(!response.body)throw new Error('瀏覽器不支援串流進度');const reader=response.body.getReader(),decoder=new TextDecoder;let buffer='',result=null;const accept=line=>{if(!line.trim())return;const event=JSON.parse(line);if(event.type==='progress')onProgress?.(event);else if(event.type==='result')result=event};while(true){const {value,done}=await reader.read();buffer+=decoder.decode(value||new Uint8Array,{stream:!done});const lines=buffer.split('\n');buffer=lines.pop();for(const line of lines)accept(line);if(done)break}if(buffer.trim())accept(buffer);if(!result?.ok)throw new Error(result?.error||'PowerPoint bridge failed');return result}
 function currentNativeItems(){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]);return ids.length?items.filter(it=>ids.includes(it.id)):items}
 function renderProjectNav(){
+ window.automationPageChanged?.();
  const project=activeProject(),page=activePage(),select=document.getElementById('project-select');
  select.innerHTML=projects.map(p=>`<option value="${p.id}" ${p.id===activeProjectId?'selected':''}>${esc(p.name)}</option>`).join('');
  document.getElementById('project-name').value=project?.name||'';document.getElementById('page-name').value=page?.name||'';document.getElementById('sidebar-page-name').value=page?.name||'';
@@ -608,6 +612,7 @@ initializeWebPptClient();
 initializeWorkspaceActions();
 initializeMobileControls();
 initializeTouchGestures();
+initializeAutomationControls();
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./service-worker.js').catch(error=>console.info('Offline install unavailable.',error));
 initializeWorkspace().then(stabilizeTypography);
 </script>

@@ -2,13 +2,13 @@
   <img src="assets/brand/logo-banner-skechu-v4.svg" width="620" alt="Skechu-PPT">
 </p>
 
-<p align="center"><strong>Trace an image into clean, editable vectors—without learning a complicated design tool.</strong></p>
+<p align="center"><strong>Trace images. Refine every curve. Keep editing in PowerPoint.</strong><br>A free, open-source editor for turning flat images into editable artwork.</p>
 
 <p align="center">
   <a href="https://evan6007.github.io/skechu-ppt/"><img src="assets/brand/open-web-cta.svg" width="620" alt="Open Web — launch Skechu-PPT free in your browser. No installation or sign-in."></a>
 </p>
 
-<p align="center"><strong>Click Open Web and start drawing.</strong><br>免安裝、免登入，打開網頁就能開始描圖。</p>
+<p align="center">免安裝、免登入。匯入圖片，描線、填色，再把每個物件繼續改。</p>
 
 <p align="center">Works on Windows, macOS, Linux, Chromebook, iPhone, iPad, and Android.<br>Need native editable PowerPoint layers? <a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe">Get the Windows installer →</a></p>
 
@@ -28,22 +28,42 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/media/feature-magnetic-trace.gif" alt="A close-up pointer moves slowly just above a curved line while an orange trace point stays snapped to it"><br><strong>Magnetic tracing</strong> — move near an image boundary and the orange point follows the real edge.</td>
-    <td width="50%"><img src="docs/media/feature-auto-trace.gif" alt="A blank canvas receives a reference image, produces unfilled vector line art, moves the reference into a corner, and reveals every editable anchor"><br><strong>Auto trace</strong> — import a reference, generate clean line art, move the source aside, and press Ctrl+A to edit every anchor.</td>
+    <td width="50%" valign="top"><img src="docs/media/features/feature-magnetic-trace.gif" width="720" alt="The cursor moves above a line while the orange tracing point stays snapped to its edge"></td>
+    <td width="50%" valign="top"><img src="docs/media/features/feature-auto-trace.gif" width="720" alt="A reference image becomes unfilled line art with editable anchors"></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/feature-rainbow-fill.gif" alt="Enclosed regions formed by complex line art are filled while T-junction boundaries remain intact"><br><strong>Connected-region fill</strong> — fill enclosed areas formed by your line art, including regions closed by T-junctions.</td>
-    <td width="50%"><img src="docs/media/feature-powerpoint.gif" alt="Complex traced artwork is selected, copied into PowerPoint, spread across the slide, then every editable object is selected"><br><strong>Native PowerPoint objects</strong> — copy any traced artwork into PowerPoint and edit every line, fill, and region independently.</td>
+    <td valign="top"><strong>Magnetic tracing</strong><br>Move near an image boundary. The orange point follows the edge.</td>
+    <td valign="top"><strong>Auto trace</strong><br>Turn a reference into line art. Every anchor stays editable.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/media/features/feature-rainbow-fill.gif" width="720" alt="Line-art regions receive color, including areas enclosed by T-junctions"></td>
+    <td width="50%" valign="top"><img src="docs/media/features/feature-powerpoint.gif" width="720" alt="Traced artwork is pasted into PowerPoint and its editable parts are spread across a slide"></td>
+  </tr>
+  <tr>
+    <td valign="top"><strong>Connected-region fill</strong><br>Fill areas enclosed by your line art—even at T-junctions.</td>
+    <td valign="top"><strong>Native PowerPoint objects</strong><br>Edit lines, fills, and regions independently in desktop PowerPoint.</td>
   </tr>
 </table>
 
-| ✦ **Auto trace** | 🧲 **Magnetic pen** | ◉ **Anchor editing** | 🪣 **Paint bucket** |
-| :---: | :---: | :---: | :---: |
-| Image → editable paths | Follow visible boundaries | Refine every curve | Fill closed regions |
-| **▧ Pages** | **☷ Layers & groups** | **⌘ Clipboard import** | **P PowerPoint** |
-| Reorder whole canvases | Organize complex artwork | Paste or drop images | Native editable shapes |
+## More than tracing
 
-**One flow:** add a reference → trace automatically or by hand → refine anchors and colors → export SVG or paste editable objects into PowerPoint.
+- **Curves you can refine:** edit anchors, tangents, shared junctions, and local smoothing.
+- **A workspace that stays organized:** pages, layers, groups, locks, and adjustable canvas size and color.
+- **Touch controls:** two-finger pan and zoom, compact panels, separate copy/paste, and a visible delete button.
+- **Portable work:** save `.skc` projects, export SVG, or copy native objects to PowerPoint with the Windows companion.
+- **Programmatic editing:** an opt-in command API and local MCP connector for supported AI clients. Batch edits share the editor's undo history.
+
+**One flow:** add a reference → trace → refine → export. Use the illustration above as an example, not a restriction on what you can draw.
+
+## Let your tools work with you
+
+Read objects, select them, change colors in a batch, move independent shapes, or start a background tracing job from code or a connected AI client.
+
+Open **專案與匯出 → 程式／AI 工具** to enable access to the current page. Access is off by default, ends when you switch pages or reload, and deletion asks for confirmation. Tracing results stay separate until applied.
+
+The **browser command API** works in the web editor. The **optional MCP connector** runs locally and opens its own editor workspace; it does not silently attach to a GitHub Pages tab. No AI subscription is needed for normal drawing.
+
+[Command API & MCP setup →](docs/automation.md)
 
 ## Start in 30 seconds
 
@@ -64,7 +84,7 @@ Want the web edition to feel like a normal app? Follow the **[click-by-click ins
 - **Auto trace without guessing parameters:** leave **自動判斷** selected. Thin drawings use centerlines with shared T-junctions; solid black/white logos use closed outlines. The four live sliders control detail threshold, curve smoothness, anchor reduction, and tiny-fragment cleanup. The preview stays separate until you choose **套用線圖**.
 - **Direct image import:** drag PNG, JPG, SVG, or a supported project file onto the page. You can also copy an image on the web and press Ctrl+V to create a new image layer while keeping its proportions.
 - **Selection and anchors:** Ctrl+A selects immediately and shows editable anchors. Drag blank canvas space to marquee-select; drag an object to move it. Locked references are excluded.
-- **Pages and layers:** drag the body of a page thumbnail or layer row to reorder it. Right-click pages for copy, paste, duplicate, rename, insertion, reordering, and deletion. Groups, visibility, locks, order, canvas size, and references survive `.skc` save/reload.
+- **Pages and layers:** drag to reorder on desktop; use the drag handles on touch devices. Right-click a page for its actions, or open its settings on mobile. Groups, visibility, locks, order, canvas size, and references survive `.skc` save/reload.
 - **PowerPoint:** on Windows, install/start Skechu-PPT v0.1.2 or later, approve the local connection, copy in the editor, then press Ctrl+V in desktop PowerPoint. The bridge prepares changed geometry in the background and reuses cached objects when possible. See the [connection guide](docs/install.md#copy-from-open-web-directly-to-powerpoint).
 - **Privacy:** reference images and autosaves remain on your device. Use **下載專案** when you want a portable backup.
 
@@ -87,7 +107,9 @@ The native PowerPoint bridge uses Windows COM automation, so **Copy to PPT is Wi
 
 ## Your work stays yours
 
-Skechu-PPT is local-first. The editor stores its autosave in the browser on your device; it does not upload reference images or projects to a Skechu server. Use **Download project** whenever you want a portable backup or need to continue on another device.
+Skechu-PPT is local-first. Normal drawing and autosave stay in your browser; reference images and projects are not uploaded to a Skechu server. Use **Download project** for a portable backup or to continue on another device.
+
+If you explicitly enable automation, requested object data and exports can be returned to your connected AI client. That client's data-handling policy applies. Read-only object listings omit image pixels; the MCP connector has no arbitrary filesystem, system clipboard, PowerPoint, or GitHub account tools.
 
 ## Project status
 
@@ -96,7 +118,9 @@ Skechu-PPT is an open-source public preview. Detailed keyboard controls are in t
 <details>
 <summary><strong>Developers and contributors</strong></summary>
 
-The hosted editor is a static, dependency-vendored web app. The optional Windows bridge is Python plus `pywin32`. Source-based setup, tests, and architecture notes are intentionally kept out of the beginner quick start.
+The hosted editor is a static, dependency-vendored web app. The optional Windows bridge is Python plus `pywin32`; the optional MCP connector uses the official Python MCP SDK. Neither is required for ordinary web editing.
+
+Start with the [documentation index](docs/README.md), [automation guide](docs/automation.md), or [repository map](docs/architecture.md#repository-map).
 
 Bug reports, small documentation improvements, and focused pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) first.
 
