@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v59-inline-ppt';
+const CACHE_NAME = 'skechu-ppt-v60-keyboard-copy';
 const APP_SHELL = [
   './',
   './index.html',
@@ -14,9 +14,9 @@ const APP_SHELL = [
   './layer-controls.js?v=35-stable-motion',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=35-stable-motion',
-  './clipboard-controls.js?v=59-inline-ppt',
-  './web-ppt-client.js?v=59-inline-ppt',
-  './web-ppt-helper.js?v=28-ppt-progress',
+  './clipboard-controls.js?v=60-keyboard-copy',
+  './web-ppt-client.js?v=60-keyboard-copy',
+  './web-ppt-helper.js?v=60-keyboard-copy',
   './ppt-preparation.js?v=59-inline-ppt',
   './web-ppt.html',
   './clipboard-controls.css?v=59-inline-ppt',

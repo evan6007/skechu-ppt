@@ -2,6 +2,13 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.5] - 2026-09-05
+
+### Fixed
+
+- Ctrl+C completes editable PowerPoint copying without a second button. If a running bridge still has older HTTP routes but serves the updated helper assets, the editor negotiates a hidden same-page connection before sending the copy once. It preserves exact origin/source/channel validation and clipboard-copy priority.
+- Failed native copying no longer presents bitmap/download buttons as though they were required steps. Source-checkout users can use the updated compatibility helper without restarting an already-running bridge.
+
 ## [0.1.4] - 2026-09-05
 
 ### Added

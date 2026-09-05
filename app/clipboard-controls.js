@@ -64,7 +64,7 @@ async function copySelectionToClipboard() {
     document.getElementById('copy-ppt').title=`複製完成${timing}`;
   } catch (error) {
     const setup=error.code==='WEB_PPT_CONNECT'||error.code==='WEB_PPT_UPDATE';
-    clipboardFeedback(setup?'啟動 PowerPoint 連接服務':'尚未確認複製完成', setup?error.message:`${error.message || error}。請確認桌面 PowerPoint 正常執行；完成前請勿貼上，以免使用舊的剪貼簿內容。`, 'error', !HAS_NATIVE_PPT_BRIDGE);
+    clipboardFeedback('尚未複製到 PowerPoint', setup?error.message:`${error.message || error}。請確認桌面 PowerPoint 正常執行；完成前請勿貼上，以免使用舊的剪貼簿內容。`, 'error');
     // Do not erase the user's existing clipboard when Office reports an error.
   } finally {
     bar.hidden = true; bar.value = 0; setClipboardBusy(false); queueNativePrepare();
