@@ -31,6 +31,28 @@ def fixed_view(image, bounds=(0, 0, 1, 1)):
     return ImageOps.fit(cropped, CONTENT, method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
 
 
+def smooth_fixed_view(image, bounds=(0, 0, 1, 1)):
+    """Crop with subpixel coordinates so slow camera moves do not hop by whole pixels."""
+    width, height = image.size
+    left, top, right, bottom = bounds
+    left, right = left * width, right * width
+    top, bottom = top * height, bottom * height
+    crop_width, crop_height = right - left, bottom - top
+    output_ratio = CONTENT[0] / CONTENT[1]
+    if crop_width / crop_height > output_ratio:
+        fitted_width = crop_height * output_ratio
+        center = (left + right) / 2
+        left, right = center - fitted_width / 2, center + fitted_width / 2
+    else:
+        fitted_height = crop_width / output_ratio
+        center = (top + bottom) / 2
+        top, bottom = center - fitted_height / 2, center + fitted_height / 2
+    return image.transform(
+        CONTENT, Image.Transform.EXTENT, (left, top, right, bottom),
+        resample=Image.Resampling.BICUBIC,
+    )
+
+
 def trace_view(image, point=None):
     edge = METADATA["trace"]["edgeScreen"]
     crop_width = min(420, image.width)
@@ -95,10 +117,10 @@ def tween(first, second, count):
 def zoom_sequence(image, start_bounds, end_bounds, count, start_angle=0, end_angle=0):
     frames = []
     for step in range(count):
-        t = (step + 1) / count
-        eased = t * t * (3 - 2 * t)
+        t = step / max(1, count - 1)
+        eased = t * t * t * (t * (t * 6 - 15) + 10)
         bounds = tuple(a + (b - a) * eased for a, b in zip(start_bounds, end_bounds))
-        view = fixed_view(image, bounds)
+        view = smooth_fixed_view(image, bounds)
         angle = start_angle + (end_angle - start_angle) * eased
         if abs(angle) > .001:
             view = view.rotate(angle, Image.Resampling.BICUBIC, expand=False, fillcolor="#ffffff")
@@ -141,31 +163,32 @@ save_gif("feature-magnetic-trace.gif", trace_frames)
 
 # 2. Start blank, import a reference, auto trace it, move the reference aside, then reveal all anchors.
 auto_bounds = (0.04, 0.02, 0.96, 0.84)
-auto_blank = fixed_view(open_frame("auto-00-blank.png"), auto_bounds)
+auto_blank = smooth_fixed_view(open_frame("auto-00-blank.png"), auto_bounds)
 auto_imported_source = open_frame("auto-01-imported.png")
-auto_imported = fixed_view(auto_imported_source, auto_bounds)
-auto_opening = [fixed_view(open_frame(f"auto-02-opening-{step:02d}.png"), auto_bounds)
+auto_imported = smooth_fixed_view(auto_imported_source, auto_bounds)
+auto_opening = [smooth_fixed_view(open_frame(f"auto-02-opening-{step:02d}.png"), auto_bounds)
                 for step in range(METADATA["autoTraceMotion"]["openingFrames"])]
 auto_preview_source = open_frame("auto-03-preview.png")
-auto_preview = fixed_view(auto_preview_source, auto_bounds)
+auto_preview = smooth_fixed_view(auto_preview_source, auto_bounds)
 auto_preview_close_bounds = (0.452, 0.574, 0.682, 0.780)
-auto_preview_close = fixed_view(auto_preview_source, auto_preview_close_bounds)
-auto_closing = [fixed_view(open_frame(f"auto-04-closing-{step:02d}.png"), auto_bounds)
+auto_preview_close = smooth_fixed_view(auto_preview_source, auto_preview_close_bounds)
+auto_closing = [smooth_fixed_view(open_frame(f"auto-04-closing-{step:02d}.png"), auto_bounds)
                 for step in range(METADATA["autoTraceMotion"]["closingFrames"])]
-auto_shrink = [fixed_view(open_frame(f"auto-05-shrink-{step:02d}.png"), auto_bounds) for step in range(12)]
+auto_shrink = [smooth_fixed_view(open_frame(f"auto-05-shrink-{step:02d}.png"), auto_bounds) for step in range(12)]
 auto_applied_source = open_frame("auto-05-shrink-00.png")
-auto_applied_clean = fixed_view(auto_applied_source, auto_bounds)
+auto_applied_clean = smooth_fixed_view(auto_applied_source, auto_bounds)
 auto_corner = auto_shrink[-1]
-auto_anchors = fixed_view(open_frame("auto-06-all-anchors.png"), auto_bounds)
+auto_anchors = smooth_fixed_view(open_frame("auto-06-all-anchors.png"), auto_bounds)
 anchor_count = METADATA["autoTraceAnchors"]
 auto_frames = [card("自動描圖", "空白工作區", auto_blank, "#38bdf8") for _ in range(8)]
 auto_frames += [card("自動描圖", "匯入底圖", frame, "#38bdf8", (162, 8), index == 3) for index, frame in enumerate(tween(auto_blank, auto_imported, 7))]
 auto_frames += [card("自動描圖", "底圖已就緒", auto_imported, "#38bdf8") for _ in range(5)]
 auto_frames += [card("自動描圖", "底圖精準對齊預覽", frame, "#38bdf8") for frame in auto_opening]
 auto_frames += [card("自動描圖", "預覽描圖結果", auto_preview, "#38bdf8") for _ in range(8)]
-auto_frames += [card("自動描圖", "放大小腦描邊細節", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_close_bounds, 12)]
+auto_frames += [card("自動描圖", "放大小腦描邊細節", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_close_bounds, 30)]
 auto_frames += [card("自動描圖", "複雜線條完整描出", auto_preview_close, "#38bdf8") for _ in range(22)]
-auto_frames += [card("自動描圖", "返回完整預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_close_bounds, auto_bounds, 10)]
+auto_frames += [card("自動描圖", "返回完整預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_close_bounds, auto_bounds, 26)]
+auto_frames += [card("自動描圖", "完整預覽已確認", auto_preview, "#38bdf8") for _ in range(7)]
 auto_frames += [card("自動描圖", "套用並返回原圖", frame, "#38bdf8") for frame in auto_closing]
 auto_frames += [card("自動描圖", "描圖已套用", auto_applied_clean, "#38bdf8") for _ in range(10)]
 auto_frames += [card("自動描圖", "底圖縮到左下角", frame, "#38bdf8") for frame in auto_shrink[1:]]
