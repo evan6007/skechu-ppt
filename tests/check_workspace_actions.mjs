@@ -116,7 +116,7 @@ assert.equal(page.items.length,1,'Starter contains only the supplied brain refer
 assert.equal(reference.type,'image');assert.equal(reference.referenceOnly,true);assert.equal(reference.locked,false);
 const png=fs.readFileSync(new URL('../app/'+reference.src,import.meta.url));
 assert.equal(page.canvasWidth,png.readUInt32BE(16));assert.equal(page.canvasHeight,png.readUInt32BE(20));
-assert.equal(reference.w,page.canvasWidth);assert.equal(reference.h,page.canvasHeight);assert.equal(reference.opacity,1);
+assert.equal(reference.w,page.canvasWidth);assert.equal(reference.h,page.canvasHeight);assert.equal(reference.opacity,.5);
 assert.ok(worker.includes('./'+reference.src),'Starter must be available offline');
 assert.ok(fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+reference.src+';.'),'Starter must be packaged for Windows');
 starterContext.activeProject=()=>starter;
@@ -124,6 +124,7 @@ reference.locked=true;
 starterContext.importReferenceImage({name:'new-reference.png'});
 const imported=starter.pages.at(-1);
 assert.equal(imported.items[0].locked,false,'New tracing references are unlocked');
+assert.equal(imported.items[0].opacity,.5,'New tracing references start at 50% opacity');
 assert.equal(imported.canvasWidth,1600);assert.equal(imported.canvasHeight,800);
 assert.equal(reference.locked,true,'Import does not unlock an existing reference');
 assert.equal(starterContext.makeProject().pages[0].items.length,0,'Explicit new projects still start blank');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v65-brain-starter';
+const CACHE_NAME = 'skechu-ppt-v66-reference-opacity';
 const APP_SHELL = [
   './',
   './index.html',
