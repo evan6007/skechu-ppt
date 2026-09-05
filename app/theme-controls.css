@@ -50,7 +50,7 @@ button.primary,.tool-button.active{background:var(--control);border-color:var(--
 .stage-shell{position:relative;isolation:isolate;overflow:visible;border:1px solid var(--glass-edge);border-radius:10px;background:transparent;box-shadow:0 24px 56px rgba(22,26,31,.22),inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(20,24,28,.12);backdrop-filter:none;-webkit-backdrop-filter:none}
 .stage-shell::before,.stage-shell::after{display:none}
 .stage-shell>.stage{position:relative;z-index:1}
-#stage-background{fill:var(--paper-fill);fill-opacity:.3}
+#stage-background{fill:var(--paper-fill);fill-opacity:1}
 .stage .guide{stroke:#8c98a5;stroke-width:1;stroke-opacity:.52;vector-effect:non-scaling-stroke}.stage .guide.major{stroke:#687684;stroke-width:1.35;stroke-opacity:.68}
 .palette-card{background:linear-gradient(145deg,var(--surface),var(--surface-2));border-color:var(--line)}
 .kbd{background:var(--surface-3);border-color:var(--line-strong)}
@@ -84,7 +84,7 @@ html[data-theme="graphite"] .tool-button.active,html[data-theme="graphite"] butt
 html[data-theme="graphite"] .page-tab.active{color:#ded1ff}
 html[data-theme="graphite"] input[type="color"]{background:var(--surface-2)}
 html[data-theme="graphite"] .stage-wrap{background-color:var(--canvas-desk);background-image:linear-gradient(45deg,var(--grid-tile) 25%,transparent 25%),linear-gradient(-45deg,var(--grid-tile) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--grid-tile) 75%),linear-gradient(-45deg,transparent 75%,var(--grid-tile) 75%)}
-html[data-theme="graphite"] #stage-background{fill:var(--paper-fill);fill-opacity:.3}
+html[data-theme="graphite"] #stage-background{fill:var(--paper-fill);fill-opacity:1}
 html[data-theme="graphite"] .stage-shell{box-shadow:0 26px 64px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(0,0,0,.28)}
 body,.topbar,.projectbar,.sidebar,.inspector,.tool-group,.workspace-page,.palette-card,.inspector-layers,.layer-folder{transition:background-color 160ms ease,border-color 160ms ease,color 160ms ease}
 *{scrollbar-color:var(--line-strong) transparent}
