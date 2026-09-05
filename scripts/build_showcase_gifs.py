@@ -92,13 +92,17 @@ def tween(first, second, count):
     return [Image.blend(first, second, (step + 1) / count) for step in range(count)]
 
 
-def zoom_sequence(image, start_bounds, end_bounds, count):
+def zoom_sequence(image, start_bounds, end_bounds, count, start_angle=0, end_angle=0):
     frames = []
     for step in range(count):
         t = (step + 1) / count
         eased = t * t * (3 - 2 * t)
         bounds = tuple(a + (b - a) * eased for a, b in zip(start_bounds, end_bounds))
-        frames.append(fixed_view(image, bounds))
+        view = fixed_view(image, bounds)
+        angle = start_angle + (end_angle - start_angle) * eased
+        if abs(angle) > .001:
+            view = view.rotate(angle, Image.Resampling.BICUBIC, expand=False, fillcolor="#ffffff")
+        frames.append(view)
     return frames
 
 
@@ -145,9 +149,12 @@ auto_preview = fixed_view(auto_preview_source, auto_bounds)
 auto_preview_close_bounds = (0.452, 0.574, 0.682, 0.780)
 auto_preview_close = fixed_view(auto_preview_source, auto_preview_close_bounds)
 auto_canvas_match_bounds = (0.166, 0.134, 0.813, 0.763)
-auto_preview_match_bounds = (0.212, 0.308, 0.790, 0.872)
+auto_preview_match_bounds = (0.2124106, 0.3071004, 0.7901768, 0.8687928)
+auto_preview_match_angle = 0.5727505
 auto_imported_match = fixed_view(auto_imported_source, auto_canvas_match_bounds)
-auto_preview_match = fixed_view(auto_preview_source, auto_preview_match_bounds)
+auto_preview_match = fixed_view(auto_preview_source, auto_preview_match_bounds).rotate(
+    auto_preview_match_angle, Image.Resampling.BICUBIC, expand=False, fillcolor="#ffffff",
+)
 auto_shrink = [fixed_view(open_frame(f"auto-05-shrink-{step:02d}.png"), auto_bounds) for step in range(12)]
 auto_applied_source = open_frame("auto-05-shrink-00.png")
 auto_applied_clean = fixed_view(auto_applied_source, auto_bounds)
@@ -160,12 +167,12 @@ auto_frames += [card("自動描圖", "匯入底圖", frame, "#38bdf8", (162, 8),
 auto_frames += [card("自動描圖", "底圖已就緒", auto_imported, "#38bdf8") for _ in range(5)]
 auto_frames += [card("自動描圖", "從底圖進入", frame, "#38bdf8") for frame in zoom_sequence(auto_imported_source, auto_bounds, auto_canvas_match_bounds, 8)]
 auto_frames += [card("自動描圖", "生成描圖預覽", frame, "#38bdf8") for frame in tween(auto_imported_match, auto_preview_match, 5)]
-auto_frames += [card("自動描圖", "展開預覽視窗", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_match_bounds, auto_bounds, 8)]
+auto_frames += [card("自動描圖", "展開預覽視窗", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_match_bounds, auto_bounds, 8, auto_preview_match_angle, 0)]
 auto_frames += [card("自動描圖", "預覽描圖結果", auto_preview, "#38bdf8") for _ in range(8)]
 auto_frames += [card("自動描圖", "放大小腦描邊細節", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_close_bounds, 12)]
 auto_frames += [card("自動描圖", "複雜線條完整描出", auto_preview_close, "#38bdf8") for _ in range(22)]
 auto_frames += [card("自動描圖", "返回完整預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_preview_close_bounds, auto_bounds, 10)]
-auto_frames += [card("自動描圖", "關閉描圖預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_match_bounds, 8)]
+auto_frames += [card("自動描圖", "關閉描圖預覽", frame, "#38bdf8") for frame in zoom_sequence(auto_preview_source, auto_bounds, auto_preview_match_bounds, 8, 0, auto_preview_match_angle)]
 auto_frames += [card("自動描圖", "套用可編輯線稿", frame, "#38bdf8") for frame in tween(auto_preview_match, auto_applied_match, 5)]
 auto_frames += [card("自動描圖", "回到原始底圖", frame, "#38bdf8") for frame in zoom_sequence(auto_applied_source, auto_canvas_match_bounds, auto_bounds, 8)]
 auto_frames += [card("自動描圖", "描圖已套用", auto_applied_clean, "#38bdf8") for _ in range(10)]
