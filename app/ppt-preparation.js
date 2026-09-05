@@ -62,8 +62,9 @@ function finishPptPrepareProgress(ready) {
   bar.hidden=true;
 }
 function cancelSupersededNativePrepare(nextBody) {
-  if(!HAS_NATIVE_PPT_BRIDGE||!pptPrepareRunning||!pptPreparingBody||nextBody===pptPreparingBody||pptPrepareCancelPromise)return;
-  pptPrepareCancelPromise=fetch('/cancel-prepare',{method:'POST'})
+  if(!pptPrepareRunning||!pptPreparingBody||nextBody===pptPreparingBody||pptPrepareCancelPromise)return;
+  if(!HAS_NATIVE_PPT_BRIDGE&&typeof cancelWebPptPrepare!=='function')return;
+  pptPrepareCancelPromise=(HAS_NATIVE_PPT_BRIDGE?fetch('/cancel-prepare',{method:'POST'}):cancelWebPptPrepare())
     .catch(()=>null)
     .finally(()=>{pptPrepareCancelPromise=null});
 }

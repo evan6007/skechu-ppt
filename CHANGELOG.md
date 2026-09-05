@@ -2,10 +2,12 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.1.4] - 2026-09-05
 
 ### Added
 
+- Same-page editable PowerPoint copying from GitHub Pages. The first Copy click connects directly to the installed Windows service; progress and completion stay in the editor, with no companion popup or redundant application approval. Browser local-network permission remains browser-controlled. Updated installer required.
+- Origin- and Host-restricted web bridge endpoints, remote payload validation before Office work, and streamed progress with no automatic retry after an uncertain clipboard write.
 - Page-thumbnail context menu with copy/paste, independent duplication, rename, blank-page insertion, ordering and confirmed deletion. Page copies retain canvas dimensions and remap item, attachment, fill-source and junction identities.
 - Pasting a copied web image into the canvas creates a normal, unlocked image layer with proportional sizing and Undo. Text inputs retain native paste, decoding is isolated from page changes, and images are read from clipboard files without remote URL fetching.
 - Automatic selection between line-art centerlines and solid Logo contours, with manual overrides. Contours retain outer boundaries, inner cutouts, sharp corners and long straight sides as editable cubic paths, including artwork touching the image border or using transparent backgrounds. Solid artwork is no longer rejected by the line-art ink-density guard.

@@ -53,10 +53,10 @@ const ctx=vm.createContext({
 });
 vm.runInContext(source,ctx);ctx.initializeClipboardControls();
 assert.equal(node('copy-ppt').hidden,false);assert.match(node('copy-ppt-mode').textContent,/可編輯/);
-await node('copy-ppt').onclick();assert.equal(requestCount,1);assert.match(node('clipboard-title').textContent,/成功.*可編輯/);
+await node('copy-ppt').onclick();assert.equal(requestCount,1);assert.match(node('clipboard-title').textContent,/已複製/);assert.match(node('clipboard-message').textContent,/可編輯物件.*Ctrl\+V/);
 assert.equal(node('clipboard-feedback').dataset.kind,'success');assert.equal(ctx.pptCopyRunning,false);
 ctx.pptPreparePromise=new Promise(()=>{});await ctx.copySelectionToClipboard();assert.equal(requestCount,2,'A click must not await unrelated background preparation');ctx.pptPreparePromise=null;
-failNative=true;await ctx.copySelectionToClipboard();assert.match(node('clipboard-title').textContent,/沒有確認/);assert.match(node('clipboard-message').textContent,/PowerPoint unavailable/);
+failNative=true;await ctx.copySelectionToClipboard();assert.match(node('clipboard-title').textContent,/尚未確認/);assert.match(node('clipboard-message').textContent,/PowerPoint unavailable/);
 assert.equal(node('clipboard-feedback').dataset.kind,'error');assert.equal(node('copy-ppt').disabled,false);failNative=false;
 ctx.selected=null;ctx.selectedIds.clear();const countBefore=requestCount;await ctx.copySelectionToClipboard();
 assert.match(node('clipboard-title').textContent,/還沒有/);assert.equal(requestCount,countBefore);
@@ -65,10 +65,10 @@ node('select-all').onclick=()=>{ctx.selected='a';ctx.selectedIds=new Set(['a'])}
 // The button starts the async request synchronously; wait for its completion.
 await new Promise(resolve=>setTimeout(resolve,0));assert.equal(requestCount,countBefore+1);
 ctx.HAS_NATIVE_PPT_BRIDGE=false;ctx.initializeClipboardControls();await ctx.copySelectionToClipboard();
-assert.equal(node('copy-ppt').hidden,false);assert.match(node('copy-ppt-mode').textContent,/連接桌面/);
-assert.match(node('clipboard-title').textContent,/成功.*可編輯/);
-ctx.requestWebPptCopy=async()=>{throw new Error('本機連接視窗被阻擋')};await ctx.copySelectionToClipboard();
-assert.equal(node('clipboard-web-actions').hidden,false);assert.match(node('clipboard-message').textContent,/本機連接視窗被阻擋/);
+assert.equal(node('copy-ppt').hidden,false);assert.match(node('copy-ppt-mode').textContent,/可編輯/);
+assert.match(node('clipboard-title').textContent,/已複製/);
+ctx.requestWebPptCopy=async()=>{const error=new Error('請更新並啟動 Windows 版');error.code='WEB_PPT_UPDATE';throw error};await ctx.copySelectionToClipboard();
+assert.equal(node('clipboard-web-actions').hidden,false);assert.match(node('clipboard-message').textContent,/請更新並啟動 Windows 版/);
 assert.equal(writes.length,0,'Never silently downgrade native shapes into a bitmap');
 await ctx.copySelectionPicture();assert.deepEqual(writes,['png']);assert.match(node('clipboard-title').textContent,/PNG 圖片/);
 assert.match(node('clipboard-message').textContent,/不是可編輯錨點/);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v58-canvas-color-menu';
+const CACHE_NAME = 'skechu-ppt-v59-inline-ppt';
 const APP_SHELL = [
   './',
   './index.html',
@@ -14,12 +14,12 @@ const APP_SHELL = [
   './layer-controls.js?v=35-stable-motion',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=35-stable-motion',
-  './clipboard-controls.js?v=30-copy-priority',
-  './web-ppt-client.js?v=30-copy-priority',
+  './clipboard-controls.js?v=59-inline-ppt',
+  './web-ppt-client.js?v=59-inline-ppt',
   './web-ppt-helper.js?v=28-ppt-progress',
-  './ppt-preparation.js?v=31-latest-idle',
+  './ppt-preparation.js?v=59-inline-ppt',
   './web-ppt.html',
-  './clipboard-controls.css?v=28-ppt-progress',
+  './clipboard-controls.css?v=59-inline-ppt',
   './paint-tools.css?v=38-responsive-shell',
   './auto-trace.js?v=26-photo-trace',
   './auto-trace-ui.js?v=47-contain-coordinates',

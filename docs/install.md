@@ -20,16 +20,16 @@ The Windows edition is required only for **Copy to PPT**, which creates separate
 
 ### Copy from Open Web directly to PowerPoint
 
-1. Install **v0.1.2 or later** from the Windows download above. Open **Skechu-PPT** once to start its local service, and leave it running. Desktop PowerPoint must be installed.
+1. Install **v0.1.4 or later** from the Windows download above. Open **Skechu-PPT** once to start its local service, and leave it running. Desktop PowerPoint must be installed.
 2. Keep drawing in [Open Web](https://evan6007.github.io/skechu-ppt/). Select objects and click **複製到 PPT**, press Ctrl+C, or use **全選並複製**.
-3. The first copy opens **Skechu-PPT 本機連接**. Check that its site is `https://evan6007.github.io`, then click **允許連接**. Leave this small window open for subsequent copies.
-4. Wait until the website says **複製成功：可編輯 PPT 物件**. Switch to a desktop PowerPoint slide and press Ctrl+V. Ungroup when needed to edit individual shapes; traced curves retain their editable nodes.
+3. Copy stays in the editor. If Chrome or Edge asks to access your local network on first use, allow it so the website can reach the installed service. There is no separate Skechu connection window or additional approval button.
+4. Wait until the website says **已複製，前往 PPT 貼上**. Switch to a desktop PowerPoint slide and press Ctrl+V. Ungroup when needed to edit individual shapes; traced curves retain their editable nodes.
 
-No project download/reload is needed. Drawing data passes from your browser to the service on your own computer, not to GitHub or another server. The connection accepts only the approved opener window and site; **中斷連接** stops new requests. A copy already sent to PowerPoint may still finish.
+No project download/reload is needed. Drawing data passes directly from your browser to the service on your own computer, not to GitHub or another server. The service accepts only the official website and local editor origins, validates the submitted drawing, and binds only to loopback. Closing the editor stops new requests; a copy already sent to PowerPoint may still finish. Browser local-network permission can be revoked in the site's browser settings.
 
-For background/incremental acceleration, use **v0.1.3 or later**. After updating, restart the local Skechu service, close the old connection popup, save your project and refresh Open Web, then connect again. Keep the popup open: it prepares the latest drawing after a short editing pause without modifying the clipboard. **快取就緒** means the current scene has been prepared. Copy feedback shows cache/incremental status and native-service elapsed time; browser round trips and waiting for an in-flight preparation may add time. Background preparation is a temporary performance cache, not a replacement for `.skc` backups.
+After updating, restart the Windows service and refresh Open Web after saving your project. After the first successful connection, edits are prepared in the background after a short pause without modifying the clipboard. **快取就緒** means the current scene has been prepared. Hover the Copy button after success to see timing. Background preparation is a temporary performance cache, not a replacement for `.skc` backups.
 
-If the connection page does not open, allow popups for Skechu-PPT and retry. If it says **404**, update/restart the old Windows edition; if the page cannot connect, start the local service (default port **8766**). If you close the connection window, click Copy again to reconnect. Do not paste until a new success message appears: on failure the clipboard may still contain an older item. SVG download and explicit PNG copying remain available without the companion; PNG is not editable vector output.
+If the in-page message asks for an update, install the current Windows edition and restart it. If it cannot connect, start the local service (default port **8766**) and check the browser's local-network permission. Click Copy again to retry; the app never repeats a clipboard write automatically after an uncertain response. Do not paste until a new success message appears: on failure the clipboard may still contain an older item. SVG download and explicit PNG copying remain available without the service; PNG is not editable vector output.
 
 ### If you downloaded the source folder
 

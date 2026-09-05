@@ -60,9 +60,11 @@ async function copySelectionToClipboard() {
     const speed=result.cached?'快取':result.incremental?`更新 ${result.changed} 個改動`:'首次建立';
     const totalSeconds=(performance.now()-clickedAt)/1000;
     const timing=Number.isFinite(result.seconds)?`（${speed} ${result.seconds} 秒${totalSeconds>result.seconds+.35?`；按下後共 ${totalSeconds.toFixed(2)} 秒`:''}）`:'';
-    clipboardFeedback('複製成功：可編輯 PPT 物件', `已寫入系統剪貼簿，共 ${result.count} 個物件${timing}。切到 PowerPoint 投影片，按 Ctrl+V；取消群組後可分別編輯。`, 'success');
+    clipboardFeedback('已複製，前往 PPT 貼上', `${result.count} 個可編輯物件。到 PowerPoint 按 Ctrl+V；取消群組後可分別編輯。`, 'success');
+    document.getElementById('copy-ppt').title=`複製完成${timing}`;
   } catch (error) {
-    clipboardFeedback('沒有確認複製成功', `${error.message || error}。請確認新版 Windows 本機服務與桌面 PowerPoint 正常執行。若連接頁是 404，請更新本機版。此時剪貼簿可能仍是舊內容。`, 'error', !HAS_NATIVE_PPT_BRIDGE);
+    const setup=error.code==='WEB_PPT_CONNECT'||error.code==='WEB_PPT_UPDATE';
+    clipboardFeedback(setup?'啟動 PowerPoint 連接服務':'尚未確認複製完成', setup?error.message:`${error.message || error}。請確認桌面 PowerPoint 正常執行；完成前請勿貼上，以免使用舊的剪貼簿內容。`, 'error', !HAS_NATIVE_PPT_BRIDGE);
     // Do not erase the user's existing clipboard when Office reports an error.
   } finally {
     bar.hidden = true; bar.value = 0; setClipboardBusy(false); queueNativePrepare();
@@ -96,8 +98,8 @@ async function downloadClipboardSelection(asPng) {
 function initializeClipboardControls() {
   const copy = document.getElementById('copy-ppt');
   copy.hidden = false; copy.removeAttribute('aria-hidden');
-  copy.title = HAS_NATIVE_PPT_BRIDGE ? '複製選取的可編輯物件到 PowerPoint（Ctrl+C）' : '透過本機連接視窗複製可編輯 PPT 物件；需要 Windows 與桌面 PowerPoint';
-  document.getElementById('copy-ppt-mode').textContent = HAS_NATIVE_PPT_BRIDGE ? '可編輯物件' : location.protocol === 'file:' ? '尚未連接服務' : '連接桌面 PPT';
+  copy.title = '複製選取的可編輯物件到 PowerPoint（Ctrl+C）';
+  document.getElementById('copy-ppt-mode').textContent = location.protocol === 'file:' ? '尚未連接服務' : '可編輯物件';
   document.getElementById('file-entry-notice').hidden = location.protocol !== 'file:';
   copy.onclick = copySelectedObjects;
   document.getElementById('copy-all-ppt').onclick = () => {

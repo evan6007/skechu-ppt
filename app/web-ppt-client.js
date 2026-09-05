@@ -1,70 +1,88 @@
-/* A user-opened localhost companion writes Office's native clipboard format.
- * No cross-origin HTTP, public upload, clipboard format spoofing or silent PNG fallback. */
-let webPptSession = null, webPptPending = null;
-let webPptPreparation = null;
+/* Copy connects directly to the installed loopback service.
+ * Browser local-network permission stays browser-controlled. No popup or iframe. */
 const WEB_PPT_ORIGIN = 'http://127.0.0.1:8766';
-function canWebPptPrepare() {return !!(webPptSession?.approved&&!webPptSession.popup.closed&&webPptSession.capabilities?.includes('prepare'));}
-function finishWebPptPrepare(error,result) {
-  const pending=webPptPreparation;if(!pending)return;
-  webPptPreparation=null;clearTimeout(pending.timer);clearInterval(pending.poll);
-  if(error)pending.reject(error);else pending.resolve(result);
-  sendWebPptCopy();
+let webPptSession = null, webPptConnecting = null;
+let webPptPending = false, webPptPreparation = false;
+function webPptError(message, code) {
+  const error = new Error(message); error.code = code; return error;
 }
-function requestWebPptPrepare(body,progress=()=>{}) {
-  if(!canWebPptPrepare()||webPptPending||webPptPreparation)return Promise.reject(new Error('背景連接尚未就緒'));
-  return new Promise((resolve,reject)=>{
-    const pending=webPptPreparation={id:crypto.randomUUID(),progress,resolve,reject};
-    pending.timer=setTimeout(()=>finishWebPptPrepare(new Error('背景準備逾時')),180000);
-    pending.poll=setInterval(()=>{if(!webPptSession||webPptSession.popup.closed)finishWebPptPrepare(new Error('連接已關閉'))},500);
-    webPptSession.popup.postMessage({kind:'skechu-ppt',type:'prepare',channel:webPptSession.channel,id:pending.id,body},WEB_PPT_ORIGIN);
-  });
+function canWebPptPrepare() {return !!webPptSession?.capabilities.includes('prepare');}
+function webPptConnectionError() {
+  return webPptError('請先啟動 Windows 版 Skechu-PPT，再按一次複製。若瀏覽器詢問本機網路存取，請允許；服務已啟動仍無法連線時，請更新 Windows 版', 'WEB_PPT_CONNECT');
 }
-function finishWebPptRequest(error, result) {
-  const pending=webPptPending;if(!pending)return;
-  webPptPending=null;clearTimeout(pending.timer);clearInterval(pending.poll);
-  if(error)pending.reject(error);else pending.resolve(result);
+async function connectWebPpt(progress) {
+  if(webPptSession)return webPptSession;
+  if(webPptConnecting)return webPptConnecting;
+  if(!['https:','http:'].includes(location.protocol))throw webPptError('請從 Skechu 網頁或本機服務開啟，不能直接從 HTML 檔連接', 'WEB_PPT_CONNECT');
+  progress({stage:'正在連接 PowerPoint；首次使用若出現本機網路提示，請允許',percent:0});
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);
+  webPptConnecting=(async()=>{
+    let response;
+    try {
+      response=await fetch(WEB_PPT_ORIGIN+'/web-ppt/status',{
+        mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal,
+      });
+    } catch (_) {throw webPptConnectionError();}
+    if(!response.ok)throw webPptError('請更新並重新啟動 Windows 版 Skechu-PPT，即可在此頁直接複製','WEB_PPT_UPDATE');
+    const info=await response.json().catch(()=>null);
+    if(!info?.ok||info.protocol!==1||!Array.isArray(info.capabilities)||!info.capabilities.includes('inline-copy')){
+      throw webPptError('本機服務版本較舊，請更新 Windows 版 Skechu-PPT','WEB_PPT_UPDATE');
+    }
+    webPptSession={capabilities:info.capabilities};return webPptSession;
+  })();
+  try {return await webPptConnecting;}
+  finally {clearTimeout(timer);webPptConnecting=null;}
 }
-function sendWebPptCopy() {
-  if(!webPptPending||!webPptSession?.approved||webPptPending.sent)return;
-  webPptPending.sent=true;clearTimeout(webPptPending.timer);
-  webPptPending.timer=setTimeout(()=>finishWebPptRequest(new Error('PowerPoint 建立物件逾時；請查看本機連接視窗，勿重複貼上舊內容')),180000);
-  webPptSession.popup.postMessage({kind:'skechu-ppt',type:'copy',channel:webPptSession.channel,id:webPptPending.id,body:webPptPending.body},WEB_PPT_ORIGIN);
+async function runWebPptOperation(kind,body,progress) {
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),180000);
+  try {
+    let response;
+    try {
+      response=await fetch(WEB_PPT_ORIGIN+'/web-ppt/'+kind,{
+        method:'POST',mode:'cors',credentials:'omit',cache:'no-store',
+        headers:{'Content-Type':'application/json'},body,signal:controller.signal,
+      });
+    } catch (_) {
+      webPptSession=null;
+      throw webPptError(kind==='copy'
+        ?'連線中斷，尚未確認複製完成。請確認 Windows 版仍在執行，再自行重試'
+        :'背景準備連線中斷','WEB_PPT_INTERRUPTED');
+    }
+    let result;
+    try {result=await readNativeStream(response,progress);}
+    catch(error) {
+      if(controller.signal.aborted||error?.name==='TypeError')webPptSession=null;
+      if(controller.signal.aborted)throw webPptError('PowerPoint 作業逾時，尚未確認完成；請確認本機服務後再重試','WEB_PPT_INTERRUPTED');
+      throw error;
+    }
+    if(!(result?.count>0)||kind==='prepare'&&!result.prepared)throw new Error('尚未確認 PowerPoint 作業完成');
+    return result;
+  } finally {clearTimeout(timer);}
 }
-function handleWebPptMessage(event) {
-  const session=webPptSession,data=event.data;
-  if(!session||event.origin!==WEB_PPT_ORIGIN||event.source!==session.popup||data?.kind!=='skechu-ppt'||data.channel!==session.channel)return;
-  if(data.capabilities)session.capabilities=data.capabilities;
-  if(data.type==='progress'&&data.id===webPptPreparation?.id){webPptPreparation.progress(data.event);return;}
-  if(data.type==='prepare-result'&&data.id===webPptPreparation?.id){
-    finishWebPptPrepare(data.result?.ok&&data.result.prepared?null:new Error(data.result?.error||'背景準備失敗'),data.result);return;
-  }
-  if(data.type==='ready') {
-    session.ready=true;
-    if(webPptPending){clearTimeout(webPptPending.timer);webPptPending.timer=setTimeout(()=>finishWebPptRequest(new Error('尚未允許本機連接；請在連接視窗按「允許連接」後重試')),120000);webPptPending.progress({stage:'請在本機連接視窗按「允許連接」',percent:0});}
-  } else if(data.type==='approved'){session.approved=true;sendWebPptCopy();if(typeof queueNativePrepare==='function')queueNativePrepare();}
-  else if(data.type==='revoked'){session.approved=false;finishWebPptPrepare(new Error('本機連接已中斷'));finishWebPptRequest(new Error('本機連接已中斷，請重新連接'));}
-  else if(webPptPending&&data.id===webPptPending.id){
-    if(data.type==='progress')webPptPending.progress(data.event);
-    if(data.type==='result')finishWebPptRequest(data.result?.ok&&data.result.count>0?null:new Error(data.result?.error||'尚未確認原生複製成功'),data.result);
-  }
+async function requestWebPptCopy(body,progress=()=>{}) {
+  if(webPptPending)throw new Error('另一個複製作業尚未完成');
+  webPptPending=true;
+  try {
+    await connectWebPpt(progress);
+    progress({stage:webPptPreparation?'正在優先複製選取物件':'正在建立可編輯物件',percent:1});
+    // Never retry a POST automatically: a lost response may follow a completed write.
+    return await runWebPptOperation('copy',body,progress);
+  } finally {webPptPending=false;}
 }
-function requestWebPptCopy(body, progress) {
-  if(webPptPending)return Promise.reject(new Error('另一個複製作業尚未完成'));
-  if(!['https:','http:'].includes(location.protocol))return Promise.reject(new Error('請從 Open Web 或本機服務開啟，不能直接用 file:// 連接'));
-  if(!webPptSession||webPptSession.popup.closed){
-    const channel=crypto.randomUUID(),hash=new URLSearchParams({origin:location.origin,channel});
-    const popup=window.open(WEB_PPT_ORIGIN+'/web-ppt.html?v=23&session='+encodeURIComponent(channel)+'#'+hash,'skechu-ppt-companion','popup,width=500,height=510');
-    if(!popup)return Promise.reject(new Error('瀏覽器封鎖了連接視窗；請允許此網站的彈出式視窗後再按一次'));
-    webPptSession={popup,channel,ready:false,approved:false};
-  } else if(!webPptSession.approved) webPptSession.popup.focus();
-  return new Promise((resolve,reject)=>{
-    const pending=webPptPending={id:crypto.randomUUID(),body,progress,resolve,reject,sent:false};
-    pending.timer=webPptSession.ready
-      ?setTimeout(()=>finishWebPptRequest(new Error('請在本機連接視窗按「允許連接」後重試')),120000)
-      :setTimeout(()=>{webPptSession=null;finishWebPptRequest(new Error('找不到新版本機連接頁面。請啟動新版 Skechu-PPT Windows 本機服務（8766），再重試；舊版需更新'))},10000);
-    pending.poll=setInterval(()=>{if(webPptSession?.popup.closed){webPptSession=null;finishWebPptRequest(new Error('本機連接視窗已關閉；請再按一次複製重新連接'))}},500);
-    if(webPptPreparation){clearTimeout(pending.timer);pending.timer=setTimeout(()=>finishWebPptRequest(new Error('優先複製逾時，請重試')),180000);progress({stage:'正在中止背景準備，優先複製',percent:0});}
-    sendWebPptCopy();
-  });
+async function requestWebPptPrepare(body,progress=()=>{}) {
+  if(!canWebPptPrepare()||webPptPending||webPptPreparation)throw new Error('背景連接尚未就緒');
+  webPptPreparation=true;
+  try {return await runWebPptOperation('prepare',body,progress);}
+  finally {webPptPreparation=false;}
 }
-function initializeWebPptClient() { window.addEventListener('message',handleWebPptMessage); }
+async function cancelWebPptPrepare() {
+  if(!webPptPreparation||!webPptSession?.capabilities.includes('cancel-prepare'))return;
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
+  try {
+    await fetch(WEB_PPT_ORIGIN+'/web-ppt/cancel-prepare',{
+      method:'POST',mode:'cors',credentials:'omit',headers:{'Content-Type':'application/json'},body:'{}',signal:controller.signal,
+    });
+  } catch (_) {/* The next copy still has server-side priority. */}
+  finally {clearTimeout(timer);}
+}
+function initializeWebPptClient() {/* No request or permission prompt until Copy. */}

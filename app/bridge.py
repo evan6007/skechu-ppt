@@ -1150,6 +1150,51 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
                            "clipboard": round(total_seconds - build_seconds - group_seconds, 2)}}
 
 
+WEB_PPT_ORIGIN = "https://evan6007.github.io"
+MAX_WEB_PPT_BYTES = 16_000_000
+
+
+def validate_web_ppt_payload(payload):
+    """Apply remote-document restrictions before touching Office or its caches."""
+    if not isinstance(payload, dict):
+        raise ValueError("圖形資料格式不正確")
+    cache_id = payload.get("cacheId")
+    if cache_id is not None and (not isinstance(cache_id, str) or len(cache_id) > 200):
+        raise ValueError("快取識別不正確")
+    source_items = payload.get("items")
+    if not isinstance(source_items, list) or not 0 < len(source_items) <= 10000:
+        raise ValueError("沒有可複製物件，或物件超過一萬個")
+    def check_numbers(value, depth=0):
+        if depth > 24:
+            raise ValueError("圖形資料層次過多")
+        if isinstance(value, float) and not math.isfinite(value):
+            raise ValueError("曲線座標不正確")
+        if isinstance(value, dict):
+            for nested in value.values():
+                check_numbers(nested, depth + 1)
+        elif isinstance(value, list):
+            for nested in value:
+                check_numbers(nested, depth + 1)
+    check_numbers(payload)
+    for item in source_items:
+        if not isinstance(item, dict) or item.get("type") not in ("box", "ellipse", "polygon", "arrow", "text", "image"):
+            raise ValueError("不支援的物件格式")
+        if item["type"] == "image":
+            src = item.get("src", "")
+            if (not isinstance(src, str) or not src.startswith("assets/")
+                    or any(char in src for char in ("\\", ":", "\x00")) or ".." in src.split("/")):
+                raise ValueError("網頁原生複製不接受本機檔案路徑；請改用線條或形狀")
+        points = item.get("points")
+        if points is not None and (not isinstance(points, list) or len(points) > 100000 or any(
+            not isinstance(point, dict) or any(
+                isinstance(point.get(axis), bool) or not isinstance(point.get(axis), (int, float))
+                or not math.isfinite(point[axis]) for axis in ("x", "y")
+            ) for point in points
+        )):
+            raise ValueError("曲線座標不正確")
+    return payload
+
+
 class Handler(SimpleHTTPRequestHandler):
     # Windows registry MIME overrides may label .js as text/plain. Workers and
     # service workers require a JavaScript MIME type even when classic scripts run.
@@ -1161,31 +1206,110 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=BASE_DIR, **kwargs)
 
+    def allowed_origins(self):
+        port = self.server.server_port
+        return {WEB_PPT_ORIGIN, f"http://127.0.0.1:{port}", f"http://localhost:{port}",
+                "http://127.0.0.1:8765", "http://localhost:8765"}
+
+    def valid_request_origin(self, required=False):
+        host = self.headers.get("Host", "")
+        if host not in (f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"):
+            return False
+        origin = self.headers.get("Origin")
+        return origin in self.allowed_origins() if origin is not None else not required
+
+    def cors_headers(self):
+        origin = self.headers.get("Origin")
+        if origin in self.allowed_origins():
+            self.send_header("Access-Control-Allow-Origin", origin)
+        self.send_header("Vary", "Origin")
+
+    def json_response(self, status, value):
+        body = json.dumps(value, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.cors_headers()
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        if self.path.split("?", 1)[0] == "/web-ppt/status":
+            if not self.valid_request_origin(required=True):
+                self.json_response(403, {"ok": False, "error": "不允許此網頁連接"})
+                return
+            self.json_response(200, {"ok": True, "protocol": 1,
+                "capabilities": ["inline-copy", "prepare", "cache-contexts", "cancel-prepare"]})
+            return
+        super().do_GET()
+
     def do_OPTIONS(self):
+        if not self.valid_request_origin(required=True):
+            self.json_response(403, {"ok": False, "error": "不允許此網頁連接"})
+            return
+        if self.headers.get("Access-Control-Request-Method", "") not in ("GET", "POST"):
+            self.json_response(405, {"ok": False, "error": "不支援此要求"})
+            return
+        requested = self.headers.get("Access-Control-Request-Headers", "")
+        if any(value.strip().lower() != "content-type" for value in requested.split(",") if value.strip()):
+            self.json_response(403, {"ok": False, "error": "不支援此要求標頭"})
+            return
         self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "http://127.0.0.1:8765")
+        self.cors_headers()
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Max-Age", "600")
+        if self.headers.get("Access-Control-Request-Private-Network") == "true":
+            self.send_header("Access-Control-Allow-Private-Network", "true")
         self.end_headers()
 
     def do_POST(self):
-        if self.path == "/cancel-prepare":
+        web_request = self.path.startswith("/web-ppt/")
+        endpoint = self.path[len("/web-ppt"):] if web_request else self.path
+        if endpoint not in ("/copy", "/prepare", "/cancel-prepare"):
+            self.send_error(404)
+            return
+        if not self.valid_request_origin(required=web_request):
+            # Drain a bounded, already-sent body before closing. Otherwise Windows
+            # may reset the TCP socket and discard the useful 403 response.
+            try:
+                rejected_length = int(self.headers.get("Content-Length", "0"))
+                if 0 < rejected_length <= MAX_WEB_PPT_BYTES:
+                    self.connection.settimeout(2)
+                    self.rfile.read(rejected_length)
+            except (ValueError, OSError):
+                pass
+            self.json_response(403, {"ok": False, "error": "不允許此網頁連接"})
+            return
+        remote_payload = web_request or self.headers.get("Origin") == WEB_PPT_ORIGIN
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length < 0 or length > MAX_WEB_PPT_BYTES:
+                raise ValueError("圖形資料過大")
+            raw_payload = self.rfile.read(length) if length else b""
+            if remote_payload and self.headers.get_content_type() != "application/json":
+                raise ValueError("請使用 JSON 圖形資料")
+            payload = json.loads(raw_payload) if length else {}
+            if remote_payload:
+                if endpoint == "/cancel-prepare":
+                    if payload != {}:
+                        raise ValueError("取消要求格式不正確")
+                else:
+                    validate_web_ppt_payload(payload)
+            if endpoint != "/cancel-prepare" and not isinstance(payload, dict):
+                raise ValueError("圖形資料格式不正確")
+        except Exception as exc:
+            self.json_response(400, {"ok": False, "error": str(exc)})
+            return
+        if endpoint == "/cancel-prepare":
             # This endpoint never enters the serialized COM worker.  A newer
             # editor state can therefore stop an obsolete background build
             # immediately instead of waiting behind it.
             cancel_background_prepares()
-            body = json.dumps({"ok": True, "cancelled": True}).encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Access-Control-Allow-Origin", "http://127.0.0.1:8765")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            self.json_response(200, {"ok": True, "cancelled": True})
             return
-        if self.path not in ("/copy", "/prepare"):
-            self.send_error(404)
-            return
-        copy_request = self.path == "/copy"
+        copy_request = endpoint == "/copy"
         cancel_event = None
         if copy_request:
             # A user click is latency-sensitive. Stop current or queued idle
@@ -1193,21 +1317,9 @@ class Handler(SimpleHTTPRequestHandler):
             cancel_background_prepares()
         else:
             cancel_event = register_prepare_cancel()
-        try:
-            length = int(self.headers.get("Content-Length", "0"))
-            payload = json.loads(self.rfile.read(length))
-        except Exception as exc:
-            body = json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False).encode("utf-8")
-            self.send_response(400)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-
         self.send_response(200)
         self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "http://127.0.0.1:8765")
+        self.cors_headers()
         self.send_header("Cache-Control", "no-cache")
         self.send_header("Connection", "close")
         self.end_headers()

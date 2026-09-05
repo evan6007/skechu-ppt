@@ -2,61 +2,82 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const client=fs.readFileSync(new URL('../app/web-ppt-client.js',import.meta.url),'utf8');
-const helper=fs.readFileSync(new URL('../app/web-ppt-helper.js',import.meta.url),'utf8');
-const messages=[],timers=new Map(),polls=new Map();let seq=0,opened=0;
-const popup={closed:false,focus(){},postMessage:(data,origin)=>messages.push({data,origin})};
-const ctx=vm.createContext({location:{protocol:'https:',origin:'https://evan6007.github.io'},crypto:{randomUUID:()=>String(++seq)},URLSearchParams,
-  window:{open:()=>{opened++;return popup},addEventListener(){}},
-  setTimeout:(fn,ms)=>{const id=++seq;timers.set(id,{fn,ms});return id},clearTimeout:id=>timers.delete(id),
-  setInterval:fn=>{const id=++seq;polls.set(id,fn);return id},clearInterval:id=>polls.delete(id)});
-vm.runInContext(client,ctx);
-const request=()=>ctx.requestWebPptCopy('{"items":[{"type":"box"}]}',()=>{});
-const reply=(type,extra={})=>ctx.handleWebPptMessage({origin:'http://127.0.0.1:8766',source:popup,data:{kind:'skechu-ppt',channel:vm.runInContext('webPptSession.channel',ctx),type,...extra}});
-let promise=request();assert.equal(opened,1);assert.equal(messages.length,0,'No drawing is sent before explicit permission');
-ctx.handleWebPptMessage({origin:'https://evil.example',source:popup,data:{kind:'skechu-ppt',type:'approved',channel:'1'}});assert.equal(messages.length,0);
-ctx.handleWebPptMessage({origin:'http://127.0.0.1:8766',source:{},data:{kind:'skechu-ppt',type:'approved',channel:'1'}});assert.equal(messages.length,0);
-reply('ready');assert.equal(messages.length,0);reply('approved');assert.equal(messages.length,1);assert.equal(messages[0].origin,'http://127.0.0.1:8766');
-reply('result',{id:messages[0].data.id,result:{ok:true,count:3}});assert.equal((await promise).count,3);assert.equal(timers.size,0);assert.equal(polls.size,0);
-promise=request();assert.equal(opened,1,'Approved companion reused without a popup for every copy');
-reply('result',{id:messages.at(-1).data.id,result:{ok:false,error:'Office blocked'}});await assert.rejects(promise,/Office blocked/);
-promise=request();popup.closed=true;[...polls.values()][0]();await assert.rejects(promise,/已關閉/);popup.closed=false;
-ctx.window.open=()=>null;await assert.rejects(request(),/封鎖/);
-ctx.window.open=()=>popup;promise=request();[...timers.values()].find(t=>t.ms===10000).fn();await assert.rejects(promise,/找不到/);
-promise=request();reply('ready');reply('revoked');await assert.rejects(promise,/中斷/);
-promise=request();assert.ok([...timers.values()].some(t=>t.ms===120000),'Already-open unapproved companion gets an approval deadline');
-[...timers.values()].find(t=>t.ms===120000).fn();await assert.rejects(promise,/允許連接/);
-// The localhost helper accepts only the known opener, origin and channel after consent.
-const nodes=new Map(),replies=[];let listener,fetches=0;
-const el=id=>{if(!nodes.has(id))nodes.set(id,{textContent:'',hidden:false,disabled:false,value:0});return nodes.get(id)};
-const opener={postMessage:(data,origin)=>replies.push({data,origin})};
-const local=vm.createContext({location:{protocol:'http:',hostname:'127.0.0.1',origin:'http://127.0.0.1:8766',hash:'#origin=https%3A%2F%2Fevan6007.github.io&channel=test'},
-  window:{opener,addEventListener:(event,fn)=>listener=fn},document:{getElementById:el},URLSearchParams,TextDecoder,Uint8Array,
-  fetch:async()=>{fetches++;let read=false;return{ok:true,body:{getReader:()=>({read:async()=>read?{done:true}:(read=true,{done:false,value:new TextEncoder().encode('{"type":"progress","stage":"copy","percent":50}\n{"type":"result","ok":true,"count":2}\n')})})}}}});
-vm.runInContext(helper,local);assert.equal(replies[0].data.type,'ready');
-const event={origin:'https://evan6007.github.io',source:opener,data:{kind:'skechu-ppt',channel:'test',type:'copy',id:'copy1',body:'{"items":[{"type":"box"}]}'}};
-await listener(event);assert.equal(fetches,0,'Local copy is denied before user consent');el('allow').onclick();
-await listener({...event,origin:'https://evil.example'});await listener({...event,source:{}});await listener({...event,data:{...event.data,channel:'stale'}});assert.equal(fetches,0);
-await listener(event);assert.equal(fetches,1);assert.equal(replies.at(-1).data.result.count,2);
-assert.ok(replies.every(m=>m.origin==='https://evan6007.github.io'),'No wildcard postMessage target');
-for(const src of ['C:/private.png','assets/../private.png','assets/..\\private.png','https://example.com/a.png'])assert.throws(()=>local.validWebPptPayload(JSON.stringify({items:[{type:'image',src}]})),/本機檔案/);
-assert.throws(()=>local.validWebPptPayload('{"items":[]}'),/沒有可複製/);
-el('disconnect').onclick();await listener(event);assert.equal(fetches,1,'Revocation stops new operations');
-const originalSelected=JSON.stringify({items:[{type:'arrow',points:[{x:0,y:0},{x:1,y:2}]}]});assert.equal(local.validWebPptPayload(originalSelected).items.length,1);
-// New helpers advertise preparation; old helpers remain copy-compatible without warming.
-assert.equal(ctx.canWebPptPrepare(),false);reply('approved',{capabilities:['prepare','cache-contexts']});assert.equal(ctx.canWebPptPrepare(),true);
-const warmProgress=[];let warm=ctx.requestWebPptPrepare(originalSelected,event=>warmProgress.push(event));const prepareMessage=messages.at(-1).data;assert.equal(prepareMessage.type,'prepare');
-promise=request();assert.equal(messages.at(-1).data.type,'copy','Foreground copy immediately preempts in-flight preparation');
-const priorityCopy=messages.at(-1).data;
-reply('prepare-result',{id:'stale',result:{ok:true,prepared:true,count:1}});assert.equal(messages.at(-1).data.type,'copy');
-reply('progress',{id:prepareMessage.id,event:{stage:'建立 PowerPoint 物件',percent:42}});assert.equal(warmProgress[0].percent,42,'Background preparation progress reaches the main editor');
-reply('prepare-result',{id:prepareMessage.id,result:{ok:true,prepared:true,count:1}});await warm;
-reply('result',{id:priorityCopy.id,result:{ok:true,count:1}});await promise;
-warm=ctx.requestWebPptPrepare(originalSelected);reply('revoked');await assert.rejects(warm,/中斷/);assert.equal(ctx.canWebPptPrepare(),false);
-const warmRequests=[];
-local.fetch=async(url,options)=>{warmRequests.push({url,body:JSON.parse(options.body)});let done=false;return {ok:true,body:{getReader:()=>({read:async()=>done?{done:true}:(done=true,{done:false,value:new TextEncoder().encode('{"type":"progress","stage":"build","percent":50}\n{"type":"result","ok":true,"prepared":true,"count":1,"seconds":0.01}\n')})})}}};
-el('allow').onclick();await listener({...event,data:{...event.data,type:'prepare',body:'{"cacheId":"test:all","items":[{"type":"box"}]}'}});
-assert.equal(warmRequests[0].url,'/prepare');assert.equal(replies.at(-1).data.type,'prepare-result');assert.equal(replies.at(-1).data.result.prepared,true);
-assert.ok(replies.some(message=>message.data.type==='progress'&&message.data.event.percent===50),'Local companion forwards background progress');
-el('disconnect').onclick();await listener({...event,data:{...event.data,type:'prepare'}});assert.equal(warmRequests.length,1);
-assert.throws(()=>local.validWebPptPayload('{"cacheId":{},"items":[{"type":"box"}]}'),/快取/);
-console.log('Web-native PPT OK: consent handshake, strict origin/source/channel, no premature data, reusable session, timeout/popup/close errors, streamed results and unsafe path rejection.');
+const html=fs.readFileSync(new URL('../app/index.html',import.meta.url),'utf8');
+const streamCode=html.split('\n').find(line=>line.startsWith('async function readNativeStream('));
+const requests=[],timers=new Map();let nextTimer=0,handler;
+const response=(events,status=200)=>new Response(events.map(event=>JSON.stringify(event)).join('\n')+'\n',
+  {status,headers:{'Content-Type':'application/x-ndjson'}});
+const okCopy=()=>response([{type:'progress',stage:'copy',percent:70},{type:'result',ok:true,count:3}]);
+const status=()=>Response.json({ok:true,protocol:1,capabilities:['inline-copy','prepare','cache-contexts','cancel-prepare']});
+const ctx=vm.createContext({
+  location:{protocol:'https:',origin:'https://evan6007.github.io'},
+  AbortController,TextDecoder,Uint8Array,Response,
+  window:{open(){throw new Error('Copy must stay in the same page')},addEventListener(){}},
+  setTimeout:(fn,ms)=>{const id=++nextTimer;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),
+  fetch:async(url,options={})=>{requests.push({url,options});return handler(url,options);},
+});
+vm.runInContext(streamCode+'\n'+client,ctx);
+const body='{"items":[{"id":"a","type":"box","x":20,"y":30,"w":60,"h":40}]}';
+const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
+const reset=()=>{vm.runInContext('webPptSession=null',ctx);requests.length=0;};
+handler=url=>url.endsWith('/status')?status():okCopy();
+ctx.initializeWebPptClient();
+assert.equal(requests.length,0,'Loading the editor must not connect or trigger permission');
+assert.equal(ctx.canWebPptPrepare(),false);
+await assert.rejects(ctx.requestWebPptPrepare(body),/尚未就緒/);
+assert.equal(requests.length,0,'No background Office work before first user copy');
+const progress=[];
+assert.equal((await ctx.requestWebPptCopy(body,event=>progress.push(event))).count,3);
+assert.deepEqual(requests.map(r=>r.url),['http://127.0.0.1:8766/web-ppt/status','http://127.0.0.1:8766/web-ppt/copy']);
+assert.equal(requests[1].options.body,body);
+for(const {options} of requests)assert.equal(options.credentials,'omit');
+assert.equal(requests[1].options.headers['Content-Type'],'application/json');
+assert.ok(progress.some(event=>event.percent===70));
+assert.equal(ctx.canWebPptPrepare(),true);assert.equal(timers.size,0);
+await ctx.requestWebPptCopy(body);
+assert.equal(requests.filter(r=>r.url.endsWith('/status')).length,1,'Reuse connection without another permission flow');
+// Foreground copy must not await an in-flight background build.
+let releasePrepare;
+handler=url=>url.endsWith('/prepare')?new Promise(resolve=>releasePrepare=resolve)
+  :url.endsWith('/cancel-prepare')?Response.json({ok:true}):okCopy();
+const warm=ctx.requestWebPptPrepare(body);
+await flush();await ctx.cancelWebPptPrepare();
+assert.ok(requests.some(r=>r.url.endsWith('/cancel-prepare')));
+const copy=ctx.requestWebPptCopy(body);await flush();
+assert.equal(requests.at(-1).url,'http://127.0.0.1:8766/web-ppt/copy');
+assert.equal((await copy).count,3);
+releasePrepare(response([{type:'result',ok:true,prepared:true,count:3}]));await warm;
+assert.equal(timers.size,0);
+// Duplicate foreground requests are rejected; exactly one POST is issued.
+let releaseCopy;
+handler=()=>new Promise(resolve=>releaseCopy=resolve);
+const pending=ctx.requestWebPptCopy(body);await flush();
+await assert.rejects(ctx.requestWebPptCopy(body),/尚未完成/);
+releaseCopy(okCopy());await pending;
+// A network failure after POST is ambiguous, so never retry automatically.
+reset();handler=url=>url.endsWith('/status')?status():Promise.reject(new TypeError('disconnected'));
+await assert.rejects(ctx.requestWebPptCopy(body),/連線中斷/);
+assert.equal(requests.filter(r=>r.options.method==='POST').length,1);
+assert.equal(ctx.canWebPptPrepare(),false);
+assert.equal(timers.size,0);
+// Probe errors, old service, blocked local-network access never send artwork.
+for(const probe of [()=>new Response('',{status:404}),()=>Response.json({ok:true,protocol:0}),()=>Promise.reject(new TypeError('denied'))]){
+  reset();handler=probe;await assert.rejects(ctx.requestWebPptCopy(body),/更新|啟動/);
+  assert.equal(requests.length,1);assert.equal(requests[0].options.method,undefined);
+  assert.equal(ctx.canWebPptPrepare(),false);assert.equal(timers.size,0);
+}
+// Stream completion is necessary. Progress, a failed result, or zero objects is not success.
+for(const result of [
+  ()=>response([{type:'progress',percent:100}]),
+  ()=>response([{type:'result',ok:false,error:'Office unavailable'}]),
+  ()=>response([{type:'result',ok:true,count:0}]),
+  ()=>new Response('{bad json}\n'),
+]){
+  reset();handler=url=>url.endsWith('/status')?status():result();
+  await assert.rejects(ctx.requestWebPptCopy(body));
+  assert.equal(requests.filter(r=>r.options.method==='POST').length,1);
+  assert.equal(timers.size,0);
+}
+reset();ctx.location.protocol='file:';
+await assert.rejects(ctx.requestWebPptCopy(body),/HTML/);assert.equal(requests.length,0);
+console.log('Inline web PPT OK: click-only connection, no popup, origin-specific direct requests, progress, copy priority, preparation, old-service handling and no retry after ambiguous writes.');

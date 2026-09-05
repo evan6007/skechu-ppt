@@ -9,6 +9,8 @@
 #copy-all-ppt{white-space:nowrap}
 .clipboard-feedback{position:fixed;right:18px;top:118px;z-index:2200;width:min(410px,calc(100vw - 36px));box-sizing:border-box;padding:16px 42px 16px 16px;border:1px solid #c4b5fd;border-left:5px solid #7c3aed;border-radius:12px;background:#fff;box-shadow:0 8px 32px #17203325;color:#172033;line-height:1.55;font-size:13px}
 .clipboard-feedback[hidden]{display:none}
+.clipboard-feedback[data-kind="success"]{width:min(340px,calc(100vw - 36px))}
+.clipboard-actions a{order:-1;flex-basis:100%;color:inherit}
 .clipboard-feedback[data-kind="success"]{border-left-color:#16a34a}
 .clipboard-feedback[data-kind="error"]{border-left-color:#dc2626}
 .clipboard-feedback[data-kind="warning"]{border-left-color:#d97706}
