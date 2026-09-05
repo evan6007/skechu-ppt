@@ -23,6 +23,17 @@ Application JSON-LD identifies the software and its alternate name. It does not 
 
 Adding metadata alone does not perform steps 1–5. These require the owner's account and consent; do not record them as complete without Search Console confirmation.
 
+### Verified setup: 2026-09-06 (Asia/Taipei)
+
+With the owner's explicit approval, the exact URL-prefix property above was verified through Google's supplied HTML meta tag. The public tag is retained in `app/index.html` and guarded by `tests/check_seo.mjs`. No Analytics, ads, DNS changes or additional owners were added.
+
+- **Homepage:** the existing index report said the URL was unknown to Google, with no previous crawl. The live test passed. Search Console then confirmed the indexing request and placement in its priority crawl queue.
+- **Feature guide:** Search Console also confirmed the indexing request and priority crawl queue placement for `/about.html`.
+- **Sitemap:** submitted successfully, but the Sitemaps report still said `Couldn't fetch` with 0 discovered pages. The exact submitted URL was verified; Google's live URL test at 01:35 reported crawl allowed, page fetch successful, and indexing allowed. The public response was HTTP 200 with `application/xml` and both expected URLs. Resubmitted once after that test; successful parsing by the sitemap processor is **not yet confirmed**.
+- **Manual actions / security issues:** both reports showed no detected issues.
+
+The two page requests are accepted, not proof of completed indexing or ranking. On the next check, read the existing sitemap and URL Inspection reports; do not repeatedly resubmit or fabricate a completion status. Google may retry failed sitemap fetches for a few days: [Sitemaps report documentation](https://support.google.com/webmasters/answer/7451001).
+
 ## Validation and scope
 
 Run `node tests/check_seo.mjs` and normal application checks before publishing. Verify the live editor, guide and sitemap return HTTP 200 and that no `X-Robots-Tag: noindex` blocks the public pages. A missing host-level robots.txt returning 404 is not a crawl ban. A file at `/skechu-ppt/robots.txt` would not control crawling for the host, so this project deliberately does not add an ineffective one or mutate the unrelated account-root site.
