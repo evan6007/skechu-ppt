@@ -40,8 +40,11 @@ function clearLayerDragVisual(gesture,settle=false){
   else ghost.remove();
 }
 function layerGroupOf(it) {
-  if (Object.prototype.hasOwnProperty.call(it, 'layerGroup')) return it.layerGroup;
-  // Existing projects gain a collapsed folder without rewriting their geometry.
+  const explicit=Object.prototype.hasOwnProperty.call(it,'layerGroup'),group=it.layerGroup;
+  // Split only legacy default folders; keep renamed, regrouped and ungrouped items intact.
+  if(it.autoTraceColored&&it.autoTraceBatch&&(!explicit||(group?.id==='trace-'+it.autoTraceBatch&&group.name==='自動描圖')))
+    return {...group,id:'fill-'+it.autoTraceBatch,name:'自動填色',collapsed:group?.collapsed??true};
+  if(explicit)return group;
   return it.autoTraceBatch ? {id: 'trace-' + it.autoTraceBatch, name: '自動描圖', collapsed: true} : null;
 }
 function layerEntries(source = items) {

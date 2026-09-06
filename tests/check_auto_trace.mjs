@@ -101,6 +101,17 @@ const aspectSource=JSON.parse(JSON.stringify(result.items[0]));aspectSource.poin
 const aspectFit=context.transformAutoTraceItems({items:[aspectSource],issues:[]},{x:10,y:20,w:200,h:100,r:0},100,100,'aspect',()=>`aspect-${seq++}`)[0];
 assert.deepEqual(JSON.parse(JSON.stringify(aspectFit.points)),[{x:60,y:20},{x:160,y:120}],'Applied trace uses the reference image contain rectangle instead of stretching to a mismatched outer box');
 context.items=transformed;context.syncAutoJunctions();
+const colorOnly={...JSON.parse(JSON.stringify(logoResult.items[0])),autoTraceColored:true,width:0,fill:'#ff8800',fillOpacity:1},mixedPrediction={...result,colorItems:[colorOnly]};
+context.autoTraceResult=mixedPrediction;context.autoTracePurpose='trace';context.document={getElementById:()=>({checked:false})};loadFunction(ui,'activeAutoTraceResult');
+assert.equal(context.activeAutoTraceResult(),mixedPrediction,'Trace action retains only the original line network');
+context.autoTracePurpose='fill';const fillOnlyResult=context.activeAutoTraceResult();
+assert.equal(fillOnlyResult.items.length,1);assert.equal(fillOnlyResult.items[0],colorOnly);assert.equal(fillOnlyResult.issues.length,0);
+assert.equal(fillOnlyResult.stats.paths,1);assert.equal(fillOnlyResult.stats.anchors,colorOnly.points.length);
+const both=context.transformAutoTraceItems({...result,items:[result.items[0],colorOnly]},{id:'ref',x:0,y:0,w:100,h:100},100,100,'split',()=>`split-${seq++}`);
+assert.equal(both[0].layerGroup.id,'trace-split');assert.equal(both[1].layerGroup.id,'fill-split');assert.equal(both[1].layerGroup.name,'自動填色');
+assert.equal(both[1].width,0);assert.equal(both[1].autoTraceSourceId,'ref');assert.equal(Object.keys(both[1].pointJunctions).length,0,'Fills never share draggable line junctions');
+assert.deepEqual(JSON.parse(JSON.stringify(both[1].points)),colorOnly.points,'Splitting groups cannot alter fill coordinates');
+context.autoTraceResult={...result,colorItems:[]};assert.equal(context.activeAutoTraceResult().items.length,0,'Empty fills cannot fall back to creating lines');
 const members=[...context.autoJunctionMembers().values()][0];context.selected=members[1].it.id;
 members[1].it.points[members[1].index]={x:80,y:90};context.syncAutoJunctions();
 for(const m of members)assert.deepEqual(JSON.parse(JSON.stringify(m.it.points[m.index])),{x:80,y:90},'Moving any T member moves the common anchor');
@@ -144,13 +155,13 @@ const defaults={'auto-trace-threshold':['150',40,220],'auto-trace-accuracy':['2.
 for(const id of Object.keys(defaults))assert.match(ui,new RegExp(`id="${id}"[^>]*type="range"`),'Every tuning control is a slider');
 function element(id){if(!elements.has(id)){const [value='',min=-Infinity,max=Infinity]=defaults[id]||[];elements.set(id,{value,innerHTML:'',textContent:'',disabled:false,open:false,attributes:{},style:{},insertAdjacentHTML(){},addEventListener(){},showModal(){this.open=true},close(){this.open=false},setAttribute(k,v){this.attributes[k]=v},checkValidity(){return this.value!==''&&Number.isFinite(Number(this.value))&&Number(this.value)>=min&&Number(this.value)<=max}})}return elements.get(id)}
 const reference={id:'ref',type:'image',referenceOnly:true,preserveFull:true,src:'data:image/png;base64,fixture',x:0,y:0,w:100,h:100,r:0};
-const controller=vm.createContext({console,URL,Blob,AutoTrace:trace,Uint8Array,Map,Number,Math,JSON,selected:'ref',items:[reference],traceDraft:null,activeProjectId:'project',activePageId:'page',deepCopy:context.deepCopy,esc:String,byId:id=>id==='ref'?reference:null,
+const controller=vm.createContext({console,URL,Blob,AutoTrace:trace,IllustrationTrace:{wasmBytes:async()=>new Uint8Array(8)},Uint8Array,Map,Number,Math,JSON,selected:'ref',items:[reference],traceDraft:null,activeProjectId:'project',activePageId:'page',deepCopy:context.deepCopy,esc:String,byId:id=>id==='ref'?reference:null,
  document:{baseURI:'http://localhost/',body:element('body'),querySelector:()=>element('toolbar'),getElementById:element,createElement:()=>({getContext:()=>({drawImage(){},getImageData:()=>({data:new Uint8Array(40000)})})})},
  Image:class{naturalWidth=100;naturalHeight=100;decode(){return Promise.resolve()}},
  Worker:class{constructor(url){assert.ok(url.startsWith('blob:'),'Works with opaque file:// origins, never starts a file:// worker');workers.push(this)}terminate(){this.terminated=true}postMessage(payload){this.payload=payload}},
  setTimeout:fn=>{const id=++timerId;timers.set(id,fn);return id},clearTimeout:id=>timers.delete(id)});
 vm.runInContext(app.split('\n').find(l=>l.startsWith('function tracePenStrokeStyle('))+'\n'+ui+'\nthis.actions={open:openAutoTrace,change:invalidateAutoTrace,cancel:cancelAutoTrace};',controller);
-const settle=async()=>{await Promise.resolve();await Promise.resolve()};
+const settle=async()=>{for(let i=0;i<8;i++)await Promise.resolve()};
 const flush=async()=>{for(const [id,fn] of [...timers]){timers.delete(id);fn()}await settle()};
 const reply=(worker,data)=>worker.onmessage({data});
 await controller.actions.open();assert.equal(workers.length,1,'Opening predicts immediately');
@@ -179,6 +190,18 @@ await controller.actions.open();element('auto-trace-mode').value='contour';contr
 reply(workers.at(-1),{type:'result',result:logoResult});assert.match(element('auto-trace-summary').textContent,/Logo 輪廓/);
 element('auto-trace-threshold').value='220';element('auto-trace-reset').onclick();await flush();assert.equal(workers.at(-1).payload.options.mode,'auto');assert.equal(workers.at(-1).payload.options.threshold,150);controller.actions.cancel();
 assert.equal(controller.items.length,1,'Preview and cancel never create canvas objects');
+await controller.actions.open('fill');assert.equal(workers.at(-1).payload.options.mode,'illustration');assert.equal(element('auto-trace-title').textContent,'自動填色');
+assert.equal(element('auto-trace-mode').disabled,true);assert.equal(element('auto-trace-close-border-label').hidden,true);
+reply(workers.at(-1),{type:'result',result:mixedPrediction});assert.equal((element('auto-trace-lines').innerHTML.match(/data-auto-curve=/g)||[]).length,1);
+assert.equal(element('auto-trace-apply').textContent,'套用色塊');assert.match(element('auto-trace-summary').textContent,/不新增線稿/);
+element('auto-trace-threshold').value='190';controller.actions.cancel();await controller.actions.open('trace');assert.equal(workers.at(-1).payload.options.threshold,150,'Fill sliders cannot change trace settings');
+assert.equal(element('auto-trace-mode').disabled,false);assert.equal(element('auto-trace-close-border-label').hidden,false);controller.actions.cancel();
+await controller.actions.open('fill');assert.equal(workers.at(-1).payload.options.threshold,190,'Each action remembers its own settings');
+element('auto-trace-reset').onclick();await flush();assert.equal(workers.at(-1).payload.options.mode,'illustration');assert.equal(workers.at(-1).payload.options.threshold,120);
+reply(workers.at(-1),{type:'result',result:{...result,items:[],colorItems:[colorOnly]}});
+let applications=0;Object.assign(controller,{id:()=>`apply-${seq++}`,commit:()=>applications++,setTracePen(){},setOnlySelected(){},render(){}});
+element('auto-trace-apply').onclick();element('auto-trace-apply').onclick();assert.equal(applications,1,'A double apply cannot add duplicate objects');assert.equal(controller.items.length,2,'Fill action works even when the engine has no line output');
+assert.equal(controller.items[1].autoTraceColored,true);assert.equal(controller.items[1].layerGroup.name,'自動填色');
 console.log('Auto trace live preview OK: immediate pen lines, broad defaults, automatic input updates, stale results, validation, errors and cancellation.');
 
 if(process.env.SKECHU_TEST_POWERPOINT==='1'){

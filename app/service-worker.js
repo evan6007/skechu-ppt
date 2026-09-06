@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v79-layer-actions';
+const CACHE_NAME = 'skechu-ppt-v80-split-trace-fill';
 const APP_SHELL = [
   './',
   './index.html',
@@ -27,7 +27,7 @@ const APP_SHELL = [
   './pan-tool.js',
   './selection-controls.js?v=67-touch-shell',
   './workspace-actions.js?v=67-touch-shell',
-  './layer-controls.js?v=79-layer-actions',
+  './layer-controls.js?v=80-split-trace-fill',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=79-layer-actions',
   './clipboard-controls.js?v=60-keyboard-copy',
@@ -43,10 +43,10 @@ const APP_SHELL = [
   './vendor/vtracer.wasm?v=1.0.0-alpha.4',
   './auto-trace.js?v=75-closed-regions',
   './auto-trace.js',
-  './auto-trace-ui.js?v=77-shared-boundaries',
+  './auto-trace-ui.js?v=80-split-trace-fill',
   './auto-trace-worker.js',
   './auto-trace-worker.js?v=77-shared-boundaries',
-  './auto-trace.css?v=75-closed-regions',
+  './auto-trace.css?v=80-split-trace-fill',
   './manifest.webmanifest',
   './skechu-mark.svg',
   './skechu-icon.png',

@@ -30,6 +30,12 @@ let entries=plain(ctx.layerEntries());
 assert.deepEqual(entries.map(e=>e.key),['item:b','group:trace-old-batch','item:a','item:ref']);
 assert.equal(entries[1].members.length,2);assert.equal(entries[1].group.collapsed,true,'Old auto-trace batches default to collapsed');
 assert.equal(ctx.items[2].layerGroup,undefined,'Reading legacy groups does not mutate items');
+const oldFill={...plain(seed[2]),autoTraceColored:true,layerGroup:{id:'trace-old-batch',name:'自動描圖',collapsed:false}},oldFillState=JSON.stringify(oldFill);
+assert.deepEqual(plain(ctx.layerGroupOf(oldFill)),{id:'fill-old-batch',name:'自動填色',collapsed:false});
+assert.equal(JSON.stringify(oldFill),oldFillState,'Splitting old default folders never rewrites geometry or metadata on read');
+assert.equal(ctx.layerGroupOf({...oldFill,layerGroup:null}),null,'Explicit ungrouping is respected');
+for(const group of [{id:'custom',name:'自動描圖'},{id:'trace-old-batch',name:'我的陰影'}])assert.deepEqual(plain(ctx.layerGroupOf({...oldFill,layerGroup:group})),group,'Manual groups and names are preserved');
+const inferredFill={...oldFill};delete inferredFill.layerGroup;assert.equal(ctx.layerGroupOf(inferredFill).id,'fill-old-batch');
 ctx.renderLayerTree();assert.ok(!el('layers').innerHTML.includes('data-layer="t1"'),'Collapsed folder hides individual rows');
 const geometry=drawn();ctx.toggleLayerFolder('group:trace-old-batch');
 assert.ok(el('layers').innerHTML.includes('data-layer="t1"'));assert.equal(ctx.history.length,0,'Disclosure does not consume Undo');
@@ -122,7 +128,7 @@ const stableLayerWrites=targetRow.style.writes;events.get('layers:pointermove:fa
 events.get('layers:pointerup:false')(event(50));assert.equal(bodyChildren[0].removed,true,'Floating copy fades and is removed after drop');
 assert.equal(targetRow.style.transform,'');
 for(const asset of ['layer-controls.js','layer-controls.css']){
-  const version='?v=79-layer-actions';
+  const version=asset.endsWith('.js')?'?v=80-split-trace-fill':'?v=79-layer-actions';
   assert.ok(html.includes(asset+version));
   assert.ok(fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes(asset+version));
   assert.ok(fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+asset+';.'));

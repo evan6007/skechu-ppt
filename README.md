@@ -79,7 +79,7 @@ The **browser command API** works in the web editor. The **optional MCP connecto
 | **[Windows installer](https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe)** | The editor plus native editable PowerPoint copy/paste |
 
 1. Choose **新增底圖** and add any image.
-2. Use **自動描圖** or place anchors with **描圖 / 磁吸**.
+2. Use **自動描圖** for linework and **自動填色** for independent color regions—two toolbar actions, two editable layer groups. Or place anchors with **描圖 / 磁吸**.
 3. Export SVG, save a portable `.skc` project, or copy editable objects to PowerPoint.
 
 Want the web edition to feel like a normal app? Follow the **[click-by-click install guide](docs/install.md)**—no command line required.

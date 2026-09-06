@@ -2,6 +2,8 @@
 let autoTraceJob=null,autoTraceResult=null,autoTraceSource=null,autoTraceSerial=0,autoTraceTimer=null;
 let autoTraceReviewCursor=0,autoTracePreviewSelection=null;
 let autoTraceDialogMotion=null,autoTraceDialogClosing=false;
+let autoTracePurpose='trace';
+const autoTraceSettingsByPurpose=new Map();
 const autoJunctionPositions=new Map();
 function createAutoTraceJob() {
  // Some embedded browsers restrict Blob URLs. HTTP editions can use the
@@ -17,10 +19,11 @@ function createAutoTraceJob() {
  } catch(error) {URL.revokeObjectURL(url);throw new Error(`自動描圖背景運算無法啟動：${error.message||error}`);}
 }
 document.getElementById('import-reference').insertAdjacentHTML('afterend','<button id="auto-trace" class="tool-button" title="把線稿、Logo 或照片角色轉成可編輯曲線"><span class="tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17c3-7 7-8 10-4s4 3 6-2"/><circle cx="4" cy="17" r="1.5"/><circle cx="14" cy="13" r="1.5"/><circle cx="20" cy="11" r="1.5"/><path d="M18 3v4M16 5h4"/></svg></span><span class="tool-text">自動描圖</span></button>');
+document.getElementById('auto-trace').insertAdjacentHTML('afterend','<button id="auto-fill" class="tool-button" aria-label="自動填色" title="從底圖取色，建立獨立的封閉色塊；不重複產生線稿"><span class="tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 10 7-7 8 8-7 7a2 2 0 0 1-3 0l-5-5a2 2 0 0 1 0-3ZM7 2l6 6M4 12h14M4 22h12M20 14s-2 2.5-2 4a2 2 0 0 0 4 0c0-1.5-2-4-2-4Z"/></svg></span><span class="tool-text">自動填色</span></button>');
 document.body.insertAdjacentHTML('beforeend',`
 <dialog id="auto-trace-dialog" aria-labelledby="auto-trace-title">
- <div class="auto-trace-heading"><div><h2 id="auto-trace-title">自動描圖</h2><p>直接預測並畫出描圖筆曲線；調整設定會自動更新。套用後可刪點、拉切線精修。</p></div><button id="auto-trace-cancel" type="button" aria-label="取消自動描圖">✕</button></div>
- <div class="auto-trace-mode-row"><label for="auto-trace-mode">描圖方式</label><select id="auto-trace-mode"><option value="auto">自動判斷（推薦）</option><option value="illustration">彩色插畫 · 封閉區域與填色</option><option value="line">細線稿 · 沿線中心描</option><option value="contour">Logo 輪廓 · 沿色塊邊緣描</option><option value="photo">照片角色 · 排除背景與雜訊</option></select><button id="auto-trace-reset" type="button">恢復推薦設定</button></div>
+ <div class="auto-trace-heading"><div><h2 id="auto-trace-title">自動描圖</h2><p id="auto-trace-description">只建立可編輯線稿，放進「自動描圖」群組。需要色塊時，使用上方的「自動填色」。</p></div><button id="auto-trace-cancel" type="button" aria-label="取消自動描圖">✕</button></div>
+ <div class="auto-trace-mode-row"><label id="auto-trace-mode-label" for="auto-trace-mode">描圖方式</label><select id="auto-trace-mode"><option value="auto">自動判斷（推薦）</option><option value="illustration">彩色插畫 · 色區辨識</option><option value="line">細線稿 · 沿線中心描</option><option value="contour">Logo 輪廓 · 沿色塊邊緣描</option><option value="photo">照片角色 · 排除背景與雜訊</option></select><button id="auto-trace-reset" type="button">恢復推薦設定</button></div>
  <p id="auto-trace-mode-hint" class="auto-trace-mode-hint">不用先猜參數：細線稿保留分岔，實心 Logo 描出外框與內部留白。</p>
  <div class="auto-trace-options">
   <label><span class="auto-trace-option-title"><span id="auto-trace-threshold-title">深淺辨識</span> <output id="auto-trace-threshold-value" for="auto-trace-threshold"></output></span><input id="auto-trace-threshold" aria-label="深淺辨識" type="range" min="40" max="220" step="5" value="150"><span class="auto-trace-range-ends"><span id="auto-trace-threshold-low">只抓深色</span><span id="auto-trace-threshold-high">包含淺色</span></span><small id="auto-trace-threshold-help">漏線往右；抓到多餘的底色往左。</small></label>
@@ -28,9 +31,9 @@ document.body.insertAdjacentHTML('beforeend',`
   <label><span class="auto-trace-option-title">錨點精簡 <output id="auto-trace-simplify-value" for="auto-trace-simplify"></output></span><input id="auto-trace-simplify" aria-label="錨點精簡" type="range" min="0" max="100" step="5" value="90"><span class="auto-trace-range-ends"><span>更多控制點</span><span>更少控制點</span></span><small>往右以較長的弧線描圖，方便精修。</small></label>
   <label><span class="auto-trace-option-title">細節清理 <output id="auto-trace-min-length-value" for="auto-trace-min-length"></output></span><input id="auto-trace-min-length" aria-label="細節清理" type="range" min="0" max="30" step="1" value="3"><span class="auto-trace-range-ends"><span>保留小細節</span><span>去掉小碎片</span></span><small>小圖示先靠左；往右會移除短線或小輪廓。</small></label>
  </div>
- <div class="auto-trace-actions"><span class="auto-trace-legend">藍線＝描線</span><label><input id="auto-trace-show-image" type="checkbox" checked> 顯示底圖</label><label><input id="auto-trace-show-anchors" type="checkbox" checked> 實際錨點（青色）</label><label><input id="auto-trace-show-issues" type="checkbox" checked> 待確認（紅圈，非錨點）</label><span id="auto-trace-summary" role="status" aria-live="polite"></span></div>
+ <div class="auto-trace-actions"><span id="auto-trace-legend" class="auto-trace-legend">藍線＝描線</span><label><input id="auto-trace-show-image" type="checkbox" checked> 顯示底圖</label><label><input id="auto-trace-show-anchors" type="checkbox" checked> 實際錨點（青色）</label><label id="auto-trace-issues-label"><input id="auto-trace-show-issues" type="checkbox" checked> 待確認（紅圈，非錨點）</label><span id="auto-trace-summary" role="status" aria-live="polite"></span></div>
  <div class="auto-trace-canvas"><svg id="auto-trace-svg" xmlns="http://www.w3.org/2000/svg" aria-label="預測描圖筆線條"><g id="auto-trace-image"></g><g id="auto-trace-lines"></g><g id="auto-trace-anchors" pointer-events="none"></g><g id="auto-trace-issues" pointer-events="none"></g></svg></div>
- <div class="auto-trace-footer"><span id="auto-trace-anchor-info">青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。</span><label id="auto-trace-color-label" hidden><input id="auto-trace-color" type="checkbox"> 自動填色（底圖取色）</label><button id="auto-trace-apply" class="primary" type="button" disabled>套用線圖</button></div>
+ <div class="auto-trace-footer"><span id="auto-trace-anchor-info">青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。</span><label id="auto-trace-close-border-label" title="把碰到原圖四邊的線接到邊緣，讓裁切區域也能填色；不改動內部曲線"><input id="auto-trace-close-border" type="checkbox" checked> 沿底圖邊緣封閉</label><button id="auto-trace-apply" class="primary" type="button" disabled>套用線圖</button></div>
 </dialog>`);
 const autoTraceDialog=document.getElementById('auto-trace-dialog');
 function autoTraceImageRect(node){const rect=node?.getBoundingClientRect?.();return rect&&rect.width>2&&rect.height>2?{left:rect.left,top:rect.top,width:rect.width,height:rect.height}:null}
@@ -61,19 +64,40 @@ function closeAutoTraceDialog(ref){
  const motion=runAutoTraceDialogMotion(false,ref);if(!motion){finishAutoTraceDialogClose();return null}motion.finally(finishAutoTraceDialogClose);return motion;
 }
 function cancelAutoTrace(){const ref=autoTraceSource?.ref;clearTimeout(autoTraceTimer);autoTraceTimer=null;autoTraceSerial++;autoTraceJob?.terminate();autoTraceJob=null;autoTraceResult=null;autoTraceSource=null;setAutoTraceBusy(false);return closeAutoTraceDialog(ref)}
-function setAutoTraceBusy(busy){document.getElementById('auto-trace-svg').setAttribute('aria-busy',String(busy));document.getElementById('auto-trace-anchors').innerHTML='';autoTracePreviewSelection=null;document.getElementById('auto-trace-anchor-info').textContent='青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。'}
+function setAutoTraceBusy(busy){document.getElementById('auto-trace-svg').setAttribute('aria-busy',String(busy));document.getElementById('auto-trace-anchors').innerHTML='';autoTracePreviewSelection=null;document.getElementById('auto-trace-anchor-info').textContent=autoTracePurpose==='fill'?'每個封閉色塊都可獨立改色、移動或刪除；不新增線稿。':'青色點才是套用後的實際錨點；紅圈只是待確認。點一段藍線可看它的點數。'}
+function configureAutoTracePurpose(purpose){
+ const keys=['mode','threshold','accuracy','simplify','min-length'];
+ if(purpose!==autoTracePurpose){
+  autoTraceSettingsByPurpose.set(autoTracePurpose,Object.fromEntries(keys.map(key=>[key,document.getElementById('auto-trace-'+key).value])));
+  const settings=autoTraceSettingsByPurpose.get(purpose)||(purpose==='fill'?{mode:'illustration',threshold:120,accuracy:3.5,simplify:90,'min-length':5}:{mode:'auto',threshold:150,accuracy:2.5,simplify:90,'min-length':3});
+  for(const key of keys)document.getElementById('auto-trace-'+key).value=String(settings[key]);
+ }
+ autoTracePurpose=purpose;const fill=purpose==='fill',name=fill?'自動填色':'自動描圖';
+ autoTraceDialog.setAttribute('data-purpose',purpose);
+ document.getElementById('auto-trace-title').textContent=name;
+ document.getElementById('auto-trace-description').textContent=fill?'從底圖取色，只建立無邊框的封閉色塊，放進「自動填色」群組。已有線稿不變；色塊可各自編輯。':'只建立可編輯線稿，放進「自動描圖」群組。需要色塊時，使用上方的「自動填色」。';
+ document.getElementById('auto-trace-mode-label').textContent=fill?'填色方式':'描圖方式';
+ document.getElementById('auto-trace-mode').disabled=fill;
+ if(fill)document.getElementById('auto-trace-mode').value='illustration';
+ document.getElementById('auto-trace-close-border-label').hidden=fill;
+ document.getElementById('auto-trace-issues-label').hidden=fill;
+ document.getElementById('auto-trace-legend').textContent=fill?'原圖取色 · 色塊無邊框':'藍線＝描線';
+ document.getElementById('auto-trace-cancel').setAttribute('aria-label','取消'+name);
+ document.getElementById('auto-trace-svg').setAttribute('aria-label',fill?'封閉色塊預覽':'預測描圖筆線條');
+ document.getElementById('auto-trace-apply').textContent=fill?'套用色塊':'套用線圖';
+}
 function invalidateAutoTrace(){
  updateAutoTraceSettings();
  clearTimeout(autoTraceTimer);autoTraceTimer=null;autoTraceSerial++;autoTraceJob?.terminate();autoTraceJob=null;autoTraceResult=null;document.getElementById('auto-trace-apply').disabled=true;
  if(!autoTraceDialog.open||!autoTraceSource)return;
  if(!validAutoTraceOptions()){setAutoTraceBusy(false);document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';document.getElementById('auto-trace-summary').textContent='請輸入範圍內的數值，填好後會自動預測';return}
- setAutoTraceBusy(true);document.getElementById('auto-trace-summary').textContent='正在更新預測描線…';
+ setAutoTraceBusy(true);document.getElementById('auto-trace-summary').textContent=autoTracePurpose==='fill'?'正在更新填色色塊…':'正在更新預測描線…';
  // Coalesce slider/input changes, and ignore any replies from superseded workers.
  autoTraceTimer=setTimeout(()=>{autoTraceTimer=null;generateAutoTracePreview()},220);
 }
 function validAutoTraceOptions(){return ['auto-trace-threshold','auto-trace-accuracy','auto-trace-simplify','auto-trace-min-length'].every(id=>{const input=document.getElementById(id);return input.value.trim()!==''&&input.checkValidity()})}
 function autoTraceSignature(ref){return JSON.stringify([activeProjectId,activePageId,ref.id,ref.src,ref.x,ref.y,ref.w,ref.h,ref.r])}
-function autoTraceOptions(){return{mode:document.getElementById('auto-trace-mode').value||'auto',threshold:Number(document.getElementById('auto-trace-threshold').value),accuracy:Number(document.getElementById('auto-trace-accuracy').value),simplify:Number(document.getElementById('auto-trace-simplify').value),minLength:Number(document.getElementById('auto-trace-min-length').value)}}
+function autoTraceOptions(){return{mode:autoTracePurpose==='fill'?'illustration':document.getElementById('auto-trace-mode').value||'auto',threshold:Number(document.getElementById('auto-trace-threshold').value),accuracy:Number(document.getElementById('auto-trace-accuracy').value),simplify:Number(document.getElementById('auto-trace-simplify').value),minLength:Number(document.getElementById('auto-trace-min-length').value)}}
 function updateAutoTraceSettings(){
  for(const [name,min,max] of [['threshold',40,220],['accuracy',.3,6],['simplify',0,100],['min-length',0,30]]){
   const input=document.getElementById('auto-trace-'+name),percent=Math.round((Number(input.value)-min)/(max-min)*100);
@@ -87,31 +111,27 @@ function updateAutoTraceSettings(){
  document.getElementById('auto-trace-threshold-high').textContent=photo?'保留更多細節':'包含淺色';
  document.getElementById('auto-trace-threshold-help').textContent=photo?'草地與照片雜訊會先排除；往右增加五官與斑紋細節。':'漏線往右；抓到多餘的底色往左。';
  document.getElementById('auto-trace-mode-hint').textContent=photo?'照片角色：估計並排除背景，只描角色外框與較明確的五官、斑紋；低解析圖片仍需套用後精修。':mode==='contour'?'Logo 輪廓：描出色塊外框與內部留白，不把實心區域縮成骨架。':mode==='line'?'細線稿：沿筆畫中心描圖，保留 T 型分岔；適合大腦線稿。':'不用先猜參數：細線稿保留分岔，實心 Logo 描出外框與內部留白。';
- if(illustration){document.getElementById('auto-trace-threshold-low').textContent='乾淨的大色區';document.getElementById('auto-trace-threshold-high').textContent='保留細小色差';document.getElementById('auto-trace-threshold-help').textContent='雜點多往左；漏掉細節往右。背景與陰影也可能形成色區。';document.getElementById('auto-trace-mode-hint').textContent='彩色插畫：先分色區，再描封閉邊界。不靠加粗線條補洞；可直接從底圖自動填色。漸層會近似成平塗色區，模糊細節仍需精修。'}
+ if(illustration){document.getElementById('auto-trace-threshold-low').textContent='乾淨的大色區';document.getElementById('auto-trace-threshold-high').textContent='保留細小色差';document.getElementById('auto-trace-threshold-help').textContent='雜點多往左；漏掉細節往右。背景與陰影也可能形成色區。';document.getElementById('auto-trace-mode-hint').textContent=autoTracePurpose==='fill'?'從底圖辨識封閉色區並取色，不新增線稿，也不改動已有物件。漸層會近似成平塗色區，模糊細節仍需精修。':'彩色插畫：先辨識色區，再建立線稿，不自動填色。需要獨立色塊時使用上方「自動填色」。模糊細節仍需精修。'}
 }
 function resetAutoTraceSettings(){
- document.getElementById('auto-trace-mode').value='auto';
- for(const [name,value] of [['threshold',150],['accuracy',2.5],['simplify',90],['min-length',3]])document.getElementById('auto-trace-'+name).value=String(value);
+ const fill=autoTracePurpose==='fill';document.getElementById('auto-trace-mode').value=fill?'illustration':'auto';
+ for(const [name,value] of [['threshold',fill?120:150],['accuracy',fill?3.5:2.5],['simplify',90],['min-length',fill?5:3]])document.getElementById('auto-trace-'+name).value=String(value);
  invalidateAutoTrace();
 }
 function autoTraceCurvePath(it){let d=`M${it.points[0].x} ${it.points[0].y}`;for(let i=0;i<(it.closed?it.points.length:it.points.length-1);i++){const j=(i+1)%it.points.length,p=it.points[i],q=it.points[j],a=it.pointHandleAngles[i],b=it.pointHandleAngles[j];d+=` C${p.x+Math.cos(a.out*Math.PI/180)*a.outLength} ${p.y+Math.sin(a.out*Math.PI/180)*a.outLength} ${q.x+Math.cos(b.in*Math.PI/180)*b.inLength} ${q.y+Math.sin(b.in*Math.PI/180)*b.inLength} ${q.x} ${q.y}`}return d+(it.closed?' Z':'')}
-document.getElementById('auto-trace-color-label').insertAdjacentHTML('beforebegin','<label title="把碰到原圖四邊的線接到邊緣，讓裁切區域也能填色；不改動內部曲線"><input id="auto-trace-close-border" type="checkbox" checked> 沿底圖邊緣封閉</label>');
 function activeAutoTraceResult(){
  if(!autoTraceResult)return null;
- if(!document.getElementById('auto-trace-color')?.checked||!autoTraceResult.colorItems){
-  if(document.getElementById('auto-trace-close-border')?.checked&&autoTraceSource?.width&&autoTraceSource?.height){
-   return TraceBoundary.close(autoTraceResult,autoTraceSource.width,autoTraceSource.height);
-  }
-  return autoTraceResult;
+ // The two actions share prediction, not output: applying fills never re-adds ink.
+ if(autoTracePurpose==='fill'){
+  const items=autoTraceResult.colorItems||[];
+  return{...autoTraceResult,items,issues:[],stats:{...autoTraceResult.stats,paths:items.length,anchors:items.reduce((n,it)=>n+it.points.length,0),junctions:0,reviewCount:0}};
  }
- // Coloring adds independent fills underneath the same unique line network.
- // It must not replace the line art with a second set of region outlines.
- const items=[...autoTraceResult.colorItems,...autoTraceResult.items];return{...autoTraceResult,items,stats:{...autoTraceResult.stats,paths:items.length,anchors:items.reduce((n,it)=>n+it.points.length,0)}};
+ if(document.getElementById('auto-trace-close-border')?.checked&&autoTraceSource?.width&&autoTraceSource?.height)return TraceBoundary.close(autoTraceResult,autoTraceSource.width,autoTraceSource.height);
+ return autoTraceResult;
 }
 function renderAutoTracePreview(){
  const result=activeAutoTraceResult();if(!result)return;
- document.getElementById('auto-trace-color-label').hidden=!autoTraceResult.colorItems?.length;
- document.getElementById('auto-trace-apply').textContent=result.items[0]?.autoTraceColored?'套用並填色':'套用線圖';
+ document.getElementById('auto-trace-apply').textContent=autoTracePurpose==='fill'?'套用色塊':'套用線圖';
  const pen=tracePenStrokeStyle();
  document.getElementById('auto-trace-lines').innerHTML=result.items.map((it,i)=>`<path class="auto-trace-predicted-line" data-auto-curve="${i}" tabindex="0" role="button" aria-label="描線 ${i+1}：${it.points.length} 個錨點" d="${autoTraceCurvePath(it)}" fill="${it.autoTraceColored?it.fill:'none'}" stroke="${autoTracePreviewSelection===i?'#7c3aed':pen.color}" stroke-width="${autoTracePreviewSelection===i?3.5:it.autoTraceColored||it.traceBoundary==='rim'?0:it.autoTraceMode==='illustration'?it.width:pen.width}" stroke-linecap="round" stroke-linejoin="round" vector-effect="${it.autoTraceMode==='illustration'?'none':'non-scaling-stroke'}"/>`).join('');
  document.getElementById('auto-trace-anchors').innerHTML=result.items.flatMap((it,i)=>it.points.map(p=>`<circle data-preview-anchor="${i}" cx="${p.x}" cy="${p.y}" r="${autoTracePreviewSelection===i?7:3.5}" fill="white" stroke="#0891b2" stroke-width="${autoTracePreviewSelection===i?2:1}" vector-effect="non-scaling-stroke"/>`)).join('');
@@ -119,16 +139,19 @@ function renderAutoTracePreview(){
  const s=result.stats,mode=s.mode==='illustration'?'彩色插畫':s.mode==='photo'?'照片角色':s.mode==='contour'?'Logo 輪廓':'細線稿';
  document.getElementById('auto-trace-summary').textContent=s.paths?`${mode} · ${s.paths} 條曲線 · ${s.anchors} 個錨點${s.mode==='photo'?` · 外框 ${s.outlinePaths} 條／特徵 ${s.detailPaths} 條`:s.mode==='contour'?'':` · ${s.junctions} 個分岔 · ${s.reviewCount} 處待確認`}`:`沒有找到線條；把「${s.mode==='photo'?'照片細節':'深淺辨識'}」往右拉試試`;
  if(autoTraceOptions().mode==='auto')document.getElementById('auto-trace-mode-hint').textContent=`自動選用「${mode}」${s.mode==='contour'?'：沿色塊邊緣描，不會再擋掉大面積黑色。':'：沿筆畫中心描，保留 T 型分岔。'}不符合預期可手動切換。`;
- if(s.mode==='illustration'){document.getElementById('auto-trace-summary').textContent=`${s.regions} 個封閉色區 · ${s.paths} 條可編輯曲線 · ${s.anchors} 個錨點`;if(autoTraceOptions().mode==='auto')document.getElementById('auto-trace-mode-hint').textContent='自動選用「彩色插畫」：沿封閉色區描圖，可開啟自動填色。雜訊多時，切到彩色插畫並降低插畫細節。'}
+ if(s.mode==='illustration'){document.getElementById('auto-trace-summary').textContent=`${s.paths} 條可編輯描線 · ${s.anchors} 個錨點`;if(autoTraceOptions().mode==='auto')document.getElementById('auto-trace-mode-hint').textContent='自動選用「彩色插畫」：只建立線稿；需要色塊時，使用上方「自動填色」。雜訊多時可降低插畫細節。'}
+ if(autoTracePurpose==='fill')document.getElementById('auto-trace-summary').textContent=s.paths?`${s.paths} 個獨立封閉色塊 · ${s.anchors} 個錨點 · 不新增線稿`:'沒有找到可填色的色區；調整插畫細節或更換底圖再試';
  document.getElementById('auto-trace-apply').disabled=!result.items.length;
 }
-function inspectAutoTraceCurve(event){const path=event.target.closest('[data-auto-curve]');if(!path||!autoTraceResult)return;autoTracePreviewSelection=Number(path.getAttribute('data-auto-curve'));const it=activeAutoTraceResult().items[autoTracePreviewSelection];renderAutoTracePreview();document.getElementById('auto-trace-anchor-info').textContent=`這段描線：${it.points.length} 個實際錨點。套用後點數相同；紅圈不代表錨點。`}
-async function openAutoTrace(){
- const selectedItem=byId(selected),ref=selectedItem?.type==='image'?selectedItem:items.find(it=>it.type==='image'&&it.referenceOnly);
- if(!ref){document.getElementById('status').textContent='請先匯入底圖，再按「自動描圖」';return}
- if(ref.preserveFull!==true){document.getElementById('status').textContent='請透過「底圖」匯入圖片，以保留原圖座標再自動描圖';return}
- if(traceDraft){document.getElementById('status').textContent='請先按 Enter 完成目前描線，再使用自動描圖';return}
- autoTraceSource={ref:deepCopy(ref),signature:autoTraceSignature(ref)};autoTraceResult=null;autoTraceDialogClosing=false;
+function inspectAutoTraceCurve(event){const path=event.target.closest('[data-auto-curve]');if(!path||!autoTraceResult)return;autoTracePreviewSelection=Number(path.getAttribute('data-auto-curve'));const it=activeAutoTraceResult().items[autoTracePreviewSelection];renderAutoTracePreview();document.getElementById('auto-trace-anchor-info').textContent=`${autoTracePurpose==='fill'?'這個色塊':'這段描線'}：${it.points.length} 個實際錨點。套用後可獨立編輯。`}
+async function openAutoTrace(purpose='trace'){
+ if(autoTraceDialogClosing)return;
+ purpose=purpose==='fill'?'fill':'trace';const name=purpose==='fill'?'自動填色':'自動描圖';
+ const selectedItem=byId(selected),linkedRef=byId(selectedItem?.autoTraceSourceId),ref=selectedItem?.type==='image'?selectedItem:linkedRef?.type==='image'?linkedRef:items.find(it=>it.type==='image'&&it.referenceOnly&&!it.hidden);
+ if(!ref){document.getElementById('status').textContent=`請先匯入底圖，再按「${name}」`;return}
+ if(ref.preserveFull!==true){document.getElementById('status').textContent=`請透過「新增底圖」匯入圖片，以保留原圖座標再${name}`;return}
+ if(traceDraft){document.getElementById('status').textContent=`請先按 Enter 完成目前描線，再使用${name}`;return}
+ configureAutoTracePurpose(purpose);autoTraceSource={ref:deepCopy(ref),signature:autoTraceSignature(ref)};autoTraceResult=null;autoTraceDialogClosing=false;
  const initialWidth=Math.max(1,ref.w),initialHeight=Math.max(1,ref.h),previewSvg=document.getElementById('auto-trace-svg');
  previewSvg.setAttribute('viewBox',`0 0 ${initialWidth} ${initialHeight}`);document.getElementById('auto-trace-image').innerHTML=`<image href="${esc(ref.src)}" width="${initialWidth}" height="${initialHeight}" opacity=".25" preserveAspectRatio="xMidYMid meet"/>`;
  document.getElementById('auto-trace-lines').innerHTML='';document.getElementById('auto-trace-issues').innerHTML='';autoTraceDialog.classList?.add('auto-trace-entering');autoTraceDialog.showModal();
@@ -138,7 +161,7 @@ async function openAutoTrace(){
 async function generateAutoTracePreview(){
  if(!autoTraceSource||!autoTraceDialog.open||!validAutoTraceOptions())return;
  clearTimeout(autoTraceTimer);autoTraceTimer=null;autoTraceJob?.terminate();const serial=++autoTraceSerial;autoTraceResult=null;
- const apply=document.getElementById('auto-trace-apply'),summary=document.getElementById('auto-trace-summary');apply.disabled=true;setAutoTraceBusy(true);summary.textContent='正在預測描線…';
+ const apply=document.getElementById('auto-trace-apply'),summary=document.getElementById('auto-trace-summary');apply.disabled=true;setAutoTraceBusy(true);summary.textContent=autoTracePurpose==='fill'?'正在辨識封閉色區與取色…':'正在預測描線…';
  try{
   const ref=autoTraceSource.ref,im=new Image;im.src=ref.src;await im.decode();if(serial!==autoTraceSerial)return;
   const scale=Math.min(1,2048/Math.max(im.naturalWidth,im.naturalHeight)),w=Math.max(3,Math.round(im.naturalWidth*scale)),h=Math.max(3,Math.round(im.naturalHeight*scale)),canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
@@ -165,19 +188,25 @@ function transformAutoTraceItems(result,ref,w,h,batch,makeId){
  const scale=Math.min(ref.w/w,ref.h/h),drawW=w*scale,drawH=h*scale,drawX=ref.x+(ref.w-drawW)/2,drawY=ref.y+(ref.h-drawH)/2,angle=(ref.r||0)*Math.PI/180,cx=ref.x+ref.w/2,cy=ref.y+ref.h/2;
  const transform=p=>{const x=drawX+p.x*scale-cx,y=drawY+p.y*scale-cy;return{x:cx+x*Math.cos(angle)-y*Math.sin(angle),y:cy+x*Math.sin(angle)+y*Math.cos(angle)}};
  const created=result.items.map((source,index)=>{
-  const it=deepCopy(source);it.id=makeId();it.name=`${source.autoTraceColored?'自動填色':'自動描圖'} ${index+1}`;it.autoTraceBatch=batch;it.layerGroup={id:'trace-'+batch,name:'自動描圖',collapsed:true};if(!source.autoTraceColored){Object.assign(it,tracePenStrokeStyle());if(source.autoTraceMode==='illustration')it.width=source.width*scale}
+  const it=deepCopy(source),colored=!!source.autoTraceColored;it.id=makeId();it.name=`${colored?'自動填色':'自動描圖'} ${index+1}`;it.autoTraceBatch=batch;it.autoTraceSourceId=ref.id;it.layerGroup={id:(colored?'fill-':'trace-')+batch,name:colored?'自動填色':'自動描圖',collapsed:true};if(!colored){Object.assign(it,tracePenStrokeStyle());if(source.autoTraceMode==='illustration')it.width=source.width*scale}
   if(source.traceBoundary){it.name=source.name;if(source.traceBoundary==='rim')it.width=0}
   for(const [key,handle] of Object.entries(it.pointHandleAngles)){const p=source.points[key],anchor=transform(p);for(const side of ['in','out']){const a=handle[side]*Math.PI/180,c=transform({x:p.x+Math.cos(a)*handle[side+'Length'],y:p.y+Math.sin(a)*handle[side+'Length']}),dx=c.x-anchor.x,dy=c.y-anchor.y;handle[side]=Math.atan2(dy,dx)*180/Math.PI;handle[side+'Length']=Math.hypot(dx,dy)}}
-  it.points=source.points.map(transform);it.pointJunctions=Object.fromEntries(Object.entries(it.pointJunctions).map(([i,key])=>[i,`${batch}-${key}`]));return it;
+  it.points=source.points.map(transform);it.pointJunctions=colored?{}:Object.fromEntries(Object.entries(it.pointJunctions||{}).map(([i,key])=>[i,`${batch}-${key}`]));return it;
  });
  for(const issue of result.issues||[]){const p=transform(issue);let best=null;for(const it of created)it.points.forEach((q,index)=>{const d=Math.hypot(q.x-p.x,q.y-p.y);if(!best||d<best.distance)best={it,index,distance:d}});if(best){best.it.autoTraceReview=best.it.autoTraceReview||{};best.it.autoTraceReview[best.index]=issue.message}}
  return created;
 }
 function applyAutoTrace(){
- const ref=autoTraceSource&&byId(autoTraceSource.ref.id);
- if(!autoTraceResult?.items.length||!ref||autoTraceSignature(ref)!==autoTraceSource.signature){document.getElementById('auto-trace-summary').textContent='底圖或工作區域已變更，請關閉後再開啟「自動描圖」';document.getElementById('auto-trace-apply').disabled=true;return}
- const batch=`auto-${id()}`,result=activeAutoTraceResult(),created=transformAutoTraceItems(result,ref,autoTraceSource.width,autoTraceSource.height,batch,id),stats=result.stats;
- const finishApply=()=>{commit();items.push(...created);setTracePen(false);setOnlySelected(created[0]?.id||null);selectedPoint=null;editPoints=true;render();autoTraceReviewCursor=0;document.getElementById('status').textContent=`已新增 ${stats.paths} 條可編輯曲線、${stats.junctions} 個共用分岔；原圖保留，可復原。${stats.reviewCount?'按右側「下一個待確認」檢查紅色接點。':''}`};
+ if(autoTraceDialogClosing||!autoTraceSource)return;
+ const ref=byId(autoTraceSource.ref.id),result=activeAutoTraceResult();
+ if(!result?.items.length||!ref||autoTraceSignature(ref)!==autoTraceSource.signature){document.getElementById('auto-trace-summary').textContent='沒有可套用的結果，或底圖／工作區域已變更；請關閉後重新開啟';document.getElementById('auto-trace-apply').disabled=true;return}
+ document.getElementById('auto-trace-apply').disabled=true;
+ const batch=`auto-${id()}`,created=transformAutoTraceItems(result,ref,autoTraceSource.width,autoTraceSource.height,batch,id),stats=result.stats,signature=autoTraceSource.signature,fill=autoTracePurpose==='fill';
+ const finishApply=()=>{
+  const currentRef=byId(ref.id);if(!currentRef||autoTraceSignature(currentRef)!==signature){document.getElementById('status').textContent='底圖或圖頁已變更，沒有新增物件；請重新開啟預覽';return}
+  commit();items.push(...created);setTracePen(false);setOnlySelected(created[0]?.id||null);selectedPoint=null;editPoints=true;render();autoTraceReviewCursor=0;
+  document.getElementById('status').textContent=fill?`已新增 ${created.length} 個獨立色塊至「自動填色」群組；線稿未改動，可復原。`:`已新增 ${created.length} 條可編輯曲線至「自動描圖」群組；原圖保留，可復原。${stats.reviewCount?'按右側「下一個待確認」檢查紅色接點。':''}`;
+ };
  const motion=cancelAutoTrace();if(motion)motion.finally(finishApply);else finishApply();
 }
 function autoJunctionMembers(sourceItems=items){const groups=new Map();for(const it of sourceItems)for(const [key,group] of Object.entries(it.pointJunctions||{})){const index=Number(key);if(!it.points?.[index])continue;if(!groups.has(group))groups.set(group,[]);groups.get(group).push({it,index,p:it.points[index]})}return groups}
@@ -221,14 +250,13 @@ document.getElementById('empty').insertAdjacentHTML('beforebegin','<button id="n
 document.getElementById('next-auto-review').onclick=nextAutoTraceReview;
 document.getElementById('confirm-auto-junction').onclick=confirmAutoTraceReview;
 document.getElementById('detach-auto-junction').onclick=detachAutoJunction;
-document.getElementById('auto-trace').onclick=openAutoTrace;
+document.getElementById('auto-trace').onclick=()=>openAutoTrace('trace');
+document.getElementById('auto-fill').onclick=()=>openAutoTrace('fill');
 document.getElementById('auto-trace-apply').onclick=applyAutoTrace;
 document.getElementById('auto-trace-cancel').onclick=cancelAutoTrace;
 autoTraceDialog.addEventListener('cancel',event=>{event.preventDefault();cancelAutoTrace()});
-autoTraceDialog.addEventListener('cancel',e=>{e.preventDefault();cancelAutoTrace()});
 for(const id of ['auto-trace-threshold','auto-trace-accuracy','auto-trace-simplify','auto-trace-min-length'])document.getElementById(id).addEventListener('input',invalidateAutoTrace);
 document.getElementById('auto-trace-mode').addEventListener('change',()=>{if(autoTraceOptions().mode==='illustration')for(const [name,value] of [['threshold',120],['accuracy',3.5],['simplify',90],['min-length',5]])document.getElementById('auto-trace-'+name).value=String(value);invalidateAutoTrace()});
-document.getElementById('auto-trace-color').onchange=()=>{autoTracePreviewSelection=null;renderAutoTracePreview()};
 document.getElementById('auto-trace-close-border').onchange=()=>{autoTracePreviewSelection=null;renderAutoTracePreview()};
 document.getElementById('auto-trace-reset').onclick=resetAutoTraceSettings;
 updateAutoTraceSettings();
