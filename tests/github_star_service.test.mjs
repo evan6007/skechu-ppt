@@ -90,7 +90,11 @@ test('CORS preflight is exact-origin and does not permit cookies', async () => {
 test('reject tampered state, wrong verifier and used code', async () => {
   const f = fixture();
   const { state } = await (await f.send('/auth/start', { challenge })).json();
-  assert.equal((await f.send('/auth/exchange', { state: `X${state.slice(1)}`, verifier, code: 'one' })).status, 401);
+  // The random nonce can already begin with X. Always change a meaningful
+  // base64 digit so this exercises tamper rejection, not a valid token (1/64).
+  const tamperedState = `${state[0] === 'X' ? 'Y' : 'X'}${state.slice(1)}`;
+  assert.notEqual(tamperedState, state);
+  assert.equal((await f.send('/auth/exchange', { state: tamperedState, verifier, code: 'one' })).status, 401);
   assert.equal((await f.send('/auth/exchange', { state, verifier: 'x'.repeat(43), code: 'one' })).status, 401);
   assert.equal(f.calls.length, 0);
   assert.equal((await f.send('/auth/exchange', { state, verifier, code: 'one' })).status, 200);
@@ -101,7 +105,9 @@ test('sessions cannot be fabricated, used as state or bound to another origin', 
   const f = fixture(), login = await f.authorize();
   assert.equal((await f.send('/star', undefined, login.state)).status, 401);
   assert.equal((await f.send('/star', undefined, 'made-up')).status, 401);
-  assert.equal((await f.send('/star', undefined, `X${login.session.slice(1)}`)).status, 401);
+  const tamperedSession = `${login.session[0] === 'X' ? 'Y' : 'X'}${login.session.slice(1)}`;
+  assert.notEqual(tamperedSession, login.session);
+  assert.equal((await f.send('/star', undefined, tamperedSession)).status, 401);
   assert.equal((await f.send('/star', undefined, login.session, { Origin: 'https://other.example' }, { ...env, APP_ORIGIN: 'https://other.example', CALLBACK_URL: 'https://other.example/callback.html' })).status, 401);
 });
 
