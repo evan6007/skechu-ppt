@@ -93,6 +93,7 @@ for(const path of ['core.js','editor.js','panel.css','commands.json']){
 const traceUi=read('app/auto-trace-ui.js'),workerCalls=[];
 const workerContext=vm.createContext({URL:{},location:{protocol:'https:'},Worker:function(url){workerCalls.push(url)}});
 vm.runInContext(traceUi.slice(0,traceUi.indexOf("document.getElementById('import-reference')")),workerContext);
-workerContext.createAutoTraceJob();assert.deepEqual(workerCalls,['auto-trace-worker.js?v=75-closed-regions']);
+workerContext.createAutoTraceJob();assert.deepEqual(workerCalls,['auto-trace-worker.js?v=77-shared-boundaries']);
+assert.ok(read('app/service-worker.js').includes(`'./${workerCalls[0]}'`),'The current fallback worker must be available offline');
 assert.ok(read('app/service-worker.js').includes("'./auto-trace.js'"),'Fallback worker engine must be available offline');
 console.log('Automation: opt-in scope, strict schemas, atomic batches, undo/redo, locks, stale edits, graph safety, source redaction, staged tracing/cancel and desktop assets OK.');
