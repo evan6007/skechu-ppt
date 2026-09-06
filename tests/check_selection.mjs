@@ -206,7 +206,8 @@ assert.match(html,/data-outline-only=/);assert.match(html,/items\.filter\(select
 assert.ok(html.includes('從空白處拖曳框選'),'Select tool tooltip explains pointer-origin selection without a permanent help block');
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
 const runtimeVersions={
-  'paint-layers.js':'?v=22-visibility-web-native',
+  'compound-fill.js':'?v=78-contour-outlines',
+  'paint-layers.js':'?v=78-contour-outlines',
   'paint-tools.js':'?v=41-liquid-paper',
   'paint-tools.css':'?v=38-responsive-shell',
   'selection-controls.js':'?v=67-touch-shell',

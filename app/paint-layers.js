@@ -21,6 +21,16 @@ function paintSceneItems(sourceItems) {
     const fillable = arrow ? it.closed : ['box', 'ellipse', 'polygon'].includes(it.type);
     const opacity = arrow ? (it.fillOpacity ?? .25) : (it.opacity ?? 1);
     const hasFill = fillable && opacity > 0 && !['none', 'transparent', ''].includes(it.fill);
+    const contours=typeof CompoundFill!=='undefined'?CompoundFill.recover(it):null;
+    if(contours){
+      // The connected legacy walk is never used as a visible stroke, even if
+      // the user changes width, removes its fill, or adds a PowerPoint outline.
+      if(hasFill)fills.push({...it,paintLayer:'fill',width:0,compoundContours:contours});
+      if((it.width??3)>0)contours.forEach((part,index)=>foreground.push({...it,...part,
+        id:`${it.id}::contour-${index}`,paintSourceId:it.id,paintLayer:'line',
+        width:it.width,color:it.color,fillOpacity:0,autoTraceColored:false}));
+      continue;
+    }
     if (!hasFill) { foreground.push(it); continue; }
     const strokeWidth = arrow ? (it.width ?? 3) : (it.strokeWidth ?? 2);
     const hasStroke = strokeWidth > 0 && (arrow || !['none', 'transparent', ''].includes(it.stroke));

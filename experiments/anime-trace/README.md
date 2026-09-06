@@ -8,6 +8,111 @@ A separate editor fix prioritizes the smallest geometric fill region over
 the background DOM hit, so an already-painted parent no longer steals clicks
 inside a single-owner inner loop.
 
+## Optional shading fills and thin-ink cleanup
+
+```sh
+node experiments/anime-trace/refine.mjs predicted-sketch.png output-prefix original.png --structure --colors
+node tests/check_anime_structure_colors.mjs
+```
+
+`--colors` now preserves source shading as independent closed fills with
+**zero stroke width**. The earlier one-color-per-structural-face experiment
+lost shadows that the sketch network did not enclose. It remains available as
+`AnimeStructureColors.run` for comparisons, but is no longer this CLI's default.
+The command consumes an aligned, already-predicted sketch; it does not run,
+download or retrain a model. JSON separates `items` (linework) and `colorItems`.
+
+- Bundled VTracer segments the original colors. `preserveShading` retains these
+  fill boundaries without importing their outline network. Eye and nose shadows
+  remain independently editable even when absent from the neural sketch graph.
+- `ink-fill-simplify.js` merges only narrow, elongated dark regions already
+  covered by existing visible ink. Defaults require a width estimate at most
+  3 source pixels and at least 94% boundary support within 3.5 source pixels.
+  Broad shadows, compact earrings, highlights and rings are protected.
+- A removed ribbon is united with the adjacent fill sharing its longest edge.
+  Exact shared cubics cancel; surviving coordinates and all neural strokes stay
+  unchanged. Unaffected source fill objects are retained directly. Area changes,
+  open unions or increased fragmentation reject the candidate result.
+- The local portrait retains 127 of 128 source color regions and all 228 graph
+  paths (204 visible, 24 zero-stroke closures). Only one region passes this
+  conservative cleanup. This does **not** resolve the remaining source/ink
+  misalignment or clutter around the ear. No public editor mode has changed.
+
+Synthetic checks cover shadow retention, zero-width fill outlines, ribbon union
+without holes/overlap, unchanged ink, compact earrings and light highlights.
+An isolated editor check recolored both eye shadows, the nose shadow and a dark
+earring, checked region bounds and exact undo, and selected all 355 objects.
+Those checks establish editability for this sample, not anime tracing accuracy.
+A separate scratch PowerPoint export produced 355 native freeforms and verified
+that all 127 color fills have `Line.Visible = 0`. Its rendered output was checked;
+the test neither copied to the clipboard nor modified the user's presentation.
+
+Do not score success by fewer anchors or fewer colors alone. Check source
+alignment, the earring/ear-fold distinction, independent recoloring, and native
+editability before promoting this path to the editor. Source images, model
+weights and private comparison artifacts are not included in the repository.
+
+## Opt-in experiment: visible ink versus fill-only boundaries
+
+`structure-layers.js` adds a conservative **source-profile heuristic after the
+neural sketch has been vectorized**. This is not a retrained model or semantic
+understanding of anatomy. It does not turn VTracer color outlines into ink.
+
+```sh
+node experiments/anime-trace/refine.mjs predicted-sketch.png output-prefix original.png --structure
+node tests/check_anime_structure.mjs
+```
+
+The original and predicted sketch must have identical size, orientation and
+crop. The optional flag requires the original image. Omitting it retains the
+previous refinement pipeline. The new module is not imported by the editor,
+worker or service worker; **nothing is enabled on the public website**.
+
+- Source intensity profiles across each cubic distinguish a narrow ink/highlight
+  ridge from a mostly monotone midtone color transition. Dark edges, genuine
+  earring loops, rim-adjacent silhouettes and uncertain spans remain visible.
+- Chain-level hysteresis avoids leaving a tiny isolated arc just because one
+  sample crossed a threshold. It does not overwrite strong ink evidence.
+- Candidate color transitions have `structureRole: "closure"` and `width: 0`,
+  **not** `hidden: true`: they remain part of the editable fill graph. Crop-rim
+  joins are also fill-only. Visible spans have `structureRole: "ink"`.
+- All existing cubics, controls and junction coordinates are retained. Splits
+  happen only at existing anchors. No artificial diagonal bridges or new
+  geometric smoothing are introduced by this stage.
+- JSON includes each span's evidence/reason and the number of uncertain spans.
+  `AnimeStructureLayers.run(..., {hideColorSteps: false})` keeps source-derived
+  boundaries visible again; crop-rim geometry remains non-ink.
+
+### Local validation and limitations (2026-09-06)
+
+The private cel-shaded portrait and the upstream Anime2Sketch `madoka` / `saber`
+samples were evaluated with the same artifact-reduced checkpoint. These are
+three exploratory cases, **not** a representative quality benchmark. Reference
+images, predictions, checkpoints and derived projects remain in ignored local
+QA storage and are not published with this repository.
+
+- The cel-shaded case retains all **33** geometric faces, with **204** visible
+  objects and **24** zero-stroke boundary objects. Source cubic/control
+  multisets are unchanged, and there are still **14** topology review warnings.
+- Isolated browser QA clicked nine local regions (both earrings, lip, teeth,
+  face, nose shadow, brow shadow, clipped hair and coat), checked bounds and
+  exact undo. Eleven consecutive, manually chosen fills preserved prior colors.
+  All 238 resulting objects could be selected; the native export payload retained
+  eleven separate painted objects and zero-stroke closure geometry. This check
+  is **not** a new desktop PowerPoint paste test or automatic-coloring claim.
+- Across all three samples, splitting visibility preserved every original cubic
+  and all original fill-face areas (33 / 103 / 291 faces). Topology conservation
+  alone says nothing about whether those faces match the artist's intent.
+- The source-guided stage reduces some unwanted shadow outlines in the cel-shaded
+  example, but eye-tail fragments, mouth-corner connectors and some hair/ear
+  junctions remain. It cannot recover detail the sketch network never predicted.
+  Strong painterly lighting still produces many false texture/light contours in
+  the `saber` case; this is **not suitable as a universal production default**.
+
+The next quality gate is reliable structural stroke extraction across styles,
+especially eyes and mouth corners, not merely fewer anchors or more closed faces.
+Any production integration needs a separate user review of these local results.
+
 ## Why a separate pipeline?
 
 An anime drawing's structural strokes are not equivalent to the boundaries of

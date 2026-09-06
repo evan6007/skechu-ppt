@@ -1,0 +1,41 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const scope=vm.createContext({});
+for(const f of ['app/auto-trace.js','app/illustration-trace.js','app/compound-fill.js','app/paint-layers.js'])vm.runInContext(fs.readFileSync(f,'utf8'),scope);
+const {trace,engine,compound,paint}=vm.runInContext('({trace:IllustrationTrace,engine:AutoTrace,compound:CompoundFill,paint:paintSceneItems})',scope);
+const svg='<svg><path fill="#f2c478" d="M0 0 L200 0 L200 160 L0 160 Z M20 20 L20 50 L60 50 L60 20 Z M120 80 C100 80 100 120 120 120 C140 120 140 80 120 80 Z"/></svg>';
+const result=trace.fromSVG(svg,{toItem:engine.toItem}),source={...result.colorItems[0],id:'holes',width:6,color:'#123456'},saved=JSON.stringify(source);
+const contours=compound.recover(source);
+assert.equal(contours.length,3,'Outer ring and two holes are independent closed contours');
+assert.ok(contours.every(it=>it.closed&&it.points.length>=3));
+const scene=paint([source]);
+assert.equal(scene.length,4,'One compound fill plus three genuine outlines');
+assert.equal(scene.filter(it=>it.paintLayer==='fill').length,1);
+assert.equal(scene[0].compoundContours.length,3);
+assert.equal(scene[0].width,0);
+assert.ok(scene.slice(1).every(it=>it.width===6&&it.color==='#123456'&&it.fillOpacity===0&&it.paintSourceId==='holes'));
+assert.equal(new Set(scene.map(it=>it.id)).size,4);
+assert.equal(JSON.stringify(source),saved,'Legacy editable source is not rewritten');
+assert.equal(compound.path(contours).match(/M/g).length,3,'SVG uses move commands, never cross-hole connectors');
+assert.equal(compound.path(contours).match(/Z/g).length,3);
+assert.equal(paint([{...source,fillOpacity:0}]).length,3,'Removing fill cannot expose bridges');
+assert.equal(paint([{...source,width:0}]).length,1,'Fill-only mode does not add an unwanted outline');
+assert.equal(compound.recover({...source,autoTraceColored:false}),null,'Intentional ordinary retraced drawings are unchanged');
+const malformed=JSON.parse(saved);malformed.pointHandleAngles[0].outLength=Infinity;
+assert.equal(compound.recover(malformed),null,'Invalid controls never produce guessed contours');
+const moved=JSON.parse(saved);moved.points.forEach(p=>{p.x+=23;p.y-=12});
+const translated=compound.recover(moved);assert.equal(translated.length,3);
+assert.equal(translated[0].points[0].x,contours[0].points[0].x+23);
+const changed=paint([{...source,width:9,color:'#ff0033'}]);
+assert.ok(changed.slice(1).every(it=>it.width===9&&it.color==='#ff0033'),'Changing style does not reuse stale cached style');
+const curveCount=it=>it.points.length;
+assert.ok(scene.slice(1).reduce((n,it)=>n+curveCount(it),0)<source.points.length,'Bridge segments never reach visible stroke objects');
+// Tiny nearby but noncoincident contours are not merged by a stroke-width tolerance.
+const separate=trace.fromSVG('<svg><path fill="#ffaa00" d="M0 0 L60 0 L60 60 L0 60 Z M0.01 0.01 L0.01 59.99 L59.99 59.99 L59.99 0.01 Z"/></svg>',{toItem:engine.toItem});
+assert.equal(compound.recover(separate.colorItems[0]).length,2);
+if(process.argv.includes('--fixture')){
+  fs.mkdirSync('.codex-tmp/compound-qa',{recursive:true});
+  fs.writeFileSync('.codex-tmp/compound-qa/native-fixture.json',JSON.stringify({items:scene}));
+}
+console.log('Compound fill: recovered holes, thick/transparent outlines, exact curves, independent native contours, immutable source and stable styles passed.');

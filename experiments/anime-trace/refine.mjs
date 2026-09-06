@@ -4,9 +4,11 @@ import path from 'node:path';
 import vm from 'node:vm';
 import {spawnSync} from 'node:child_process';
 
-const [input, outputPrefix, reference] = process.argv.slice(2);
-if (!input || !outputPrefix || ![4,5].includes(process.argv.length)) {
-  console.error('Usage: node experiments/anime-trace/refine.mjs predicted-sketch.png output-prefix [original-image.png]');
+const args=process.argv.slice(2),structure=args.includes('--structure'),colors=args.includes('--colors');
+const positional=args.filter(arg=>!['--structure','--colors'].includes(arg));
+const [input, outputPrefix, reference] = positional;
+if (!input || !outputPrefix || ![2,3].includes(positional.length)||args.filter(arg=>arg==='--structure').length>1||args.filter(arg=>arg==='--colors').length>1||structure&&!reference||colors&&!structure) {
+  console.error('Usage: node experiments/anime-trace/refine.mjs predicted-sketch.png output-prefix [original-image.png] [--structure (requires original)] [--colors (requires --structure)]');
   process.exit(2);
 }
 const outputs = ['.json', '.svg'].map(ext => path.resolve(outputPrefix+ext));
@@ -23,10 +25,25 @@ return {data,width,height};
 }
 const {data,width,height}=decode(input), source=reference ? decode(reference) : null;
 if(source && (source.width!==width || source.height!==height)) throw new Error('Original image and sketch must have identical dimensions and alignment.');
-const scope = vm.createContext({});
+const scope = vm.createContext({WebAssembly,TextDecoder,TextEncoder});
 for (const file of ['../../app/auto-trace.js', '../../app/trace-boundary.js', './refine.js']) vm.runInContext(fs.readFileSync(new URL(file, import.meta.url), 'utf8'), scope);
 const {engine, refine} = vm.runInContext('({engine:AutoTrace,refine:AnimeLineRefine})', scope);
-const result = refine.run({data, width, height, referenceData:source?.data}, engine);
+let result = refine.run({data, width, height, referenceData:source?.data}, engine);
+if(structure){
+  for(const file of ['../../app/region-fill.js','./structure-layers.js'])vm.runInContext(fs.readFileSync(new URL(file,import.meta.url),'utf8'),scope);
+  const {layers,geometry}=vm.runInContext('({layers:AnimeStructureLayers,geometry:RegionFill})',scope);
+  result=layers.run(result,source,engine,geometry);
+  if(colors){
+    for(const file of ['../../app/vendor/vtracer.js','../../app/illustration-trace.js','../../app/compound-fill.js','./structure-colors.js','./ink-fill-simplify.js'])vm.runInContext(fs.readFileSync(new URL(file,import.meta.url),'utf8'),scope);
+    scope.vectorBytes=fs.readFileSync(new URL('../../app/vendor/vtracer.wasm',import.meta.url));
+    vm.runInContext('VTracerWasm.init(vectorBytes)',scope);
+    const sourceColors=engine.run({...source,options:{mode:'illustration',threshold:120,accuracy:3.5,simplify:90,minLength:5}});
+    const {simplifyInk,compound,trace,colorStage}=vm.runInContext('({simplifyInk:AnimeInkFillSimplify,compound:CompoundFill,trace:IllustrationTrace,colorStage:AnimeStructureColors})',scope);
+    const simplified=simplifyInk.run({...result,width,height},{...sourceColors,width,height},{geometry,compound,trace,engine,colors:colorStage});
+    result=colorStage.preserveShading({...result,width,height},simplified);
+    result.inkSimplification=simplified.inkSimplification;
+  }
+}
 function curvePath(item) {
   let d = `M${item.points[0].x} ${item.points[0].y}`;
   for (let i = 0; i < item.points.length-(item.closed ? 0 : 1); i++) {
@@ -36,8 +53,9 @@ function curvePath(item) {
   }
   return d+(item.closed ? 'Z' : '');
 }
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="white"/>${result.items.map(item => `<path d="${curvePath(item)}" fill="none" stroke="#242b34" stroke-width="${item.width}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}</svg>`;
+const svgItems=[...(result.colorItems||[]),...result.items];
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="white"/>${svgItems.map(item => `<path d="${curvePath(item)}" fill="${item.autoTraceColored?item.fill:'none'}" fill-rule="evenodd" stroke="#242b34" stroke-width="${item.width}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}</svg>`;
 for (const file of outputs) fs.mkdirSync(path.dirname(file), {recursive: true});
 fs.writeFileSync(outputs[0], JSON.stringify({width, height, ...result}), {flag: 'wx'});
 fs.writeFileSync(outputs[1], svg, {flag: 'wx'});
-console.log(JSON.stringify({files: outputs, stats: result.stats}, null, 2));
+console.log(JSON.stringify({files: outputs, stats: result.stats,...(structure?{structure:{visible:result.structure.visible,closures:result.structure.closures,uncertainSpans:result.structure.uncertainSpans}}:{})}, null, 2));

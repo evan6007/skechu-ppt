@@ -108,6 +108,22 @@ class InlineBridgeTests(unittest.TestCase):
         self.assertEqual(self.request("POST", "/web-ppt/cancel-prepare", {})[0], 200)
         self.assertEqual(self.cancel.call_count, 3)
 
+    def test_compound_contours_are_validated_and_preserved(self):
+        ring = {"closed": True, "points": [{"x": 0, "y": 0}, {"x": 20, "y": 0}, {"x": 10, "y": 20}]}
+        item = {"type": "arrow", "closed": True, "points": ring["points"],
+                "compoundContours": [ring, ring]}
+        for invalid in (None, [], [ring], [ring, None], [ring, {"closed": False}],
+                        [ring, {"closed": True, "points": [{"x": "1", "y": 0}]*3}]):
+            self.assertEqual(self.request("POST", "/web-ppt/copy", {
+                "items": [{**item, "compoundContours": invalid}]})[0], 400)
+        self.copy.assert_not_called()
+        self.cancel.assert_not_called()
+        payload = {"items": [item]}
+        self.assertEqual(self.request("POST", "/web-ppt/prepare", payload)[0], 200)
+        self.assertEqual(self.copy.call_args.args[0], payload)
+        self.assertFalse(self.bridge.PREPARE_CANCEL_EVENTS)
+        self.cancel.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

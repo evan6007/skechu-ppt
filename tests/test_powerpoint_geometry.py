@@ -56,6 +56,68 @@ class NativePreparationPriorityTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get("SKECHU_TEST_POWERPOINT") == "1", "requires local PowerPoint")
 class NativePowerPointGeometryTests(unittest.TestCase):
+    @staticmethod
+    def compound_fixture():
+        def rectangle(x, y, w, h):
+            return {"type": "arrow", "closed": True, "curved": True,
+                    "pointHandleAngles": {
+                        "0": {"in":90,"out":0,"inLength":h/3,"outLength":w/3},
+                        "1": {"in":180,"out":90,"inLength":w/3,"outLength":h/3},
+                        "2": {"in":-90,"out":180,"inLength":h/3,"outLength":w/3},
+                        "3": {"in":0,"out":-90,"inLength":w/3,"outLength":h/3}},
+                    "points": [{"x": x, "y": y}, {"x": x+w, "y": y},
+                               {"x": x+w, "y": y+h}, {"x": x, "y": y+h}]}
+        outer = rectangle(0, 0, 200, 160)
+        return {**outer, "id": "compound", "paintLayer": "fill", "width": 0,
+                "color": "#000000", "fill": "#f2c478", "fillOpacity": 1,
+                "compoundContours": [outer, rectangle(20, 20, 40, 30),
+                                     rectangle(100, 80, 30, 40)]}
+
+    def test_compound_holes_survive_reenabled_office_outline(self):
+        import zipfile
+        import xml.etree.ElementTree as ET
+        from PIL import Image
+        item = self.compound_fixture()
+        self.bridge.copy_native({"items": [item]}, copy_clipboard=False)
+        state = self.bridge.STATE
+        shape = state["presentation"].Slides(1).Shapes.Item(state["item_shapes"]["compound"][0])
+        self.assertEqual(shape.Type, 5, "Compound fill must be an editable freeform, not a picture")
+        self.assertGreaterEqual(shape.Nodes.Count, 12)
+        shape.Line.Visible = -1
+        shape.Line.Weight = 2
+        output = ROOT / ".codex-tmp" / "native-compound-qa"
+        output.mkdir(parents=True, exist_ok=True)
+        shape.Export(str(output / "outlined.png"), 2)
+        state["presentation"].SaveAs(str(output / "outlined.pptx"))
+        ns = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
+        with zipfile.ZipFile(output / "outlined.pptx") as z:
+            xml = ET.fromstring(z.read("ppt/slides/slide1.xml"))
+        self.assertEqual(len(xml.findall(".//a:moveTo", ns)), 3)
+        self.assertEqual(len(xml.findall(".//a:close", ns)), 3,
+                         "Native geometry must contain three closed subpaths, no bridge")
+        image = Image.open(output / "outlined.png").convert("RGBA")
+        # Shape.Export dimensions include stroke padding; test deep interiors.
+        self.assertEqual(image.getpixel((round(image.width*.20), round(image.height*.22)))[3], 0,
+                         "The first hole remains transparent after an Office outline")
+        self.assertGreater(image.getpixel((round(image.width*.4), round(image.height*.4)))[3], 240)
+
+    def test_compound_append_recolor_and_geometry_rebuild(self):
+        item = self.compound_fixture()
+        line = {"id": "line", "type": "arrow", "closed": False, "curved": False,
+                "points": [{"x": 0, "y": 0}, {"x": 200, "y": 160}], "width": 1}
+        payload = {"items": [line]}
+        self.bridge.copy_native(payload, copy_clipboard=False)
+        payload["items"].insert(0, item)
+        appended = self.bridge.copy_native(payload, copy_clipboard=False)
+        self.assertTrue(appended.get("incremental"))
+        item["fill"] = "#229966"
+        recolored = self.bridge.copy_native(payload, copy_clipboard=False)
+        self.assertTrue(recolored.get("incremental"))
+        item["compoundContours"][1]["points"][0]["x"] += 2
+        rebuilt = self.bridge.copy_native(payload, copy_clipboard=False)
+        self.assertFalse(rebuilt.get("cached"))
+        self.assertFalse(rebuilt.get("incremental", False))
+
     @classmethod
     def setUpClass(cls):
         spec = importlib.util.spec_from_file_location("qa_bridge", ROOT / "app" / "bridge.py")

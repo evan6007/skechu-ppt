@@ -48,6 +48,8 @@ jobs:
         run: node tests/check_cut_tools.mjs
       - name: Check paint layers and reference tools
         run: node tests/check_paint_tools.mjs
+      - name: Check independent hole contours and outline recovery
+        run: node tests/check_compound_fill.mjs
       - name: Check selection and gesture behavior
         run: node tests/check_selection.mjs
       - name: Check mobile controls and compact panels
@@ -64,6 +66,10 @@ jobs:
         run: node tests/check_auto_trace.mjs
       - name: Check experimental sketch refinement and safe gap repair
         run: node tests/check_anime_refine.mjs
+      - name: Check experimental ink and fill-only boundaries
+        run: node tests/check_anime_structure.mjs
+      - name: Check experimental structural region colors
+        run: node tests/check_anime_structure_colors.mjs
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
       - name: Install optional MCP test dependency

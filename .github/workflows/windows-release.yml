@@ -43,6 +43,7 @@ jobs:
             --add-data "app/cut-tools.js;." `
             --add-data "app/cut-tools.css;." `
             --add-data "app/paint-layers.js;." `
+            --add-data "app/compound-fill.js;." `
             --add-data "app/paint-tools.js;." `
             --add-data "app/pan-tool.js;." `
             --add-data "app/touch-gestures.js;." `

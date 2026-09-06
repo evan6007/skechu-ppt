@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v77-shared-boundaries';
+const CACHE_NAME = 'skechu-ppt-v78-contour-outlines';
 const APP_SHELL = [
   './',
   './index.html',
@@ -21,7 +21,8 @@ const APP_SHELL = [
   './path-cut.js',
   './cut-tools.js',
   './cut-tools.css',
-  './paint-layers.js?v=22-visibility-web-native',
+  './compound-fill.js?v=78-contour-outlines',
+  './paint-layers.js?v=78-contour-outlines',
   './paint-tools.js?v=41-liquid-paper',
   './pan-tool.js',
   './selection-controls.js?v=67-touch-shell',

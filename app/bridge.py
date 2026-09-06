@@ -373,7 +373,9 @@ def circle_arc_bezier_nodes(points, closed=False):
 def build_arrow_freeform(slide, points, min_x, min_y, scale, closed, curved=True, explicit_bezier=False,
                          point_kinds=None, point_smoothness=None, point_angles=None,
                          point_handle_angles=None, default_strength=100, centerline_locked=False,
-                         edge_locked=False, verification_checks=None):
+                         edge_locked=False, verification_checks=None, compound_contours=None):
+    if compound_contours:
+        return build_compound_freeform(slide, compound_contours, min_x, min_y, scale)
     item = {"type": "arrow", "points": points, "closed": closed, "curved": curved,
             "explicitBezier": explicit_bezier, "pointKinds": point_kinds,
             "pointSmoothness": point_smoothness, "pointAngles": point_angles,
@@ -396,21 +398,29 @@ def build_arrow_freeform(slide, points, min_x, min_y, scale, closed, curved=True
         except Exception:
             shape = None
     if shape is None:
-        builder = slide.Shapes.BuildFreeform(1, (nodes[0]["x"] - min_x) * scale,
-                                             (nodes[0]["y"] - min_y) * scale)
+        # Office AddNodes can treat a cubic endpoint (0, 0) as omitted and
+        # silently use its last control instead. Build off-origin, then move
+        # back before verification; the final geometry remains exact.
+        shift = 1 if cubic and any(abs(p["x"]-min_x)<1e-9 and abs(p["y"]-min_y)<1e-9
+                                   for p in nodes[3::3]) else 0
+        builder = slide.Shapes.BuildFreeform(1, (nodes[0]["x"] - min_x) * scale + shift,
+                                             (nodes[0]["y"] - min_y) * scale + shift)
         if cubic:
             for i in range(1, len(nodes), 3):
                 c1, c2, end = nodes[i:i + 3]
                 # Corner means explicit Bezier controls, not a visually sharp curve.
                 # Auto discards the controls and lets Office reshape the segment.
                 builder.AddNodes(1, 1,
-                                 (c1["x"] - min_x) * scale, (c1["y"] - min_y) * scale,
-                                 (c2["x"] - min_x) * scale, (c2["y"] - min_y) * scale,
-                                 (end["x"] - min_x) * scale, (end["y"] - min_y) * scale)
+                                 (c1["x"] - min_x) * scale + shift, (c1["y"] - min_y) * scale + shift,
+                                 (c2["x"] - min_x) * scale + shift, (c2["y"] - min_y) * scale + shift,
+                                 (end["x"] - min_x) * scale + shift, (end["y"] - min_y) * scale + shift)
         else:
             for point in nodes[1:]:
                 builder.AddNodes(0, 0, (point["x"] - min_x) * scale, (point["y"] - min_y) * scale)
         shape = builder.ConvertToShape()
+        if shift:
+            shape.IncrementLeft(-shift)
+            shape.IncrementTop(-shift)
     verify_freeform_nodes(shape, nodes, min_x, min_y, scale, max_checks=verification_checks)
     return shape
 
@@ -490,6 +500,60 @@ def add_text(slide, text, x, y, w, h, size, color, center=True, rotation=0,
                              font_name, align, valign, bold, italic, margins, word_wrap)
 
 
+def validate_compound_contours(contours):
+    if not isinstance(contours, list) or not 2 <= len(contours) <= 1800:
+        raise ValueError("Invalid compound contours")
+    anchors = 0
+    for part in contours:
+        if not isinstance(part, dict) or not part.get("closed") or part.get("compoundContours"):
+            raise ValueError("Expected independent closed contours")
+        points = part.get("points")
+        if not isinstance(points, list) or len(points) < 2 or any(
+            not isinstance(point, dict) or any(
+                isinstance(point.get(axis), bool) or not isinstance(point.get(axis), (int, float))
+                or not math.isfinite(point[axis]) for axis in ("x", "y")) for point in points
+        ):
+            raise ValueError("Invalid compound contour coordinates")
+        anchors += len(points)
+        if anchors > 40000:
+            raise ValueError("Too many compound contour anchors")
+
+
+def build_compound_freeform(slide, contours, min_x, min_y, scale):
+    """Build actual Office cutouts: no retraced bridge can become a visible line.
+
+    Merge Combine implements even/odd rings, including holes and disjoint rings.
+    Only shapes created on our private scratch slide participate in the merge.
+    """
+    validate_compound_contours(contours)
+    before = {slide.Shapes.Item(i).Id for i in range(1, slide.Shapes.Count + 1)}
+    shapes = []
+    try:
+        for part in contours:
+            points = part.get("points") or []
+            shape = build_arrow_freeform(slide, points, min_x, min_y, scale, True,
+                                         part.get("curved", True), False,
+                                         part.get("pointKinds"), part.get("pointSmoothness"),
+                                         part.get("pointAngles"), part.get("pointHandleAngles"),
+                                         verification_checks=3)
+            shapes.append(shape)
+        names = [shape.Name for shape in shapes]
+        # msoMergeCombine = 2. Unlike a bridged Freeform, it has separate
+        # closed subpaths even when the user later enables an outline in PPT.
+        slide.Shapes.Range(names).MergeShapes(2, shapes[0])
+        merged = [slide.Shapes.Item(i) for i in range(1, slide.Shapes.Count + 1)
+                  if slide.Shapes.Item(i).Id not in before]
+        if len(merged) != 1:
+            raise ValueError("PowerPoint did not create one compound shape")
+        return merged[0]
+    except Exception:
+        for i in range(slide.Shapes.Count, 0, -1):
+            candidate = slide.Shapes.Item(i)
+            if candidate.Id not in before:
+                candidate.Delete()
+        raise
+
+
 def item_hash(item):
     return hashlib.sha256(json.dumps(item, sort_keys=True, separators=(",", ":"),
                                      ensure_ascii=False).encode("utf-8")).hexdigest()
@@ -497,7 +561,10 @@ def item_hash(item):
 
 def item_geometry_hash(item):
     kind = item.get("type")
-    if kind in ("arrow", "polygon"):
+    if item.get("compoundContours"):
+        geometry = {"type": kind, "contours": [freeform_node_points(part)
+                                               for part in item["compoundContours"]]}
+    elif kind in ("arrow", "polygon"):
         geometry = {"type": kind, "nodes": freeform_node_points(item)}
     else:
         geometry = {"type": kind, "bounds": bounds(item), "rotation": item.get("r", 0)}
@@ -597,6 +664,10 @@ def verify_freeform_nodes(shape, nodes, min_x, min_y, scale, tolerance=.02, max_
 
 
 def update_freeform_shape(shape, item, min_x, min_y, scale, update_geometry=True):
+    if update_geometry and item.get("compoundContours"):
+        # Office's real multi-contour shape has no bridge nodes. Rebuild it on
+        # geometry edits; style-only edits still use the incremental cache.
+        raise ValueError("Rebuild changed compound geometry")
     nodes = freeform_node_points(item)
     if update_geometry:
         if shape.Nodes.Count != len(nodes):
@@ -688,7 +759,8 @@ def add_cached_region_fill(slide, item, min_x, min_y, scale):
         bool(item.get("curved", True)), bool(item.get("explicitBezier")),
         item.get("pointKinds"), item.get("pointSmoothness"), item.get("pointAngles"),
         item.get("pointHandleAngles"), item.get("smoothnessDefault", 100),
-        bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")))
+        bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")),
+        compound_contours=item.get("compoundContours"))
     update_freeform_shape(shape, item, min_x, min_y, scale, update_geometry=False)
     safe_id = re.sub(r"[^A-Za-z0-9_-]", "_", str(item.get("id")))
     shape.Name = "sema_%s_main" % safe_id
@@ -1062,7 +1134,8 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
                                              item.get("pointSmoothness"), item.get("pointAngles"),
                                              item.get("pointHandleAngles"), item.get("smoothnessDefault", 100),
                                              bool(item.get("centerlineLocked")), bool(item.get("edgeLocked")),
-                                             verification_checks=verification_checks)
+                                             verification_checks=verification_checks,
+                                             compound_contours=item.get("compoundContours"))
                 shape_name = remember(shape, item)
                 has_arrowheads = not closed and math.hypot(pts[0]["x"]-pts[-1]["x"], pts[0]["y"]-pts[-1]["y"]) > .01
                 style_key = (item.get("color", "#596a73"), round(float(item.get("width", 3)), 6),
@@ -1179,6 +1252,10 @@ def validate_web_ppt_payload(payload):
     for item in source_items:
         if not isinstance(item, dict) or item.get("type") not in ("box", "ellipse", "polygon", "arrow", "text", "image"):
             raise ValueError("不支援的物件格式")
+        if "compoundContours" in item:
+            if item["type"] != "arrow" or not item.get("closed"):
+                raise ValueError("Compound contours require a closed freeform")
+            validate_compound_contours(item["compoundContours"])
         if item["type"] == "image":
             src = item.get("src", "")
             if (not isinstance(src, str) or not src.startswith("assets/")
