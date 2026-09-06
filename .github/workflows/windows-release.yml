@@ -38,6 +38,10 @@ jobs:
             --add-data "app/github-star.css;." `
             --add-data "app/github-star-config.json;." `
             --add-data "app/region-fill.js;." `
+            --add-data "app/trace-boundary.js;." `
+            --add-data "app/path-cut.js;." `
+            --add-data "app/cut-tools.js;." `
+            --add-data "app/cut-tools.css;." `
             --add-data "app/paint-layers.js;." `
             --add-data "app/paint-tools.js;." `
             --add-data "app/pan-tool.js;." `
@@ -54,6 +58,8 @@ jobs:
             --add-data "app/web-ppt.html;." `
             --add-data "app/ppt-preparation.js;." `
             --add-data "app/paint-tools.css;." `
+            --add-data "app/illustration-trace.js;." `
+            --add-data "app/vendor;vendor" `
             --add-data "app/auto-trace.js;." `
             --add-data "app/auto-trace-ui.js;." `
             --add-data "app/auto-trace-worker.js;." `

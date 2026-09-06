@@ -47,13 +47,19 @@
 
 ## More than tracing
 
+- **Closed illustration regions:** trace color boundaries with shared, smoothed curves and optionally fill each region from the reference. Every result remains an editable vector object. Gradients become flat color regions; faint or blurred details may need manual refinement.
 - **Curves you can refine:** edit anchors, tangents, shared junctions, and local smoothing.
+- **Scissors for editable paths:** split lines with point, straight or freehand cuts. Toggle **畫完直接切斷** off to add anchors without breaking paths. Hold Ctrl for horizontal/vertical cuts, or right-click / long-press an anchor for point cutting. Anchors are immediately editable, with one-step undo.
 - **A workspace that stays organized:** pages, layers, groups, locks, and adjustable canvas size and color.
 - **Touch controls:** two-finger pan and zoom, compact panels, separate copy/paste, and a visible delete button.
 - **Portable work:** save `.skc` projects, export SVG, or copy native objects to PowerPoint with the Windows companion.
 - **Programmatic editing:** an opt-in command API and local MCP connector for supported AI clients. Batch edits share the editor's undo history.
 
 **One flow:** add a reference → trace → refine → export. Use the illustration above as an example, not a restriction on what you can draw.
+
+**New: fill right up to the image edge.** Auto trace's **沿底圖邊緣封閉** option is on by default. It connects clipped strokes to an editable image-edge boundary, so cropped regions can be filled without adding a visible black frame. Turn it off to keep open edges. Interior missing lines may still need repair.
+
+For developers: our [experimental anime-sketch refinement](experiments/anime-trace/) uses aligned source colors to repair supported gaps. This is a separate local experiment, **not an Anime2Sketch mode in the public web editor**; no model weights or private reference images are bundled.
 
 ## Let your tools work with you
 

@@ -58,7 +58,7 @@ assert.equal(h.fire('click',3).stopped,undefined);
 
 // Persistent tracing and paint tools restore their pre-touch document, not a
 // blank draft or the first finger's accidental extra node/fill.
-for(const mode of ['trace','bucket','picker','pan','reference']){
+for(const mode of ['trace','bucket','picker','pan','reference','cut']){
   h=harness();c=h.ctx;c.paintTool=mode==='trace'?null:mode;c.tracePenOn=mode==='trace';
   c.traceDraft=mode==='trace'?{id:'line',anchorCount:3,anchorIndices:[0,1,2]}:null;
   const before=c.state(),draft=plain(c.traceDraft);h.fire('pointerdown',1);

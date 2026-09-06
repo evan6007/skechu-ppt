@@ -40,6 +40,12 @@ jobs:
         run: node tests/check_preparation.mjs
       - name: Check connected-region filling
         run: node tests/check_regions.mjs
+      - name: Check image-edge closures and native fill geometry
+        run: node tests/check_trace_boundary.mjs
+      - name: Check closed illustration regions and editable automatic colors
+        run: node tests/check_illustration_trace.mjs
+      - name: Check scissors and exact curve splitting
+        run: node tests/check_cut_tools.mjs
       - name: Check paint layers and reference tools
         run: node tests/check_paint_tools.mjs
       - name: Check selection and gesture behavior
@@ -56,6 +62,8 @@ jobs:
         run: node tests/check_layers.mjs
       - name: Check automatic tracing and junction topology
         run: node tests/check_auto_trace.mjs
+      - name: Check experimental sketch refinement and safe gap repair
+        run: node tests/check_anime_refine.mjs
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
       - name: Install optional MCP test dependency

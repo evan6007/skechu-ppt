@@ -25,6 +25,8 @@ async function runAutomationTrace(ref, options, signal, progress) {
   const canvas=document.createElement('canvas');canvas.width=Math.max(3,Math.round(image.naturalWidth*scale));canvas.height=Math.max(3,Math.round(image.naturalHeight*scale));
   const context=canvas.getContext('2d',{willReadFrequently:true});context.drawImage(image,0,0,canvas.width,canvas.height);
   const data=context.getImageData(0,0,canvas.width,canvas.height).data;
+  const vectorWasm=AutoTrace.needsIllustration({data,options})?await IllustrationTrace.wasmBytes():null;
+  if(signal.aborted)throw Error('Tracing cancelled.');
   const result=await new Promise((resolve,reject)=>{
     const worker=createAutoTraceJob();
     const finish=(error,result)=>{clearTimeout(timer);signal.removeEventListener('abort',abort);worker.terminate();error?reject(error):resolve(result);};
@@ -33,9 +35,10 @@ async function runAutomationTrace(ref, options, signal, progress) {
     signal.addEventListener('abort',abort,{once:true});
     worker.onerror=event=>finish(Error(event.message||'Tracing failed.'));
     worker.onmessage=event=>{const m=event.data;if(m.type==='progress')progress(m.percent);else if(m.type==='error')finish(Error(m.message));else finish(null,m.result);};
-    worker.postMessage({width:canvas.width,height:canvas.height,data,options:{...options,accuracy:Math.max(.3,options.accuracy*scale),minLength:options.minLength*scale}},[data.buffer]);
+    worker.postMessage({width:canvas.width,height:canvas.height,data,vectorWasm,options:{...options,accuracy:Math.max(.3,options.accuracy*scale),minLength:options.minLength*scale}},vectorWasm?[data.buffer,vectorWasm.buffer]:[data.buffer]);
   });
   if(signal.aborted)throw Error('Tracing cancelled.');
+  if(options.autoFill){if(!result.colorItems)throw Error('Automatic colors require illustration mode.');result.items=result.colorItems;result.stats={...result.stats,paths:result.items.length,anchors:result.items.reduce((n,it)=>n+it.points.length,0)}}
   return {items:transformAutoTraceItems(result,ref,canvas.width,canvas.height,uid('api-trace'),id),stats:result.stats};
 }
 function initializeAutomationControls() {

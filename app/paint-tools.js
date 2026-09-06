@@ -3,6 +3,7 @@ let paintTool = null, referenceDrag = null, colorSample = null, colorSampleSourc
 let colorPickerSerial = 0, colorPickerReturn = null;
 
 function resetPaintTools() {
+  if(typeof resetCutTool==='function')resetCutTool();
   paintTool = null; colorPickerSerial++; colorSample = null; colorSampleSource = null;
   finishHandDrag();
   if (referenceDrag) finishReferenceDrag(true);
@@ -28,12 +29,12 @@ function setPaintTool(mode) {
   setTracePen(false); // Ends a draft and resets all mutually exclusive modes.
   paintTool = mode;
   if (mode) {
-    const id = {bucket: 'paint-bucket', picker: 'palette-eyedropper', reference: 'resize-reference', pan: 'pan-tool'}[mode];
+    const id = {bucket: 'paint-bucket', picker: 'palette-eyedropper', reference: 'resize-reference', pan: 'pan-tool', cut: 'cut-tool'}[mode];
     document.getElementById(id).classList.add('active');
     document.getElementById(id).setAttribute('aria-pressed', 'true');
     document.getElementById('select-tool').classList.remove('active');
     document.getElementById('select-tool').setAttribute('aria-pressed', 'false');
-    svg.classList.add({bucket: 'paint-bucket', picker: 'color-picker', reference: 'reference-edit', pan: 'hand-tool'}[mode]);
+    svg.classList.add({bucket: 'paint-bucket', picker: 'color-picker', reference: 'reference-edit', pan: 'hand-tool', cut: 'cut-tool'}[mode]);
     if (mode === 'pan') stageWrap.classList.add('hand-tool');
   }
   renderSelection();
@@ -184,7 +185,7 @@ function initializePaintTools() {
   document.getElementById('resize-reference').onclick = activateReferenceResize;
   syncPaintColor();
   svg.addEventListener('pointerdown', event => {
-    if (!paintTool || paintTool === 'pan' || event.button !== 0) return;
+    if (!paintTool || paintTool === 'pan' || paintTool === 'cut' || event.button !== 0) return;
     event.preventDefault(); event.stopImmediatePropagation();
     if (paintTool === 'bucket') {
       if (completePaletteDrop(activePaletteColor, event.clientX, event.clientY, event.target)) paintStatus('已填色，線條保留在上方；可繼續點下一個區域，Esc 退出');
@@ -197,7 +198,7 @@ function initializePaintTools() {
     }
   }, true);
   svg.addEventListener('pointermove', event => {
-    if (!paintTool || drag?.kind === 'pan' || palettePointerDrag) return;
+    if (!paintTool || paintTool === 'cut' || drag?.kind === 'pan' || palettePointerDrag) return;
     event.stopImmediatePropagation();
     if (paintTool === 'picker') updateColorSample(event);
     else if (paintTool === 'bucket') setFillHover(fillTargetAt(svgPt(event), event.target)?.id);
@@ -217,7 +218,7 @@ function initializePaintTools() {
   for (const event of ['dblclick', 'contextmenu']) svg.addEventListener(event, e => { if (paintTool) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
   window.addEventListener('keydown', event => {
     if (document.getElementById('auto-trace-dialog')?.open || ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName) || event.target.isContentEditable) return;
-    if (event.key === 'Escape' && paintTool) { event.preventDefault(); event.stopImmediatePropagation(); activateSelectTool(); clearSelectionState(); return; }
+    if (event.key === 'Escape' && paintTool && paintTool !== 'cut') { event.preventDefault(); event.stopImmediatePropagation(); activateSelectTool(); clearSelectionState(); return; }
     if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
     if (event.key.toLowerCase() === 'h') { event.preventDefault(); activateHandTool(); }
     if (event.key.toLowerCase() === 'b') { event.preventDefault(); activatePaintBucket(); }

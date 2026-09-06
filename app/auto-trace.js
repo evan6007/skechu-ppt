@@ -342,12 +342,21 @@ const AutoTrace = (function createAutoTrace() {
     const items=outline.items.concat(details.items);progress(100,'照片角色預覽完成');
     return {items,issues:[],stats:{mode:'photo',inkPixels:ink,background:{r:Math.round(bg.r),g:Math.round(bg.g),b:Math.round(bg.b)},paths:items.length,outlinePaths:outline.items.length,detailPaths:details.items.length,anchors:items.reduce((sum,it)=>sum+it.points.length,0),junctions:details.stats.junctions||0,reviewCount:0}};
   }
+  function hasRichColour(data){
+    const bins=new Map();let colourful=0,samples=0;
+    for(let i=0;i<data.length;i+=64){if(data[i+3]<128)continue;const r=data[i],g=data[i+1],b=data[i+2];samples++;if(Math.max(r,g,b)-Math.min(r,g,b)>25)colourful++;const key=(r>>4)*256+(g>>4)*16+(b>>4);bins.set(key,(bins.get(key)||0)+1)}
+    return colourful>samples*.25&&[...bins.values()].filter(n=>n>samples*.002).length>24;
+  }
   function run({width:w,height:h,data,options={}},progress=()=>{}){
     if(!Number.isInteger(w)||!Number.isInteger(h)||w<3||h<3||w*h>5e6||data.length!==w*h*4)throw new Error('圖片尺寸或像素資料不正確（最多 500 萬像素）。');
     const threshold=clamp(Number(options.threshold)||150,40,220),accuracy=clamp(Number(options.accuracy)||2.5,.3,6),simplify=clamp(Number.isFinite(Number(options.simplify))?Number(options.simplify):90,0,100),minLength=clamp(Number.isFinite(Number(options.minLength))?Number(options.minLength):3,0,30);
     const mask=new Uint8Array(w*h);let ink=0;
     for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,j=i*4,a=data[j+3]/255,lum=(.2126*data[j]+.7152*data[j+1]+.0722*data[j+2])*a+255*(1-a);if(lum<threshold){mask[i]=1;ink++}}
-    const requested=['line','contour','photo'].includes(options.mode)?options.mode:'auto',mode=requested==='auto'?(hasSolidAreas(mask,w,h,ink)?'contour':'line'):requested;
+    const requested=['line','contour','photo','illustration'].includes(options.mode)?options.mode:'auto',mode=requested==='auto'?(hasSolidAreas(mask,w,h,ink)?(typeof IllustrationTrace!=='undefined'&&hasRichColour(data)?'illustration':'contour'):'line'):requested;
+    if(mode==='illustration'){
+      if(typeof IllustrationTrace==='undefined')throw new Error('插畫描圖元件尚未載入，請重新整理頁面。');
+      return IllustrationTrace.run(data,w,h,{threshold,accuracy,simplify,minLength},{toItem},progress);
+    }
     if(!ink)return {items:[],issues:[],stats:{mode,inkPixels:0,paths:0,anchors:0,junctions:0,reviewCount:0}};
     if(mode==='photo')return tracePhoto(data,w,h,threshold,accuracy,simplify,minLength,progress);
     if(mode==='contour')return traceContours(mask,w,h,ink,accuracy,simplify,minLength,progress);
@@ -425,13 +434,14 @@ const AutoTrace = (function createAutoTrace() {
     for(const key of ['pointJunctions','autoTraceReview','pointKinds'])result[key]=Object.fromEntries(Object.entries(source[key]||{}).filter(([i])=>mapping.has(Number(i))).map(([i,value])=>[mapping.get(Number(i)),value]));
     return result;
   }
-  const workerSource=()=>`const AutoTrace=(${createAutoTrace.toString()})();(${autoTraceWorkerRuntime.toString()})();`;
-  return {run,thin,graph,fit,at,toItem,simplifyItem,workerSource};
+  const workerSource=()=>`${typeof IllustrationTrace!=='undefined'?IllustrationTrace.workerSource():''}const AutoTrace=(${createAutoTrace.toString()})();(${autoTraceWorkerRuntime.toString()})();`;
+  const needsIllustration=({data,options={}})=>options.mode==='illustration'||(!options.mode||options.mode==='auto')&&hasRichColour(data);
+  return {run,thin,graph,fit,at,toItem,simplifyItem,workerSource,needsIllustration};
 })();
 
 function autoTraceWorkerRuntime() {
   self.onmessage=event=>{
-    try {const result=AutoTrace.run(event.data,(percent,stage)=>self.postMessage({type:'progress',percent,stage}));self.postMessage({type:'result',result});}
+    try {if(event.data.vectorWasm)VTracerWasm.init(event.data.vectorWasm);const result=AutoTrace.run(event.data,(percent,stage)=>self.postMessage({type:'progress',percent,stage}));self.postMessage({type:'result',result});}
     catch(error){self.postMessage({type:'error',message:error.message||String(error)});}
   };
 }

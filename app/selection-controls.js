@@ -70,7 +70,15 @@ function selectionContextTarget(event) {
   return event.target.closest('[data-anchor-owner]')?.dataset.anchorOwner || event.target.closest('[data-id]')?.dataset.id ||
     (event.target.closest('[data-handle],[data-segment],[data-action]') ? selected : null);
 }
-function showSelectionContextMenu(id, x, y) {
+function selectionContextAnchor(event) {
+  const handle=event.target.closest('[data-handle="arrow-point"],[data-handle="poly-point"]');
+  if(!handle)return null;
+  const index=Number(handle.dataset.point),owner=handle.dataset.anchorOwner||selected;
+  return Number.isInteger(index)&&byId(owner)?.points?.[index]?{owner,index}:null;
+}
+function showSelectionContextMenu(id, x, y, anchor = null) {
+  if(anchor&&typeof showAnchorCutMenu==='function'&&showAnchorCutMenu(anchor,x,y))return;
+  if(typeof resetAnchorCutMenu==='function')resetAnchorCutMenu();
   if (!selectableOnCanvas(byId(id))) { document.getElementById('context-menu').hidden = true; return; }
   if (!selectedIds.has(id)) select(id);
   showLineContextMenu(x, y);
@@ -81,14 +89,14 @@ function beginRightSelection(event, capture = svg) {
   const before = selectionSnapshot();
   drag = {kind: 'marquee', start: svgPt(event), additive: event.shiftKey,
     pointOwner: before.ids.length === 1 && byId(before.selected)?.points ? before.selected : null,
-    contextTarget: selectionContextTarget(event), contextOnClick: true};
+    contextTarget: selectionContextTarget(event), contextAnchor:selectionContextAnchor(event), contextOnClick: true};
   document.getElementById('context-menu').hidden = true;
   marqueeRect = null; registerSelectionGesture(event, before, capture);
 }
 function handleSelectionContextMenu(event) {
   event.preventDefault();
   if (suppressSelectionContextMenu && event.button === 2 || drag?.kind === 'marquee') return;
-  showSelectionContextMenu(selectionContextTarget(event), event.clientX, event.clientY);
+  showSelectionContextMenu(selectionContextTarget(event), event.clientX, event.clientY,selectionContextAnchor(event));
 }
 function beginSelectionPointerDown(event, {action, h, g, before}) {
   if (![0, 1].includes(event.button)) return;
@@ -215,7 +223,7 @@ function finishSelectionGesture(event, cancel = false) {
   stageWrap.classList.remove('panning');
   if (gesture.capture.hasPointerCapture(gesture.pointerId)) gesture.capture.releasePointerCapture(gesture.pointerId);
   if (gesture.stateBefore != null) render(); else refreshSelectionUI();
-  if (!cancel && gesture.kind === 'marquee' && !gesture.moved && gesture.contextOnClick) showSelectionContextMenu(gesture.contextTarget, event.clientX, event.clientY);
+  if (!cancel && gesture.kind === 'marquee' && !gesture.moved && gesture.contextOnClick) showSelectionContextMenu(gesture.contextTarget, event.clientX, event.clientY,gesture.contextAnchor);
   if (cancel) document.getElementById('status').textContent = '已取消拖曳，物件保持原位';
 }
 function selectLayerFromEvent(event, id) {

@@ -6,17 +6,30 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Added
 
+- Image-edge closure in the auto-trace preview, enabled by default and switchable without rerunning the worker. Short clipped endpoints join an exact, zero-stroke image rim; resulting fills retain normal editable anchors, native export geometry and undo.
+- Developer-only anime-sketch refinement with source-supported gap/corner/T repair, thin border artifact suppression and light-stroke ribbon cleanup. The local CLI now supports image-edge closure. Neural inference is not shipped in the browser; private samples and weights are excluded.
+
+- Closed illustration tracing with a pinned, locally executed VTracer WebAssembly engine. Shared cutout boundaries replace skeleton gap-joining for color artwork; optional source-color fills preserve holes as native editable Freeforms. Original line/logo/photo engines remain available. No user images are uploaded.
+- Edge-preserving illustration cleanup and less aggressive color merging retain small dark insets and narrow highlights. Curve fitting keeps small arcs without globally adding noisy regions; zero cleanup remains available, and the original reference pixels are never modified.
+- Illustration mode and `autoFill` for the opt-in tracing API, plus closed-region, hole, worker, native-coordinate and real-browser recolor/undo checks.
+- Freehand "cut after drawing" toggle: on creates independent path pieces; off inserts exact editable anchors into the same connected paths. Existing fills, closed outlines, T-junctions and attachments are retained when adding points, with no duplicate nodes at existing anchors.
+- Point cut from an anchor's right-click menu or a 500 ms touch hold. The compact menu operates on that exact anchor; dragging, a second finger, page changes and cancellation abandon the hold without cutting.
+- Scissors with point, straight-line and freehand modes. Exact cubic subdivision creates independent editable endpoints, preserves existing color areas, remaps surviving attachments and shares one-step undo. Locked objects and reference images are excluded; two-finger navigation cancels an unfinished cut.
 - Search metadata naming Skechu and Skechu-PPT, stable canonical URLs, application structured data, a static feature guide and a two-page sitemap. Search Console verification and indexing requests remain separate owner actions, not automatic ranking guarantees.
 - Opt-in, current-page command API with 12 named commands and a separately installed official-SDK MCP connector. Includes paginated inspection, batch styles/movement, editable shapes, confirmed deletion, undo/redo, SVG output and staged/cancellable background tracing. Strict schemas, revision guards and one-step history protect interactive work.
 - Automation guide, repository map and optional MCP protocol/security checks. The ordinary static web editor does not require the connector or an AI account.
 
 ### Changed
 
+- Scissors now return directly to selected editable anchors after a successful cut, without a Done button. Hold Ctrl during a straight cut to constrain it horizontally or vertically; pressing or releasing Ctrl also updates a stationary preview.
 - README feature recordings now occupy separate, top-aligned rows from their captions. All four retain their original 720 × 405 dimensions and colors.
 - Published feature GIFs moved to `docs/media/features/`; showcase tooling moved to `scripts/showcase/`. Existing local projects, MP4 exports and generated files were not removed.
 
 ### Fixed
 
+- Tiny curved branch crossings are intersected at finer precision, preventing a subpixel missed crossing from merging large foreground/background fill regions. Nested single-owner loops now win over an enclosing painted DOM target.
+
+- Connected-region filling at tangent T-junctions: tiny auto-traced links with equal initial tangents now use their geometric order, keeping neighboring regions separate. Single-path enclosed subregions also use the local face instead of recoloring the whole object.
 - Embedded browsers without Blob URL support can load the packaged automatic-tracing worker over HTTP instead of running the heavy operation on the UI thread.
 
 ### Previously added

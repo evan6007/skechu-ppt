@@ -84,7 +84,11 @@ const RegionFill = (() => {
     const curves=[];
     for(const path of paths)path.segments.forEach((s,index)=>{
       if(![s.p0,s.c1,s.c2,s.p3].every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)))return;
-      const samples=flatten(s),xs=samples.map(p=>p.x),ys=samples.map(p=>p.y);
+      // A 2–3 px curled branch can cross its neighbor less than .15 px from a
+      // shared endpoint. Coarse flattening misses that crossing and merges two
+      // large faces. Spend precision on tiny curves, not the whole drawing.
+      const controlLength=dist(s.p0,s.c1)+dist(s.c1,s.c2)+dist(s.c2,s.p3);
+      const samples=flatten(s,controlLength<12?.001:.15),xs=samples.map(p=>p.x),ys=samples.map(p=>p.y);
       curves.push({...s,owner:path.id,index,width:path.width||1,first:!path.closed&&index===0,last:!path.closed&&index===path.segments.length-1,samples,box:{x0:Math.min(...xs),y0:Math.min(...ys),x1:Math.max(...xs),y1:Math.max(...ys)},cuts:[{t:0,p:s.p0},{t:1,p:s.p3}]});
     });
     const cut=(s,t,p)=>{const existing=s.cuts.find(c=>Math.abs(c.t-t)<1e-6);if(existing)existing.p=p;else s.cuts.push({t,p})};
@@ -133,7 +137,15 @@ const RegionFill = (() => {
     for(const v of vertices){
       v.out=v.out.filter(e=>!e.dead);
       for(const e of v.out){let d=sub(e.curve.c1,e.curve.p0);if(Math.hypot(d.x,d.y)<EPS)d=sub(point(e.curve,.001),e.curve.p0);e.angle=Math.atan2(d.y,d.x)}
-      v.out.sort((a,b)=>a.angle-b.angle);
+      v.out.sort((a,b)=>{
+        const delta=a.angle-b.angle;
+        if(Math.abs(delta)>1e-8)return delta;
+        // Tangent branches need their geometric order too. Auto-traced T nodes
+        // can contain a tiny curved link beside a straight link with the SAME
+        // tangent. Input order here would walk across the divider into a neighbor.
+        const da=sub(point(a.curve,.01),a.curve.p0),db=sub(point(b.curve,.01),b.curve.p0);
+        return -cross(da,db);
+      });
     }
     const faces=[];
     for(const start of edges){
@@ -161,5 +173,5 @@ const RegionFill = (() => {
     segments.forEach((s,i)=>{const p=s.p0,previous=segments[(i-1+segments.length)%segments.length],a=sub(previous.c2,p),b=sub(s.c1,p);handles[i]={in:Math.atan2(a.y,a.x)*180/Math.PI,out:Math.atan2(b.y,b.x)*180/Math.PI,inLength:Math.hypot(a.x,a.y),outLength:Math.hypot(b.x,b.y)}});
     return {id,type:'arrow',name:'區域填色',points,pointHandleAngles:handles,curved:true,closed:true,explicitBezier:false,color,width:0,style:'solid',startHead:false,endHead:false,fill:color,fillOpacity:1,regionFill:{key:face.key,sources:face.owners}};
   }
-  return {line,point,split,slice,flatten,arc,contains,build,find,path,toItem};
+  return {line,point,split,slice,flatten,arc,contains,build,find,path,toItem,nearest,intersections};
 })();

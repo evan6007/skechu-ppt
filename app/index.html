@@ -30,7 +30,7 @@
 <link rel="icon" type="image/svg+xml" href="skechu-mark.svg?v=1">
 <link rel="apple-touch-icon" href="skechu-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="auto-trace.css?v=28-shared-image">
+<link rel="stylesheet" href="auto-trace.css?v=75-closed-regions">
 <link rel="stylesheet" href="paint-tools.css?v=38-responsive-shell">
 <link rel="stylesheet" href="layer-controls.css?v=35-stable-motion">
 <link rel="stylesheet" href="clipboard-controls.css?v=59-inline-ppt">
@@ -75,6 +75,7 @@
 <link rel="stylesheet" href="theme-controls.css?v=55-canvas-color-menu">
 <link rel="stylesheet" href="github-star.css?v=63-instant-star">
 <link rel="stylesheet" href="mobile-controls.css?v=69-copy-paste">
+<link rel="stylesheet" href="cut-tools.css">
 <link rel="stylesheet" href="automation/panel.css?v=70-automation">
 <script>try{const savedTheme=localStorage.getItem('skechu-ui-theme');if(['graphite','mist','linen'].includes(savedTheme))document.documentElement.dataset.theme=savedTheme}catch{}</script>
 </head>
@@ -171,6 +172,9 @@
 <script src="github-star.js?v=64-instant-star"></script>
 <script src="local-smoothing.js"></script>
 <script src="region-fill.js"></script>
+<script src="trace-boundary.js?v=76-paper-edge"></script>
+<script src="path-cut.js"></script>
+<script src="cut-tools.js"></script>
 <script src="paint-layers.js?v=22-visibility-web-native"></script>
 <script src="paint-tools.js?v=41-liquid-paper"></script>
 <script src="pan-tool.js"></script>
@@ -181,8 +185,10 @@
 <script src="clipboard-controls.js?v=60-keyboard-copy"></script>
 <script src="web-ppt-client.js?v=60-keyboard-copy"></script>
 <script src="ppt-preparation.js?v=59-inline-ppt"></script>
-<script src="auto-trace.js?v=26-photo-trace"></script>
-<script src="auto-trace-ui.js?v=70-worker-fallback"></script>
+<script src="vendor/vtracer.js?v=1.0.0-alpha.4"></script>
+<script src="illustration-trace.js?v=75-closed-regions"></script>
+<script src="auto-trace.js?v=75-closed-regions"></script>
+<script src="auto-trace-ui.js?v=76-paper-edge"></script>
 <script src="mobile-controls.js?v=69-copy-paste"></script>
 <script src="touch-gestures.js?v=68-touch-gestures"></script>
 <script src="automation/core.js?v=70-automation"></script>
@@ -398,7 +404,26 @@ function fillBoundarySamples(it){const boundary=fillBoundaryPath(it);if(!boundar
 function fillNetworkFaces(){const paths=items.filter(it=>!it.regionFill).map(fillBoundaryPath).filter(Boolean),signature=JSON.stringify(paths);if(signature!==regionFaceCache.signature)regionFaceCache={signature,faces:RegionFill.build(paths)};return regionFaceCache.faces}
 function regionGeometryKey(it){return JSON.stringify([it.points,it.pointHandleAngles])}
 function materializeFillTarget(target){if(!target.regionFace)return target;const item=RegionFill.toItem(target.regionFace,id(),activePaletteColor);item.regionFill.geometry=regionGeometryKey(item);items.push(item);return item}
-function fillTargetAt(point,domTarget){pendingRegionFace=null;const face=RegionFill.find(fillNetworkFaces(),point);if(face&&face.owners.length>1){const existing=items.find(it=>it.regionFill?.key===face.key&&it.regionFill.geometry===regionGeometryKey(it)&&itemContainsFillPoint(it,point));if(existing)return existing;pendingRegionFace=face;return{id:'network-region-preview',name:'接線圍出的區域',regionFace:face}}const direct=domTarget?.closest?.('[data-id]'),directItem=direct&&byId(direct.dataset.id);if(itemContainsFillPoint(directItem,point))return directItem;for(let i=items.length-1;i>=0;i--)if(itemContainsFillPoint(items[i],point))return items[i];return null}
+function fillTargetAt(point,domTarget){
+ pendingRegionFace=null;
+ const direct=domTarget?.closest?.('[data-id]'),directItem=direct&&byId(direct.dataset.id);
+ if(directItem?.autoTraceColored&&directItem.closed&&itemContainsFillPoint(directItem,point))return directItem;
+ const faces=fillNetworkFaces(),face=RegionFill.find(faces,point);
+ if(face){
+  const owner=byId(face.owners[0]);
+  if(face.owners.length>1||(owner?.type==='arrow'&&(!owner.closed||faces.filter(f=>f.owners.includes(owner.id)).length>1))){
+   const existing=items.find(it=>it.regionFill?.key===face.key&&it.regionFill.geometry===regionGeometryKey(it)&&itemContainsFillPoint(it,point));
+   if(existing)return existing;
+   pendingRegionFace=face;return{id:'network-region-preview',name:'接線圍出的區域',regionFace:face};
+  }
+  // A filled background receives the DOM hit through an unfilled inner loop.
+  // The smallest bounded face must win, including single-owner closed shapes.
+  if(itemContainsFillPoint(owner,point))return owner;
+ }
+ if(itemContainsFillPoint(directItem,point))return directItem;
+ for(let i=items.length-1;i>=0;i--)if(itemContainsFillPoint(items[i],point))return items[i];
+ return null;
+}
 function setFillHover(idv){scene.querySelectorAll('[data-region-preview]').forEach(el=>el.remove());scene.querySelectorAll('[data-fill-target]').forEach(el=>el.removeAttribute('data-fill-target'));fillHoverId=idv||null;if(fillHoverId==='network-region-preview'&&pendingRegionFace){scene.insertAdjacentHTML('beforeend',`<path data-region-preview="true" d="${RegionFill.path(pendingRegionFace)}" fill="${activePaletteColor}" fill-opacity=".35" stroke="#f97316" stroke-width="2" vector-effect="non-scaling-stroke" pointer-events="none"/>`);return}if(!fillHoverId)return;const node=[...scene.querySelectorAll('[data-id]')].find(el=>el.dataset.id===fillHoverId);if(node)node.setAttribute('data-fill-target','true')}
 function validPaletteColor(value){return /^#[0-9a-f]{6}$/i.test(String(value||''))?String(value).toLowerCase():null}
 function savePalette(){try{localStorage.setItem('skechu-palette',JSON.stringify(paletteColors))}catch{}}
@@ -442,7 +467,7 @@ function anchorHandleLengths(it,index){const p=it.points[index],count=it.points.
 function setLinkedTangent(it,index,angle,length,inLength=length){it.pointAngles=it.pointAngles||{};it.pointAngles[index]=angle;it.pointHandleAngles=it.pointHandleAngles||{};it.pointHandleAngles[index]={in:normalizeAngle(angle+180),out:angle,inLength,outLength:length,linked:true};it.pointKinds=it.pointKinds||{};delete it.pointKinds[index];it.curved=true}
 function tangentHandleLayout(it,index){const p=it.points[index],handles=splitHandleAngles(it.pointHandleAngles,index),split=handles&&!handles.linked,lengths=anchorHandleLengths(it,index),unit=overlayUnit(),angle=pointTangentAngle(it.points,index,it.pointAngles,!!it.closed),make=(side,offset)=>{const degrees=handles?handles[side]:(side==='in'?normalizeAngle(angle+180):angle),radians=degrees*Math.PI/180,length=lengths[side]+offset;return{side,offset,x:p.x+Math.cos(radians)*length,y:p.y+Math.sin(radians)*length}};const incoming=make('in',44*unit);let outgoing=make('out',44*unit);if(split&&Math.hypot(incoming.x-outgoing.x,incoming.y-outgoing.y)<42*unit)outgoing=make('out',44*unit+Math.max(0,lengths.in-lengths.out)+44*unit);return{split,incoming,outgoing}}
 function tangentGuideMarkup(it){if(it?.type!=='arrow'||!Number.isInteger(selectedPoint)||!it.points[selectedPoint]||pointIsSharp(it.pointKinds,selectedPoint))return'';const p=it.points[selectedPoint],layout=tangentHandleLayout(it,selectedPoint),sides=layout.split?[layout.incoming,layout.outgoing]:[layout.outgoing];return sides.map(handle=>{const kind=layout.split?'tangent-'+handle.side:'tangent-angle',cls=layout.split?'tangent-'+handle.side:'',label=layout.split?(handle.side==='in'?'進入柄':'離開柄'):'連動切線';return `<line class="tangent-guide ${cls}" x1="${p.x}" y1="${p.y}" x2="${handle.x}" y2="${handle.y}"/><circle class="tangent-handle-hit ${cls}" data-handle="${kind}" data-point="${selectedPoint}" data-reach-offset="${handle.offset}" cx="${handle.x}" cy="${handle.y}" r="18"><title>${label}：可拉到遠處調整角度與弧度，虛線連回錨點</title></circle><circle class="tangent-angle-handle ${cls}" cx="${handle.x}" cy="${handle.y}" r="8"/>`}).join('')}
-function renderSelection(){if(paintTool==='bucket'||paintTool==='picker'){selection.innerHTML='';return}if(paintTool==='reference'&&byId(selected)?.referenceOnly&&!byId(selected)?.hidden){selection.innerHTML=referenceEditMarkup(byId(selected));scaleSelectionOverlay();return}let html=selectedIds.size>1&&!traceDraft?multiSelectionMarkup():'';if(marqueeRect)html+=`<rect class="marquee" x="${marqueeRect.x}" y="${marqueeRect.y}" width="${marqueeRect.w}" height="${marqueeRect.h}"/>`;selection.innerHTML=html;if(selectedIds.size>1&&!traceDraft){selection.insertAdjacentHTML('beforeend',snapOverlay());scaleSelectionOverlay();return}const it=byId(selected);if(!it||it.hidden||traceDraft?.id===selected){selection.insertAdjacentHTML('beforeend',snapOverlay()+traceJoinOverlay());scaleSelectionOverlay();return}let main='';
+function renderSelection(){if(paintTool==='bucket'||paintTool==='picker'||paintTool==='cut'){selection.innerHTML='';return}if(paintTool==='reference'&&byId(selected)?.referenceOnly&&!byId(selected)?.hidden){selection.innerHTML=referenceEditMarkup(byId(selected));scaleSelectionOverlay();return}let html=selectedIds.size>1&&!traceDraft?multiSelectionMarkup():'';if(marqueeRect)html+=`<rect class="marquee" x="${marqueeRect.x}" y="${marqueeRect.y}" width="${marqueeRect.w}" height="${marqueeRect.h}"/>`;selection.innerHTML=html;if(selectedIds.size>1&&!traceDraft){selection.insertAdjacentHTML('beforeend',snapOverlay());scaleSelectionOverlay();return}const it=byId(selected);if(!it||it.hidden||traceDraft?.id===selected){selection.insertAdjacentHTML('beforeend',snapOverlay()+traceJoinOverlay());scaleSelectionOverlay();return}let main='';
  if(it.locked){const b=itemBounds(it);main=`<rect class="selected-outline" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>`}
  else if(it.type==='image'){main=imageSelectionMarkup(it)}
  else if(it.type==='box'||it.type==='ellipse'){const all=it.type!=='image'||editPoints,pts=all?`<circle class="handle" data-handle="tl" cx="${it.x}" cy="${it.y}" r="8"/><circle class="handle" data-handle="tr" cx="${it.x+it.w}" cy="${it.y}" r="8"/><circle class="handle" data-handle="bl" cx="${it.x}" cy="${it.y+it.h}" r="8"/><circle class="handle" data-handle="br" cx="${it.x+it.w}" cy="${it.y+it.h}" r="8"/>`:`<circle class="handle" data-handle="br" cx="${it.x+it.w}" cy="${it.y+it.h}" r="8"/>`;main=`<g transform="rotate(${it.r||0} ${it.x+it.w/2} ${it.y+it.h/2})"><rect class="selected-outline" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}"/>${pts}</g>`}
@@ -632,6 +657,7 @@ initializePanelLayout();
 initializeClipboardControls();
 initializeWebPptClient();
 initializeWorkspaceActions();
+initializeCutTools();
 initializeMobileControls();
 initializeTouchGestures();
 initializeAutomationControls();

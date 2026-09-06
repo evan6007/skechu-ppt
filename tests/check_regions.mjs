@@ -35,6 +35,14 @@ const smallGap=path('gap',[{x:100,y:.7},{x:100,y:99.3}]);
 assert.equal(R.build([outer,smallGap]).length,2,'A subpixel attachment error is tolerated');
 const largeGap=path('gap',[{x:100,y:7},{x:100,y:93}]);
 assert.equal(R.build([outer,largeGap]).length,1,'An actual gap does not create a region');
+// Reduced real starter-brain regression: equal tangents at a tiny T link used
+// to join the narrow cerebellum-side region into its left neighbor (area 45066).
+const brainPaths=JSON.parse(fs.readFileSync(new URL('fixtures/brain-tangent-fill.json',import.meta.url),'utf8'));
+for(const paths of [brainPaths,[...brainPaths].reverse()]){
+ const brainFaces=R.build(paths),narrow=R.find(brainFaces,{x:870,y:560}),left=R.find(brainFaces,{x:800,y:700});
+ assert.ok(narrow&&left);assert.notEqual(narrow.key,left.key,'Tangent links must not leak across the brainstem divider');
+ assert.ok(narrow.area>3700&&narrow.area<3800);assert.ok(left.area>41000&&left.area<42000);
+}
 const reversed=path('reverse',[{x:0,y:100},{x:200,y:100},{x:200,y:0},{x:0,y:0}],true);
 assert.equal(R.build([reversed,divider]).length,2,'Clockwise and counterclockwise source paths work');
 
@@ -68,6 +76,20 @@ assert.equal(ctx.fillTargetAt({x:30,y:50},null).id,created.id,'Repeated drop rec
 assert.ok(ctx.fillTargetAt({x:170,y:50},null).regionFace,'Other side remains separately fillable');
 ctx.items=plain(ctx.items);assert.equal(ctx.fillTargetAt({x:30,y:50},null).id,created.id,'Save/reload preserves the region');
 ctx.items=ctx.items.slice(0,2);assert.ok(ctx.fillTargetAt({x:30,y:50},null).regionFace,'Undoing fill leaves the network usable');
+const originalItems=ctx.items;
+ctx.items=[{id:'face-base',type:'box',x:0,y:0,w:200,h:200,fill:'#f8ce8e',opacity:1,strokeWidth:2},
+ {id:'nose-loop',type:'arrow',closed:true,curved:false,width:2,fill:'#dbeafe',fillOpacity:0,points:[{x:80,y:70},{x:120,y:110},{x:80,y:135}]}];
+const parentBefore=JSON.stringify(ctx.items[0]);
+const innerTarget=ctx.fillTargetAt({x:90,y:105},{closest:()=>({dataset:{id:'face-base'}})});
+assert.equal(innerTarget.id,'nose-loop','An existing parent fill must not steal a click inside an unfilled single-owner loop');
+innerTarget.fill='#b86d35';innerTarget.fillOpacity=1;
+assert.equal(JSON.stringify(ctx.items[0]),parentBefore,'Coloring the inner loop leaves the parent fill unchanged');
+assert.equal(ctx.fillTargetAt({x:160,y:160},{closest:()=>({dataset:{id:'face-base'}})}).id,'face-base','Outside the inner loop still targets the parent');
+ctx.items=originalItems;
+ctx.items=[{id:'self',type:'arrow',curved:false,closed:true,width:2,points:[{x:0,y:0},{x:100,y:100},{x:0,y:100},{x:100,y:0}]}];
+const lower=ctx.fillTargetAt({x:50,y:20},null),upper=ctx.fillTargetAt({x:50,y:80},null);
+assert.ok(lower.regionFace&&upper.regionFace,'Single-owner self-crossing outline still has independently fillable faces');
+assert.notEqual(lower.regionFace.key,upper.regionFace.key);ctx.items=originalItems;
 assert.equal(ctx.fillBoundaryPath({type:'image',referenceOnly:true}),null,'Reference images do not create boundaries');
 assert.equal(ctx.fillBoundaryPath({type:'arrow',referenceOnly:true,points:[{x:0,y:0},{x:1,y:1}]}),null);
 load('nativeBody');load('exportableItems');

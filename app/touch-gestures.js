@@ -18,6 +18,8 @@ function restoreTouchEdit(saved) {
   // A page switch while a finger was down must not restore a different page.
   if (!saved || saved.project!==activeProjectId || saved.page!==activePageId) return;
   finishSelectionGesture(null,true); finishReferenceDrag(true); finishHandDrag();
+  if(typeof cancelCutGesture==='function')cancelCutGesture();
+  if(typeof cancelAnchorHold==='function'){cancelAnchorHold();resetAnchorCutMenu();}
   items=JSON.parse(saved.items);history=saved.history;future=saved.future;
   restoreSelectionSnapshot(saved.selection);traceDraft=saved.draft;
   paintTool=saved.paintTool;tracePenOn=saved.tracePenOn;activePaletteColor=saved.color;

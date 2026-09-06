@@ -95,7 +95,7 @@
           const ref=targets(doc,[args.imageId],false)[0];
           if (ref.type!=='image' || !ref.referenceOnly) fail('INVALID_ARGUMENT','Choose a reference image.');
           const current=task={id:host.uid(),status:'running',progress:0,context:doc.context,controller:new AbortController()};
-          const options={mode:'auto',threshold:150,accuracy:2.5,simplify:90,minLength:3};
+          const options={mode:'auto',threshold:150,accuracy:2.5,simplify:90,minLength:3,autoFill:false};
           for(const key of Object.keys(options)) if (args[key] !== undefined) options[key]=args[key];
           Promise.resolve().then(()=>host.trace(clone(ref),options,current.controller.signal,p=>{current.progress=p})).then(result=>{
             if(task!==current || current.controller.signal.aborted)return;

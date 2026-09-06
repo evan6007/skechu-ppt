@@ -17,7 +17,7 @@ function fixture() {
     apply(items,ids){undo.push(plain(doc.items));redo.length=0;doc.items=items;doc.selection=ids;edits++;},
     history(action){const source=action==='undo'?undo:redo,target=action==='undo'?redo:undo;if(source.length){target.push(doc.items);doc.items=source.pop();}},
     exportSvg:()=>'<svg/>',confirmDelete:n=>confirmation(n),
-    trace:()=>new Promise(resolve=>{resolveTrace=resolve})};
+    trace:(reference,options)=>{host.lastTraceOptions=options;return new Promise(resolve=>{resolveTrace=resolve})}};
   const api=context.SkechuAutomationCore.create(host,definitions);
   return {api,doc,host,undo,get edits(){return edits},set busy(v){busy=v},set confirmation(v){confirmation=v},
     finishTrace:()=>resolveTrace({items:[{id:'traced',type:'arrow',points:[{x:0,y:0},{x:1,y:1}]}],stats:{paths:1}}),
@@ -80,7 +80,9 @@ assert.equal((await f.api.execute('get_task',{taskId:task.taskId})).status,'read
 f.doc.items[0].x++;
 await rejects(f.api.execute('apply_trace',{context:await f.ctx(),taskId:task.taskId}),'STALE_DOCUMENT');
 await f.api.execute('cancel_task',{taskId:task.taskId});
-task=await f.api.execute('trace_image',{context:await f.ctx(),imageId:'ref'});f.finishTrace();await new Promise(r=>setTimeout(r,0));
+task=await f.api.execute('trace_image',{context:await f.ctx(),imageId:'ref',mode:'illustration',autoFill:true});
+assert.equal(f.host.lastTraceOptions.mode,'illustration');assert.equal(f.host.lastTraceOptions.autoFill,true);
+f.finishTrace();await new Promise(r=>setTimeout(r,0));
 await f.api.execute('apply_trace',{context:await f.ctx(),taskId:task.taskId});assert.equal(f.edits,1);assert.equal(f.doc.items.at(-1).id,'traced');
 assert.equal(f.api.status().task,null);
 
@@ -91,6 +93,6 @@ for(const path of ['core.js','editor.js','panel.css','commands.json']){
 const traceUi=read('app/auto-trace-ui.js'),workerCalls=[];
 const workerContext=vm.createContext({URL:{},location:{protocol:'https:'},Worker:function(url){workerCalls.push(url)}});
 vm.runInContext(traceUi.slice(0,traceUi.indexOf("document.getElementById('import-reference')")),workerContext);
-workerContext.createAutoTraceJob();assert.deepEqual(workerCalls,['auto-trace-worker.js?v=70-automation']);
+workerContext.createAutoTraceJob();assert.deepEqual(workerCalls,['auto-trace-worker.js?v=75-closed-regions']);
 assert.ok(read('app/service-worker.js').includes("'./auto-trace.js'"),'Fallback worker engine must be available offline');
 console.log('Automation: opt-in scope, strict schemas, atomic batches, undo/redo, locks, stale edits, graph safety, source redaction, staged tracing/cancel and desktop assets OK.');
