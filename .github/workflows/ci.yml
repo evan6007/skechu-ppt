@@ -40,6 +40,8 @@ jobs:
         run: node tests/check_preparation.mjs
       - name: Check connected-region filling
         run: node tests/check_regions.mjs
+      - name: Check editable multistop gradients
+        run: node tests/check_gradient_fill.mjs
       - name: Check image-edge closures and native fill geometry
         run: node tests/check_trace_boundary.mjs
       - name: Check closed illustration regions and editable automatic colors

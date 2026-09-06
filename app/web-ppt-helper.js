@@ -21,12 +21,20 @@ function initializeWebPptHelper() {
   if(location.protocol!=='http:'||!['127.0.0.1','localhost'].includes(location.hostname)||!opener||!allowed.has(origin)||!channel){status.textContent='請從正式 Skechu Open Web 的「複製到 PPT」開啟此頁。';return;}
   document.getElementById('site').textContent=origin;allow.disabled=false;status.textContent='尚未連接。按「允許連接」後，才會接收這個網頁視窗的複製要求。';
   const capabilities=['prepare','cache-contexts','cancel-prepare',...(embedded?['inline-copy']:[])];
-  allow.onclick=()=>{approved=true;allow.hidden=true;disconnect.hidden=false;status.textContent='已連接。改動後會背景準備，不會寫入剪貼簿；按複製才會寫入。請保留此視窗。';reply('approved',{capabilities});};
-  disconnect.onclick=()=>{approved=false;allow.hidden=false;disconnect.hidden=true;status.textContent='已中斷。已送入 PowerPoint 的作業可能仍會完成；新要求已停止。';reply('revoked');};
+  // A newly served helper can run against an older process: advertise only
+  // capabilities confirmed by that process, never by this file's version.
+  let connectionRevision=0;
+  allow.onclick=async()=>{const revision=++connectionRevision;
+    try{const info=await fetch('/native-capabilities',{cache:'no-store',signal:AbortSignal.timeout(1500)}).then(r=>r.json());
+      if(info.capabilities?.includes('gradient-fill-v1')&&!capabilities.includes('gradient-fill-v1'))capabilities.push('gradient-fill-v1');
+    }catch{}
+    if(revision!==connectionRevision)return;
+    approved=true;allow.hidden=true;disconnect.hidden=false;status.textContent='已連接。改動後會背景準備，不會寫入剪貼簿；按複製才會寫入。請保留此視窗。';reply('approved',{capabilities});};
+  disconnect.onclick=()=>{connectionRevision++;approved=false;allow.hidden=false;disconnect.hidden=true;status.textContent='已中斷。已送入 PowerPoint 的作業可能仍會完成；新要求已停止。';reply('revoked');};
   window.addEventListener('message',async event=>{
     const data=event.data;
     if(event.source!==opener||event.origin!==origin||data?.kind!=='skechu-ppt'||data.channel!==channel)return;
-    if(data.type==='connect'&&embedded){allow.onclick();return;}
+    if(data.type==='connect'&&embedded)return allow.onclick();
     if(data.type==='cancel-prepare'&&approved){try{await fetch('/cancel-prepare',{method:'POST'});}catch{}return;}
     if(!['copy','prepare'].includes(data.type))return;
     const preparing=data.type==='prepare',resultType=preparing?'prepare-result':'result';
@@ -35,6 +43,7 @@ function initializeWebPptHelper() {
     if(preparing)preparingNow=true;else copying=true;bar.hidden=false;bar.value=0;
     try{
       const payload=validWebPptPayload(data.body);
+      if(payload.items.some(it=>it.fillGradient)&&!capabilities.includes('gradient-fill-v1'))throw new Error('請更新並重新啟動 Windows 版，才能複製可編輯漸層');
       status.textContent=preparing?'背景準備改動（不寫入剪貼簿）…':'正在建立原生物件…';
       const response=await fetch(preparing?'/prepare':'/copy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       if(!response.ok||!response.body)throw new Error('本機 PowerPoint 服務無法處理要求');

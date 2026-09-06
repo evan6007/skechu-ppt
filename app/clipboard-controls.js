@@ -42,6 +42,7 @@ async function copySelectionToClipboard() {
   clipboardFeedback('正在複製到 PowerPoint', '正在建立可編輯物件，請等到「複製成功」再切到 PPT 貼上。');
   try {
     const body = nativeRequestBody(clipboardSelection());
+    if(HAS_NATIVE_PPT_BRIDGE&&typeof requireLocalGradientCapability==='function')await requireLocalGradientCapability(body);
     const progress = event => {
       bar.value = event.percent || 0;
       const count = event.total ? ` ${event.current}/${event.total}` : '';

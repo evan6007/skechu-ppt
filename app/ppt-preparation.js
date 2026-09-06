@@ -93,6 +93,7 @@ function runNativePrepare() {
         pptPreparingBody=body;
         showPptPrepareProgress({percent:1,stage:'啟動背景準備'});
         try {
+          if(HAS_NATIVE_PPT_BRIDGE&&typeof requireLocalGradientCapability==='function')await requireLocalGradientCapability(body);
           const progress=event=>showPptPrepareProgress(event);
           const result=HAS_NATIVE_PPT_BRIDGE
             ?await readNativeStream(await fetch('/prepare',{method:'POST',headers:{'Content-Type':'application/json'},body}),progress)

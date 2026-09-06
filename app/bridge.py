@@ -663,6 +663,53 @@ def verify_freeform_nodes(shape, nodes, min_x, min_y, scale, tolerance=.02, max_
             raise ValueError(f"PowerPoint changed freeform control point {index}")
 
 
+def validate_fill_gradient(value):
+    """Strict, bounded portable gradient schema; validate before calling Office."""
+    if value is None:
+        return None
+    def number(v):
+        return not isinstance(v, bool) and isinstance(v, (int, float)) and math.isfinite(v)
+    if (not isinstance(value, dict) or value.get("type") != "linear"
+            or not number(value.get("angle")) or not isinstance(value.get("stops"), list)
+            or not 2 <= len(value["stops"]) <= 10):
+        raise ValueError("漸層格式不正確：需要線性方向及 2–10 個色標")
+    stops = []
+    for stop in value["stops"]:
+        if (not isinstance(stop, dict) or not isinstance(stop.get("color"), str)
+                or re.fullmatch(r"#[0-9a-fA-F]{6}", stop["color"]) is None
+                or not number(stop.get("position")) or not 0 <= stop["position"] <= 1
+                or not number(stop.get("opacity")) or not 0 <= stop["opacity"] <= 1):
+            raise ValueError("漸層色標不正確：位置及不透明度必須在 0–1 之間")
+        stops.append(dict(color=stop["color"].lower(), position=stop["position"], opacity=stop["opacity"]))
+    return dict(type="linear", angle=value["angle"] % 360, stops=sorted(stops, key=lambda s: s["position"]))
+
+
+def apply_shape_fill(shape, item, fallback, opacity):
+    gradient = validate_fill_gradient(item.get("fillGradient"))
+    fill = shape.Fill
+    fill.Visible = -1
+    opacity = max(0, min(1, float(opacity)))
+    if gradient is None or opacity == 0:
+        # Explicitly reset cached gradients when the user switches to solid.
+        fill.Solid()
+        fill.ForeColor.RGB = rgb(item.get("fill", fallback))
+        fill.Transparency = 1 - opacity
+        return
+    fill.TwoColorGradient(1, 1)
+    fill.GradientAngle = gradient["angle"]
+    stops = fill.GradientStops
+    while stops.Count > 2:
+        stops.Delete(stops.Count)
+    ordered = gradient["stops"]
+    for index, stop in ((1, ordered[0]), (2, ordered[-1])):
+        target = stops.Item(index)
+        target.Color.RGB = rgb(stop["color"])
+        target.Position = stop["position"]
+        target.Transparency = 1 - opacity * stop["opacity"]
+    for stop in ordered[1:-1]:
+        stops.Insert(rgb(stop["color"]), stop["position"], 1 - opacity * stop["opacity"])
+
+
 def update_freeform_shape(shape, item, min_x, min_y, scale, update_geometry=True):
     if update_geometry and item.get("compoundContours"):
         # Office's real multi-contour shape has no bridge nodes. Rebuild it on
@@ -695,12 +742,10 @@ def update_freeform_shape(shape, item, min_x, min_y, scale, update_geometry=True
             shape.Line.EndArrowheadStyle = arrow_style if item.get("endHead", True) else 1
         shape.Fill.Visible = -1 if closed else 0
         if closed:
-            shape.Fill.ForeColor.RGB = rgb(item.get("fill", "#dbeafe"))
-            shape.Fill.Transparency = 1 - float(item.get("fillOpacity", .25))
+            apply_shape_fill(shape, item, "#dbeafe", item.get("fillOpacity", .25))
         return
     shape.Fill.Visible = -1
-    shape.Fill.ForeColor.RGB = rgb(item.get("fill", "#d2e2f0"))
-    shape.Fill.Transparency = 1 - float(item.get("opacity", 1))
+    apply_shape_fill(shape, item, "#d2e2f0", item.get("opacity", 1))
     stroke = str(item.get("stroke", "#28343e"))
     stroke_width = float(item.get("strokeWidth", 3))
     shape.Line.Visible = -1 if stroke_width > 0 and stroke.lower() not in ("none", "transparent", "") else 0
@@ -736,8 +781,7 @@ def update_cached_shape(shape, item, min_x, min_y, scale, update_geometry=True):
         except Exception:
             pass
     shape.Fill.Visible = -1
-    shape.Fill.ForeColor.RGB = rgb(item.get("fill", "#f3f3f3"))
-    shape.Fill.Transparency = 1 - float(item.get("opacity", 1))
+    apply_shape_fill(shape, item, "#f3f3f3", item.get("opacity", 1))
     stroke_width = float(item.get("strokeWidth", 2))
     shape.Line.Visible = -1 if stroke_width > 0 else 0
     if stroke_width > 0:
@@ -768,8 +812,10 @@ def add_cached_region_fill(slide, item, min_x, min_y, scale):
 
 
 def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
-    pythoncom.CoInitialize()
     payload = native_payload(payload)
+    for item in payload.get("items", []):
+        validate_fill_gradient(item.get("fillGradient"))
+    pythoncom.CoInitialize()
     with LOCK, native_cache_context(payload.get("cacheId")):
         started = time.perf_counter()
         last_progress = {"percent": -1, "stage": None}
@@ -1185,6 +1231,14 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
                     shape_range.Fill.Transparency = 1 - fill_opacity
             except Exception as exc:
                 raise RuntimeError("arrow formatting failed at %s: %s" % (stage, exc))
+        # Apply after template duplication and batched solid styling so each
+        # shape retains its own stops, even when geometry/base colors match.
+        for item in selected:
+            if item.get("fillGradient") and (item.get("type") in ("box", "ellipse", "polygon")
+                    or item.get("type") == "arrow" and item.get("closed")):
+                opacity = item.get("fillOpacity", .25) if item["type"] == "arrow" else item.get("opacity", 1)
+                if opacity > 0:
+                    apply_shape_fill(slide.Shapes.Item(item_shapes[str(item.get("id"))][0]), item, "#dbeafe", opacity)
         report(90, "建立 PowerPoint 物件", len(selected), len(selected), True)
         build_seconds = time.perf_counter() - started
         # Copy one native group so PowerPoint cannot independently reflow the
@@ -1252,6 +1306,7 @@ def validate_web_ppt_payload(payload):
     for item in source_items:
         if not isinstance(item, dict) or item.get("type") not in ("box", "ellipse", "polygon", "arrow", "text", "image"):
             raise ValueError("不支援的物件格式")
+        validate_fill_gradient(item.get("fillGradient"))
         if "compoundContours" in item:
             if item["type"] != "arrow" or not item.get("closed"):
                 raise ValueError("Compound contours require a closed freeform")
@@ -1312,12 +1367,15 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.path.split("?", 1)[0] == "/web-ppt/status":
-            if not self.valid_request_origin(required=True):
+        path = self.path.split("?", 1)[0]
+        if path in ("/web-ppt/status", "/native-capabilities"):
+            # Same-origin GETs omit Origin. This read-only loopback endpoint
+            # shares host/origin checks and never touches Office or user data.
+            if not self.valid_request_origin(required=path == "/web-ppt/status"):
                 self.json_response(403, {"ok": False, "error": "不允許此網頁連接"})
                 return
             self.json_response(200, {"ok": True, "protocol": 1,
-                "capabilities": ["inline-copy", "prepare", "cache-contexts", "cancel-prepare"]})
+                "capabilities": ["inline-copy", "prepare", "cache-contexts", "cancel-prepare", "gradient-fill-v1"]})
             return
         super().do_GET()
 

@@ -11,7 +11,7 @@ const okCopy=()=>response([{type:'progress',stage:'copy',percent:70},{type:'resu
 const status=()=>Response.json({ok:true,protocol:1,capabilities:['inline-copy','prepare','cache-contexts','cancel-prepare']});
 const ctx=vm.createContext({
   location:{protocol:'https:',origin:'https://evan6007.github.io'},
-  AbortController,TextDecoder,Uint8Array,Response,
+  AbortController,AbortSignal,TextDecoder,Uint8Array,Response,
   window:{open(){throw new Error('Copy must stay in the same page')},addEventListener(){}},
   setTimeout:(fn,ms)=>{const id=++nextTimer;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),
   fetch:async(url,options={})=>{requests.push({url,options});return handler(url,options);},
@@ -115,9 +115,9 @@ const helper=fs.readFileSync(new URL('../app/web-ppt-helper.js',import.meta.url)
 const helperNodes=new Map(),helperReplies=[];let helperListener,helperFetches=0;
 const parent={postMessage:(data,origin)=>helperReplies.push({data,origin})};
 const helperCtx=vm.createContext({location:{protocol:'http:',hostname:'127.0.0.1',origin:'http://127.0.0.1:8766',hash:'#origin=https%3A%2F%2Fevan6007.github.io&channel=test'},
-  URLSearchParams,TextDecoder,Uint8Array,window:{parent,addEventListener:(event,listener)=>helperListener=listener},
+  URLSearchParams,TextDecoder,Uint8Array,AbortSignal,window:{parent,addEventListener:(event,listener)=>helperListener=listener},
   document:{getElementById:id=>{if(!helperNodes.has(id))helperNodes.set(id,{textContent:'',hidden:false});return helperNodes.get(id);}},
-  fetch:async()=>{helperFetches++;return okCopy();}});
+  fetch:async(url)=>{if(url.endsWith('/native-capabilities'))return status();helperFetches++;return okCopy();}});
 vm.runInContext(helper,helperCtx);
 const event={origin:'https://evan6007.github.io',source:parent,data:{kind:'skechu-ppt',channel:'test',type:'copy',id:'copy',body}};
 await helperListener(event);assert.equal(helperFetches,0,'No copying before a known parent initiates connection');
@@ -126,6 +126,9 @@ await helperListener({...event,source:{},data:{...event.data,type:'connect'}});
 await helperListener(event);assert.equal(helperFetches,0);
 await helperListener({...event,data:{...event.data,type:'connect'}});
 assert.equal(helperReplies.at(-1).data.type,'approved');
+assert.ok(!helperReplies.at(-1).data.capabilities.includes('gradient-fill-v1'),'Old backend cannot claim new gradient support');
+await helperListener({...event,data:{...event.data,body:JSON.stringify({items:[{type:'box',fillGradient:{type:'linear'}}]})}});
+assert.equal(helperFetches,0,'No silent solid downgrade through compatibility transport');
 await helperListener(event);assert.equal(helperFetches,1);
 assert.equal(helperReplies.at(-1).data.result.count,3);
 for(const src of ['C:/private.png','assets/../private.png','https://example.com/image.png']){
@@ -134,3 +137,15 @@ for(const src of ['C:/private.png','assets/../private.png','https://example.com/
 assert.equal(helperFetches,1,'Unsafe paths never reach Office');
 helperNodes.get('disconnect').onclick();await helperListener(event);assert.equal(helperFetches,1);
 console.log('Compatibility copy OK: automatic hidden connection, exact message boundary, one copy per keypress, no second button and no image downgrade.');
+
+ctx.location.protocol='https:';reset();handler=url=>url.endsWith('/status')?status():okCopy();
+const gradientBody=JSON.stringify({items:[{id:'g',type:'box',fillGradient:{type:'linear',angle:0,stops:[{color:'#ff0000',position:0,opacity:1},{color:'#0000ff',position:1,opacity:1}]}}]});
+await assert.rejects(ctx.requestWebPptCopy(gradientBody),/更新/);
+assert.equal(requests.filter(r=>r.options.method==='POST').length,0);
+reset();handler=url=>url.endsWith('/status')?Response.json({ok:true,protocol:1,capabilities:['inline-copy','gradient-fill-v1']}):okCopy();
+await ctx.requestWebPptCopy(gradientBody);assert.equal(requests.at(-1).options.body,gradientBody);
+console.log('Native gradients require backend capability and retain stop metadata.');
+reset();handler=()=>status();await ctx.requireLocalGradientCapability(body);assert.equal(requests.length,0,'Ordinary local copy needs no extra probe');
+await assert.rejects(ctx.requireLocalGradientCapability(gradientBody),/更新/);
+handler=()=>Response.json({capabilities:['gradient-fill-v1']});await ctx.requireLocalGradientCapability(gradientBody);
+assert.equal(requests.at(-1).url,'/native-capabilities');assert.ok(requests.every(r=>r.options.method===undefined));

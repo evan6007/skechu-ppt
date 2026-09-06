@@ -1,0 +1,26 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const ctx=vm.createContext({});
+vm.runInContext(read('app/gradient-fill.js')+';globalThis.G=GradientFill;',ctx);
+vm.runInContext(read('app/paint-layers.js'),ctx);
+const G=ctx.G,plain=x=>JSON.parse(JSON.stringify(x));
+const g={type:'linear',angle:450,stops:[{color:'#FFFFFF',position:1,opacity:0},{color:'#123ABC',position:0,opacity:1},{color:'#ff0000',position:.5,opacity:.5}]};
+const saved=JSON.stringify(g),n=plain(G.normalize(g));
+assert.equal(n.angle,90);assert.deepEqual(n.stops.map(s=>s.position),[0,.5,1]);assert.equal(n.stops[0].color,'#123abc');assert.equal(JSON.stringify(g),saved);
+for(const invalid of [null,{}, {...g,type:'radial'},{...g,angle:NaN},{...g,angle:'45'}, {...g,stops:g.stops.slice(0,1)}, {...g,stops:Array(11).fill(g.stops[0])}])assert.equal(G.normalize(invalid),null);
+for(const stop of [{color:'red'},{color:'#ffffff"/>'},{position:-.1},{position:1.1},{position:'1'},{opacity:null},{opacity:Infinity},{opacity:false}])assert.equal(G.normalize({...g,stops:[{...g.stops[0],...stop},g.stops[1]]}),null);
+assert.ok(G.normalize({...g,stops:Array(10).fill(g.stops[0])}));
+for(const angle of [0,90,180,270]){const p=G.endpoints(angle);assert.ok(Object.values(p).every(v=>v>=-1e-8&&v<=1+1e-8));assert.ok(Math.abs(p.x1+p.x2-1)<1e-8&&Math.abs(p.y1+p.y2-1)<1e-8)}
+const markup=G.svg(g,'a"/><script>');assert.match(markup.defs,/<linearGradient/);assert.ok(!markup.defs.includes('<script>'));assert.match(markup.defs,/stop-opacity="0"/);assert.notEqual(markup.fill,G.svg(g,'other').fill);
+const sampled=G.sample({type:'linear',angle:0,stops:[{color:'#ff0000',position:0,opacity:1},{color:'#0000ff',position:1,opacity:1}]},.5);
+assert.equal(sampled.color,'#800080');assert.equal(sampled.opacity,1);
+const shape={id:'a',type:'box',x:10,y:20,w:200,h:100,fill:'#ff0000',stroke:'#000000',strokeWidth:2,fillGradient:g};
+const painted=ctx.paintSceneItems([shape]);assert.equal(painted.length,2);assert.equal(JSON.stringify(painted[0].fillGradient),saved);assert.equal(painted[1].opacity,0);
+const html=read('app/index.html');
+assert.match(html,/gradient-fill.js\?v=81-gradient-fill/);assert.match(html,/initializeGradientFillControls\(\)/);assert.match(html,/delete it.fillGradient/);
+assert.match(html,/return gradient\?`<g \$\{paintAttrs\}>\$\{gradient.defs\}\$\{markup\}<\/g>`/,'Selection SVG must retain the definitions in its selected root');
+assert.match(read('app/service-worker.js'),/gradient-fill.css\?v=81-gradient-fill/);
+assert.match(read('.github/workflows/windows-release.yml'),/app\/gradient-fill.js/);
+console.log('Gradient schema, safe SVG, paint metadata and packaging checks passed.');

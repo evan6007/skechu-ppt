@@ -29,6 +29,8 @@ No project download/reload is needed. Drawing data passes directly from your bro
 
 After updating, restart the Windows service and refresh Open Web after saving your project. After the first successful connection, edits are prepared in the background after a short pause without modifying the clipboard. **快取就緒** means the current scene has been prepared. Hover the Copy button after success to see timing. Background preparation is a temporary performance cache, not a replacement for `.skc` backups.
 
+**Gradient fills need v0.1.6 or later.** In the editor, select one unlocked closed region, rectangle, ellipse, or polygon and click **漸層**. Set a linear direction and 2–10 color stops; each stop has its own position and transparency. Drag stops, or use the stop selector when they overlap. Gradients are saved in `.skc` and SVG, and become editable native PowerPoint gradient stops. Older companions show an update message instead of silently replacing the gradient with a solid color. This tool edits gradients manually; automatic fill still extracts flat colors from the reference.
+
 If the in-page message asks for an update, install the current Windows edition and restart it. If it cannot connect, start the local service (default port **8766**) and check the browser's local-network permission. Click Copy again to retry; the app never repeats a clipboard write automatically after an uncertain response. Do not paste until a new success message appears: on failure the clipboard may still contain an older item. SVG download and explicit PNG copying remain available without the service; PNG is not editable vector output.
 
 ### If you downloaded the source folder

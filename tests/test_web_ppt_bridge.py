@@ -79,6 +79,16 @@ class InlineBridgeTests(unittest.TestCase):
         self.copy.assert_not_called()
         self.cancel.assert_not_called()
 
+    def test_same_origin_capabilities_without_origin_header(self):
+        status, headers, body=self.request('GET','/native-capabilities',origin=None)
+        self.assertEqual(status,200)
+        self.assertIn('gradient-fill-v1',json.loads(body)['capabilities'])
+        self.assertEqual(headers['Cache-Control'],'no-store')
+        for options in [{'origin':'https://evil.example'},{'origin':None,'headers':{'Host':'evil.example'}}]:
+            self.assertEqual(self.request('GET','/native-capabilities',**options)[0],403)
+        self.copy.assert_not_called()
+        self.cancel.assert_not_called()
+
     def test_validate_remote_documents_before_cancelling_or_scheduling(self):
         bad = [None, [], {}, {"items": []}, {"cacheId": {}, "items": [{"type": "box"}]},
                {"items": [{"type": "unknown"}]}, {"items": [{"type": "box", "x": float("nan")}]},

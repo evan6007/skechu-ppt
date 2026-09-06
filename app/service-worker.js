@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v80-split-trace-fill';
+const CACHE_NAME = 'skechu-ppt-v81-gradient-fill';
 const APP_SHELL = [
   './',
   './index.html',
@@ -21,6 +21,8 @@ const APP_SHELL = [
   './path-cut.js',
   './cut-tools.js',
   './cut-tools.css',
+  './gradient-fill.js?v=81-gradient-fill',
+  './gradient-fill.css?v=81-gradient-fill',
   './compound-fill.js?v=78-contour-outlines',
   './paint-layers.js?v=79-layer-actions',
   './paint-tools.js?v=41-liquid-paper',
@@ -30,10 +32,10 @@ const APP_SHELL = [
   './layer-controls.js?v=80-split-trace-fill',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=79-layer-actions',
-  './clipboard-controls.js?v=60-keyboard-copy',
-  './web-ppt-client.js?v=60-keyboard-copy',
-  './web-ppt-helper.js?v=60-keyboard-copy',
-  './ppt-preparation.js?v=59-inline-ppt',
+  './clipboard-controls.js?v=81-gradient-fill',
+  './web-ppt-client.js?v=81-gradient-fill',
+  './web-ppt-helper.js?v=81-gradient-fill',
+  './ppt-preparation.js?v=81-gradient-fill',
   './web-ppt.html',
   './clipboard-controls.css?v=59-inline-ppt',
   './paint-tools.css?v=38-responsive-shell',

@@ -87,7 +87,15 @@ async function connectWebPpt(progress) {
   try {return await webPptConnecting;}
   finally {clearTimeout(timer);webPptConnecting=null;}
 }
+async function requireLocalGradientCapability(body) {
+  if(!JSON.parse(body).items?.some(it=>it.fillGradient))return;
+  let info;
+  try{info=await fetch('/native-capabilities',{cache:'no-store',signal:AbortSignal.timeout(2000)}).then(r=>r.json())}catch{}
+  if(!info?.capabilities?.includes('gradient-fill-v1'))throw webPptError('請更新並重新啟動 Windows 版，才能複製可編輯的 PPT 漸層。SVG 匯出仍可使用。','WEB_PPT_UPDATE');
+}
 async function runWebPptOperation(kind,body,progress) {
+  if(JSON.parse(body).items?.some(it=>it.fillGradient)&&!webPptSession?.capabilities?.includes('gradient-fill-v1'))
+    throw webPptError('這些物件包含漸層；請更新並重新啟動 Windows 版，才能複製可編輯的 PPT 漸層。SVG 匯出仍可使用。','WEB_PPT_UPDATE');
   if(webPptSession?.transport==='frame')return runWebPptFrameOperation(kind,body,progress);
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),180000);
   try {

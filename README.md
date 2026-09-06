@@ -47,7 +47,8 @@
 
 ## More than tracing
 
-- **Separate line art and fills:** trace each shared color boundary once, with independent closed regions for coloring. Automatic colors retain the editable line art; disconnected color islands stay separate. Detail cleanup removes narrow transition fringes, while gradients still become flat colors and blurred features may need manual refinement.
+- **Separate line art and fills:** trace each shared color boundary once, with independent closed regions for coloring. Automatic colors retain the editable line art; disconnected color islands stay separate. Automatic color extraction still flattens gradients; blurred details may need manual refinement.
+- **Editable gradient fills:** select a closed region and click **漸層**. Add 2–10 color stops, drag their positions, adjust transparency and angle, or return to a solid fill. Gradients stay editable in `.skc`, SVG, and native PowerPoint objects (requires Windows companion **v0.1.6+**). This is a manual linear-gradient tool, not automatic lighting reconstruction.
 - **Curves you can refine:** edit anchors, tangents, shared junctions, and local smoothing.
 - **Scissors for editable paths:** split lines with point, straight or freehand cuts. Toggle **畫完直接切斷** off to add anchors without breaking paths. Hold Ctrl for horizontal/vertical cuts, or right-click / long-press an anchor for point cutting. Anchors are immediately editable, with one-step undo.
 - **A workspace that stays organized:** pages, layers, groups, locks, and adjustable canvas size and color.
