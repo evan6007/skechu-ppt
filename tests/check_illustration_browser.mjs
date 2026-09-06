@@ -16,8 +16,12 @@ try{
  fs.mkdirSync('.codex-tmp',{recursive:true});await page.locator('#auto-trace-svg').screenshot({path:'.codex-tmp/illustration-lines-browser.png'});
  await page.locator('#auto-trace-color').check();assert.equal(await page.locator('#auto-trace-apply').innerText(),'套用並填色');
  assert.ok(await page.locator('#auto-trace-lines path[fill^="#"]').count()>0);await page.locator('#auto-trace-svg').screenshot({path:'.codex-tmp/illustration-fill-browser.png'});
- const count=await page.evaluate(()=>autoTraceResult.colorItems.length);await page.locator('#auto-trace-apply').click();await page.waitForFunction(count=>items.length===count+1,count);
+ const count=await page.evaluate(()=>autoTraceResult.colorItems.length),lineCount=await page.evaluate(()=>autoTraceResult.items.length);await page.locator('#auto-trace-apply').click();await page.waitForFunction(count=>items.length===count+1,count+lineCount);
  assert.equal(await page.evaluate(()=>items.filter(i=>i.autoTraceColored&&i.closed&&i.fillOpacity===1&&i.width===0).length),count,'Applied fills are normal editable closed vector shapes, with no raster substitute');
+ assert.equal(await page.evaluate(()=>items.filter(i=>i.autoTraceMode==='illustration'&&!i.autoTraceColored&&i.fillOpacity===0).length),lineCount,'Automatic colors keep the unique line art as separate editable objects');
+ const exported=await page.evaluate(()=>JSON.parse(nativeRequestBody(items)).items);
+ assert.equal(exported.filter(i=>i.autoTraceColored).length,count);
+ assert.equal(exported.filter(i=>i.autoTraceMode==='illustration'&&!i.autoTraceColored).length,lineCount,'PPT receives exactly one stroke network, without per-fill duplicated outlines');
  const result=await page.evaluate(()=>({stats:autoTraceResult?.stats,count:items.length,anchors:items.filter(i=>i.autoTraceColored).reduce((n,i)=>n+i.points.length,0)}));
  await page.evaluate(()=>{const ref=items.find(i=>i.referenceOnly);ref.hidden=true;setOnlySelected(null);editPoints=false;render()});
  await page.locator('#stage').screenshot({path:'.codex-tmp/illustration-applied-browser.png'});

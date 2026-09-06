@@ -6,7 +6,7 @@ const autoJunctionPositions=new Map();
 function createAutoTraceJob() {
  // Some embedded browsers restrict Blob URLs. HTTP editions can use the
  // packaged worker directly without moving expensive tracing onto the UI thread.
- if(typeof URL.createObjectURL!=='function' && location.protocol!=='file:')return new Worker('auto-trace-worker.js?v=75-closed-regions');
+ if(typeof URL.createObjectURL!=='function' && location.protocol!=='file:')return new Worker('auto-trace-worker.js?v=77-shared-boundaries');
  // The worker contains the already-loaded engine, with no file:// fetch or importScripts.
  // This also keeps the preview worker and editable-anchor engine on the same version.
  const url=URL.createObjectURL(new Blob([AutoTrace.workerSource()],{type:'text/javascript'}));
@@ -104,7 +104,9 @@ function activeAutoTraceResult(){
   }
   return autoTraceResult;
  }
- const items=autoTraceResult.colorItems;return{...autoTraceResult,items,stats:{...autoTraceResult.stats,paths:items.length,anchors:items.reduce((n,it)=>n+it.points.length,0)}};
+ // Coloring adds independent fills underneath the same unique line network.
+ // It must not replace the line art with a second set of region outlines.
+ const items=[...autoTraceResult.colorItems,...autoTraceResult.items];return{...autoTraceResult,items,stats:{...autoTraceResult.stats,paths:items.length,anchors:items.reduce((n,it)=>n+it.points.length,0)}};
 }
 function renderAutoTracePreview(){
  const result=activeAutoTraceResult();if(!result)return;

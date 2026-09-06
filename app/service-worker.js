@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v76-paper-edge';
+const CACHE_NAME = 'skechu-ppt-v77-shared-boundaries';
 const APP_SHELL = [
   './',
   './index.html',
@@ -36,15 +36,15 @@ const APP_SHELL = [
   './web-ppt.html',
   './clipboard-controls.css?v=59-inline-ppt',
   './paint-tools.css?v=38-responsive-shell',
-  './illustration-trace.js?v=75-closed-regions',
+  './illustration-trace.js?v=77-shared-boundaries',
   './illustration-trace.js',
   './vendor/vtracer.js?v=1.0.0-alpha.4',
   './vendor/vtracer.wasm?v=1.0.0-alpha.4',
   './auto-trace.js?v=75-closed-regions',
   './auto-trace.js',
-  './auto-trace-ui.js?v=76-paper-edge',
+  './auto-trace-ui.js?v=77-shared-boundaries',
   './auto-trace-worker.js',
-  './auto-trace-worker.js?v=75-closed-regions',
+  './auto-trace-worker.js?v=77-shared-boundaries',
   './auto-trace.css?v=75-closed-regions',
   './manifest.webmanifest',
   './skechu-mark.svg',

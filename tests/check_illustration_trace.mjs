@@ -5,12 +5,40 @@ context.bytes=wasm;vm.runInContext('VTracerWasm.init(bytes);this.engine=AutoTrac
 const {engine,adapter,region}=context;
 const holeSVG='<svg><path fill="#cc5533" d="M0 0L100 0L100 100L0 100Z M30 30L30 70L70 70L70 30Z"/></svg>';
 const hole=adapter.fromSVG(holeSVG,engine);assert.equal(hole.items.length,2);assert.equal(hole.colorItems.length,1);
-function curves(it){return it.points.map((p,i)=>{const j=(i+1)%it.points.length,q=it.points[j],a=it.pointHandleAngles[i],b=it.pointHandleAngles[j];return{p0:p,c1:{x:p.x+Math.cos(a.out*Math.PI/180)*a.outLength,y:p.y+Math.sin(a.out*Math.PI/180)*a.outLength},c2:{x:q.x+Math.cos(b.in*Math.PI/180)*b.inLength,y:q.y+Math.sin(b.in*Math.PI/180)*b.inLength},p3:q}})}
+function curves(it){return it.points.slice(0,it.closed?it.points.length:-1).map((p,i)=>{const j=(i+1)%it.points.length,q=it.points[j],a=it.pointHandleAngles[i],b=it.pointHandleAngles[j];return{p0:p,c1:{x:p.x+Math.cos(a.out*Math.PI/180)*a.outLength,y:p.y+Math.sin(a.out*Math.PI/180)*a.outLength},c2:{x:q.x+Math.cos(b.in*Math.PI/180)*b.inLength,y:q.y+Math.sin(b.in*Math.PI/180)*b.inLength},p3:q}})}
 const samples=curves(hole.colorItems[0]).flatMap(c=>region.flatten(c).slice(0,-1));assert.ok(region.contains({x:10,y:10},samples));assert.ok(!region.contains({x:50,y:50},samples),'A hole stays empty; the fill cannot spill into its neighbour');
 for(const item of [...hole.items,...hole.colorItems]){assert.equal(item.closed,true);assert.equal(item.explicitBezier,false);assert.ok(!('src' in item));assert.ok(item.points.length>=3);for(const handle of Object.values(item.pointHandleAngles))assert.ok(Object.values(handle).every(Number.isFinite))}
 assert.equal(hole.colorItems[0].width,0,'Zero-area hole connectors are never stroked');
 assert.equal(JSON.stringify(adapter.parsePath('m10 10h20v20h-20z')),JSON.stringify(adapter.parsePath('M10 10L30 10L30 30L10 30Z')));
 assert.throws(()=>adapter.parsePath('M0 0L1 1'),/未封閉/);assert.throws(()=>adapter.parsePath('M0 0C1 2'),/不完整/);
+// Adjacent regions share one editable stroke, not two coincident outlines.
+const rect=(color,x0,y0,x1,y1)=>`<path fill="${color}" d="M${x0} ${y0}L${x1} ${y0}L${x1} ${y1}L${x0} ${y1}Z"/>`;
+const adjacentSVG='<svg>'+rect('#111111',0,0,50,100)+rect('#ff8800',50,0,100,100)+'</svg>';
+const adjacent=adapter.fromSVG(adjacentSVG,engine);
+assert.equal(adjacent.colorItems.length,2);assert.equal(adjacent.stats.sharedEdgesRemoved,1);
+assert.equal(adjacent.items.flatMap(curves).filter(s=>Math.abs(s.p0.x-50)<1e-5&&Math.abs(s.p3.x-50)<1e-5).length,1);
+assert.ok(adjacent.items.some(i=>!i.closed),'The visible shared network is not per-region closed strokes');
+assert.ok(adjacent.items.every(i=>i.fillOpacity===0&&i.width>0));
+assert.equal(region.build(adjacent.items.map((it,i)=>({id:String(i),closed:it.closed,width:it.width,segments:curves(it)}))).length,2,'Both sides of the single shared edge still fill independently');
+const tee=adapter.fromSVG('<svg>'+rect('#111111',0,0,50,100)+rect('#ff8800',50,0,100,40)+rect('#4477ff',50,40,100,100)+'</svg>',engine);
+assert.equal(tee.stats.sharedEdgesRemoved,3,'A straight edge is partitioned at a neighbouring T before deduplication');
+assert.equal(region.build(tee.items.map((it,i)=>({id:String(i),closed:it.closed,width:it.width,segments:curves(it)}))).length,3);
+const cubic=adapter.fromSVG('<svg><path fill="#111111" d="M0 0L50 0C70 20 30 80 50 100L0 100Z"/><path fill="#ff8800" d="M50 100C30 80 70 20 50 0L100 0L100 100Z"/></svg>',engine);
+assert.equal(cubic.stats.sharedEdgesRemoved,1,'Reversed cubic control points share the same curve');
+const parallel=adapter.fromSVG('<svg>'+rect('#111111',0,0,50,100)+rect('#ff8800',50.01,0,100,100)+'</svg>',engine);
+assert.equal(parallel.stats.sharedEdgesRemoved,0,'Nearby but distinct curves are never snapped together');
+const islands=adapter.fromSVG('<svg><path fill="#cc5533" d="M0 0L20 0L20 20L0 20Z M40 0L60 0L60 20L40 20Z"/></svg>',engine);
+assert.equal(islands.colorItems.length,2,'Disconnected same-colour islands are independent native objects');
+assert.ok(islands.colorItems.every(it=>Math.max(...it.points.map(p=>p.x))-Math.min(...it.points.map(p=>p.x))===20),'No connector crosses the empty space between islands');
+const bandSVG=(a,m,b)=>'<svg>'+rect(a,0,0,50,100)+rect(m,50,0,52,100)+rect(b,52,0,102,100)+'</svg>';
+const fringe=adapter.fromSVG(bandSVG('#202020','#808080','#eeeeee'),engine,{maxTransitionWidth:3});
+assert.equal(fringe.stats.transitionBandsRemoved,1);assert.equal(fringe.colorItems.length,2);
+assert.equal(fringe.items.flatMap(curves).filter(s=>s.p0.x>=50&&s.p0.x<=52&&s.p3.x===s.p0.x).length,1,'A narrow interpolated fringe leaves one dividing line, not a white ribbon');
+assert.ok(Math.abs(fringe.colorItems.reduce((n,it)=>{const ps=curves(it).flatMap(s=>region.flatten(s).slice(0,-1));return n+Math.abs(ps.reduce((a,p,i)=>{const q=ps[(i+1)%ps.length];return a+p.x*q.y-p.y*q.x},0))/2},0)-10200)<1e-5,'Removing a fringe neither leaves a gap nor overlaps fill regions');
+assert.equal(adapter.fromSVG(bandSVG('#202020','#808080','#eeeeee'),engine).colorItems.length,3,'Zero cleanup preserves source regions');
+for(const colors of [['#aaa080','#202020','#eee0c0'],['#202830','#f0f0e0','#403830'],['#2030cc','#ff2211','#eeeeee']]){
+ assert.equal(adapter.fromSVG(bandSVG(...colors),engine,{maxTransitionWidth:3}).colorItems.length,3,'A real dark stroke, light reflection or differently coloured accent survives');
+}
 // Own noisy, high-contrast oval fixture: cleanup cannot flatten a small dark
 // inset into its brown surround or erase the narrow light reflection.
 const ovalW=100,ovalH=110,oval=new Uint8Array(ovalW*ovalH*4);
@@ -36,13 +64,13 @@ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
  let c=[244,229,190];if(x>25&&x<135&&y>15&&y<125)c=[38,50,77];if(x>45&&x<115&&y>40&&y<106)c=[225,160,112];if(x>58&&x<99&&y>62&&y<66)c=[29,35,44];if(x>72&&x<76&&y>21&&y<34)c=[125,144,164];data.set([...c,255],(y*width+x)*4);
 }
 const input={width,height,data,options:{mode:'illustration',threshold:120,accuracy:2.5,minLength:2}},result=engine.run(input);
-assert.ok(result.colorItems.length>=4&&result.colorItems.length<40);assert.ok(result.items.every(i=>i.closed));
+assert.ok(result.colorItems.length>=4&&result.colorItems.length<40);assert.ok(result.colorItems.every(i=>i.closed));
 assert.equal(JSON.stringify(engine.run(input)),JSON.stringify(result),'Repeated traces do not jitter or randomly change');
 const containing=(x,y)=>result.colorItems.filter(it=>region.contains({x,y},curves(it).flatMap(c=>region.flatten(c).slice(0,-1))));
 assert.equal(containing(60,60).length,1);assert.equal(containing(80,64).length,1);assert.notEqual(containing(60,60)[0].autoTraceRegion,containing(80,64)[0].autoTraceRegion,'A thin dark facial feature stays separate from the surrounding face');
 assert.notEqual(containing(73,27)[0].autoTraceRegion,containing(40,27)[0].autoTraceRegion,'A light feature inside a dark region survives');
 const messages=[],self={postMessage:message=>messages.push(message)};vm.runInNewContext(engine.workerSource(),{self,WebAssembly,TextDecoder,TextEncoder});self.onmessage({data:{...input,vectorWasm:wasm}});assert.equal(JSON.stringify(messages.at(-1).result),JSON.stringify(result),'Browser worker and direct geometry are identical');
 assert.ok(!messages.at(-1).error);
-const nativeItems=[...hole.colorItems,...result.colorItems],native=spawnSync(process.env.PYTHON||'python',['-c','import json,sys;sys.path.insert(0,"app");import bridge;print(json.dumps([bridge.freeform_node_points(it) for it in json.load(sys.stdin)]))'],{cwd:new URL('..',import.meta.url),input:JSON.stringify(nativeItems),encoding:'utf8'});
+const nativeItems=[...hole.colorItems,...result.colorItems,...adjacent.items,...tee.items,...cubic.items,...fringe.items,...islands.colorItems],native=spawnSync(process.env.PYTHON||'python',['-c','import json,sys;sys.path.insert(0,"app");import bridge;print(json.dumps([bridge.freeform_node_points(it) for it in json.load(sys.stdin)]))'],{cwd:new URL('..',import.meta.url),input:JSON.stringify(nativeItems),encoding:'utf8'});
 assert.equal(native.status,0,native.stderr);JSON.parse(native.stdout).forEach((nodes,i)=>{const cs=curves(nativeItems[i]),expected=[cs[0].p0,...cs.flatMap(c=>[c.c1,c.c2,c.p3])];assert.equal(nodes.length,expected.length);nodes.forEach((p,j)=>assert.ok(Math.hypot(p.x-expected[j].x,p.y-expected[j].y)<1e-8,'Native PowerPoint retains every closed curve and hole connector'))});
-console.log('Illustration OK: deterministic closed regions, thin dark/light details, exact holes, editable cubic anchors, local WASM and worker parity.');
+console.log('Illustration OK: unique shared lines, T partitions, independent islands, bounded fringe cleanup, preserved details/holes, native cubic parity, deterministic worker output.');

@@ -47,7 +47,7 @@
 
 ## More than tracing
 
-- **Closed illustration regions:** trace color boundaries with shared, smoothed curves and optionally fill each region from the reference. Every result remains an editable vector object. Gradients become flat color regions; faint or blurred details may need manual refinement.
+- **Separate line art and fills:** trace each shared color boundary once, with independent closed regions for coloring. Automatic colors retain the editable line art; disconnected color islands stay separate. Detail cleanup removes narrow transition fringes, while gradients still become flat colors and blurred features may need manual refinement.
 - **Curves you can refine:** edit anchors, tangents, shared junctions, and local smoothing.
 - **Scissors for editable paths:** split lines with point, straight or freehand cuts. Toggle **畫完直接切斷** off to add anchors without breaking paths. Hold Ctrl for horizontal/vertical cuts, or right-click / long-press an anchor for point cutting. Anchors are immediately editable, with one-step undo.
 - **A workspace that stays organized:** pages, layers, groups, locks, and adjustable canvas size and color.
