@@ -207,7 +207,7 @@ assert.ok(html.includes('從空白處拖曳框選'),'Select tool tooltip explain
 const worker=fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8');
 const runtimeVersions={
   'compound-fill.js':'?v=78-contour-outlines',
-  'paint-layers.js':'?v=78-contour-outlines',
+  'paint-layers.js':'?v=79-layer-actions',
   'paint-tools.js':'?v=41-liquid-paper',
   'paint-tools.css':'?v=38-responsive-shell',
   'selection-controls.js':'?v=67-touch-shell',

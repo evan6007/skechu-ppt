@@ -25,7 +25,7 @@ const ctx=vm.createContext({items:plain(seed),selected:'a',selectedIds:new Set([
 ctx.byId=id=>ctx.items.find(it=>it.id===id);ctx.commit=()=>{ctx.history.push(JSON.stringify(ctx.items));ctx.future=[]};
 vm.runInContext(paint+'\n'+source,ctx);
 function reset(){ctx.items=plain(seed);ctx.history=[];ctx.future=['redo'];ctx.selectedIds=new Set(['a']);ctx.selected='a';}
-const ids=()=>ctx.items.map(it=>it.id),drawn=()=>plain(ctx.items).map(({layerGroup,locked,...it})=>it);
+const ids=()=>plain(ctx.items).map(it=>it.id),drawn=()=>plain(ctx.items).map(({layerGroup,locked,...it})=>it);
 let entries=plain(ctx.layerEntries());
 assert.deepEqual(entries.map(e=>e.key),['item:b','group:trace-old-batch','item:a','item:ref']);
 assert.equal(entries[1].members.length,2);assert.equal(entries[1].group.collapsed,true,'Old auto-trace batches default to collapsed');
@@ -55,8 +55,19 @@ reset();ctx.moveLayerEntry('item:a','group:trace-old-batch','inside');assert.equ
 ctx.moveLayerEntry('item:a','item:b','above');assert.equal(ctx.layerGroupOf(ctx.byId('a')),null,'Dragging to root removes membership');
 reset();ctx.moveLayerEntry('item:t1','item:t2','above');assert.equal(ctx.layerGroupOf(ctx.byId('t1')).id,'trace-old-batch','Child reorder preserves folder');
 ctx.selectedIds=new Set(['t1','t2']);ctx.ungroupSelectedLayers();assert.equal(ctx.layerEntries().filter(e=>e.group).length,0,'Legacy folders stay ungrouped after explicit removal');
-reset();assert.equal(ctx.moveLayerEntry('item:a','item:ref','below'),false,'Vectors cannot go behind reference');
-ctx.byId('ref').locked=false;assert.equal(ctx.moveLayerEntry('item:ref','item:a','above'),false,'Reference remains below artwork');
+reset();assert.equal(ctx.moveLayerEntry('item:a','item:ref','below'),true,'Explicit vector move can place it behind a reference');
+assert.ok(ctx.byId('ref').referenceStacked);assert.deepEqual(ids().slice(0,2),['a','ref']);
+assert.equal(ctx.moveLayerEntry('item:ref','item:b','above'),false,'Locked references still cannot be dragged');
+ctx.byId('ref').locked=false;assert.equal(ctx.moveLayerEntry('item:ref','group:trace-old-batch','above'),true,'Reference may move above a whole vector group');
+let stack=plain(ctx.paintSceneItems(ctx.items));
+assert.ok(stack.findIndex(it=>it.id==='ref')>stack.findIndex(it=>it.id==='t2'),'Visible reference is actually above the entire group');
+ctx.items=JSON.parse(JSON.stringify(ctx.items));assert.ok(ctx.byId('ref').referenceStacked,'Manual reference order survives save/reload');
+assert.equal(ctx.moveLayerEntry('item:ref','group:trace-old-batch','inside'),false,'Root reference does not silently join a vector folder');
+assert.equal(ctx.moveLayerEntry('item:ref','group:trace-old-batch','below'),true);
+stack=plain(ctx.paintSceneItems(ctx.items));assert.ok(stack.findIndex(it=>it.id==='ref')<stack.findIndex(it=>it.id==='t1'));
+reset();ctx.byId('ref').locked=false;const stackBefore=JSON.stringify(ctx.items);ctx.moveLayerEntry('item:ref','item:b','above');
+assert.equal(ctx.paintSceneItems(ctx.items).at(-1).id,'ref');ctx.items=JSON.parse(ctx.history.pop());assert.equal(JSON.stringify(ctx.items),stackBefore,'Undo restores reference default and exact original order');
+reset();ctx.items.push(ctx.items.shift());assert.equal(ctx.paintSceneItems(ctx.items)[0].id,'ref','Unmoved legacy references remain below artwork even if their array position differs');
 reset();ctx.moveLayerEntry('item:a','item:b','below');
 const painted=plain(ctx.paintSceneItems(ctx.items));assert.deepEqual(painted.filter(it=>it.paintLayer==='fill').map(it=>it.paintSourceId),['a','b'],'Explicit drag overrides fill recency');
 assert.ok(painted.findIndex(it=>it.id==='t1')>painted.findIndex(it=>it.id==='b::paint-fill'),'Linework remains above fill');
@@ -111,7 +122,7 @@ const stableLayerWrites=targetRow.style.writes;events.get('layers:pointermove:fa
 events.get('layers:pointerup:false')(event(50));assert.equal(bodyChildren[0].removed,true,'Floating copy fades and is removed after drop');
 assert.equal(targetRow.style.transform,'');
 for(const asset of ['layer-controls.js','layer-controls.css']){
-  const version=asset.endsWith('.js')?'?v=67-touch-shell':'?v=35-stable-motion';
+  const version='?v=79-layer-actions';
   assert.ok(html.includes(asset+version));
   assert.ok(fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes(asset+version));
   assert.ok(fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+asset+';.'));

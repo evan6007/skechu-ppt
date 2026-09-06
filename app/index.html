@@ -32,7 +32,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="auto-trace.css?v=75-closed-regions">
 <link rel="stylesheet" href="paint-tools.css?v=38-responsive-shell">
-<link rel="stylesheet" href="layer-controls.css?v=35-stable-motion">
+<link rel="stylesheet" href="layer-controls.css?v=79-layer-actions">
 <link rel="stylesheet" href="clipboard-controls.css?v=59-inline-ppt">
 <meta name="theme-color" content="#141518">
 <link rel="stylesheet" href="vendor/katex/katex.min.css?v=01611-local">
@@ -162,12 +162,13 @@
       </section>
       <div class="panel-resizer horizontal" data-panel-resize="inspector-split" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="調整選取項目與圖層高度"></div>
       <section class="inspector-layers" aria-label="圖層管理">
-      <h2>圖層</h2><div class="layer-toolbar"><button id="group-layers" type="button" disabled>建立群組</button><button id="ungroup-layers" type="button" disabled>移出群組</button></div><p class="layer-help">直接拖曳圖層名稱或左側把手排序 · 放到群組中央加入 · 右側眼睛顯示／隱藏、鎖頭鎖定</p><div id="layers" class="layer-list"></div>
+      <h2>圖層</h2><div class="layer-toolbar"><button id="group-layers" type="button" disabled>建立群組</button><button id="ungroup-layers" type="button" disabled>移出群組</button></div><p class="layer-help">拖曳名稱或把手排序 · 右鍵／長按或「⋯」複製、刪除整組 · 底圖可拖到群組上方</p><div id="layers" class="layer-list"></div>
       </section>
     </aside>
   </main>
 </div>
 <div id="context-menu" class="context-menu" hidden><button id="merge-lines" type="button">合併線段</button><div id="merge-hint" class="context-hint">兩個端點吸在一起後即可合併。</div></div>
+<div id="layer-context-menu" role="menu" aria-label="圖層操作" hidden></div>
 <script src="theme-controls.js?v=46-canvas-shapes"></script>
 <script src="github-star.js?v=64-instant-star"></script>
 <script src="local-smoothing.js"></script>
@@ -176,12 +177,12 @@
 <script src="path-cut.js"></script>
 <script src="cut-tools.js"></script>
 <script src="compound-fill.js?v=78-contour-outlines"></script>
-<script src="paint-layers.js?v=78-contour-outlines"></script>
+<script src="paint-layers.js?v=79-layer-actions"></script>
 <script src="paint-tools.js?v=41-liquid-paper"></script>
 <script src="pan-tool.js"></script>
 <script src="selection-controls.js?v=67-touch-shell"></script>
 <script src="workspace-actions.js?v=67-touch-shell"></script>
-<script src="layer-controls.js?v=67-touch-shell"></script>
+<script src="layer-controls.js?v=79-layer-actions"></script>
 <script src="panel-layout.js?v=1-resizable"></script>
 <script src="clipboard-controls.js?v=60-keyboard-copy"></script>
 <script src="web-ppt-client.js?v=60-keyboard-copy"></script>
@@ -233,7 +234,7 @@ const deepCopy=value=>JSON.parse(JSON.stringify(value));
 const uid=prefix=>`${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
 const activeProject=()=>projects.find(p=>p.id===activeProjectId)||null;
 const activePage=()=>activeProject()?.pages.find(p=>p.id===activePageId)||null;
-function resetEditorState(){resetPaintTools();resetCanvasPan();autoJunctionPositions.clear();selected=null;selectedPoint=null;selectedSegment=null;selectedIds.clear();selectedPoints.clear();drag=null;traceDraft=null;traceJoinMode=false;traceRouteValid=true;marqueeRect=null;history=[];future=[];editPoints=false;snapLines=[];snapAnchors=[];hotAnchor=null}
+function resetEditorState(){resetPaintTools();resetCanvasPan();if(typeof closeLayerMenu==='function'){closeLayerMenu();cancelLayerLongPress();finishLayerPointer(true);}autoJunctionPositions.clear();selected=null;selectedPoint=null;selectedSegment=null;selectedIds.clear();selectedPoints.clear();drag=null;traceDraft=null;traceJoinMode=false;traceRouteValid=true;marqueeRect=null;history=[];future=[];editPoints=false;snapLines=[];snapAnchors=[];hotAnchor=null}
 function syncActivePage(){const page=activePage();if(page)page.items=deepCopy(items)}
 function canvasAppearance(page=activePage()){const rawColor=String(page?.canvasColor||page?.color||'#ffffff'),color=/^#[0-9a-f]{6}$/i.test(rawColor)?rawColor:'#ffffff',rawOpacity=Number(page?.canvasOpacity??page?.opacity);return{color,opacity:Number.isFinite(rawOpacity)?clamp(rawOpacity,0,1):1}}
 const CANVAS_PAPER_PRESETS={glass:{color:'#ffffff',opacity:.3},white:{color:'#ffffff',opacity:1},gray:{color:'#aeb3ba',opacity:1}};

@@ -12,7 +12,22 @@ function raiseFilledItem(it, sourceItems = items) {
 function topFilledItem(sourceItems) {
   return sourceItems.filter(renderedFillIsVisible).sort((a,b) => fillOrderValue(a)-fillOrderValue(b)).at(-1);
 }
+// Legacy/new references start below the drawing. An explicit layer move opts
+// a reference into the ordinary item stack; save/Undo keep that intent.
+function layerStackItems(sourceItems) {
+  return [...sourceItems.filter(it=>it.referenceOnly&&!it.referenceStacked),
+    ...sourceItems.filter(it=>!it.referenceOnly||it.referenceStacked)];
+}
 function paintSceneItems(sourceItems) {
+  const output=[],band=[];
+  for(const it of layerStackItems(sourceItems)){
+    if(it.hidden)continue;
+    if(it.referenceOnly){output.push(...paintVectorBand(band),it);band.length=0;}
+    else band.push(it);
+  }
+  return output.concat(paintVectorBand(band));
+}
+function paintVectorBand(sourceItems) {
   const reference = [], fills = [], foreground = [];
   for (const it of sourceItems) {
     if (it.hidden) continue;

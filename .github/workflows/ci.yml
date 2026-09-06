@@ -62,6 +62,8 @@ jobs:
         run: node tests/check_workspace_actions.mjs
       - name: Check layer folders and drag ordering
         run: node tests/check_layers.mjs
+      - name: Check layer menu actions and whole-group deletion
+        run: node tests/check_layer_actions.mjs
       - name: Check automatic tracing and junction topology
         run: node tests/check_auto_trace.mjs
       - name: Check experimental sketch refinement and safe gap repair

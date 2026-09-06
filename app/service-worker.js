@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v78-contour-outlines';
+const CACHE_NAME = 'skechu-ppt-v79-layer-actions';
 const APP_SHELL = [
   './',
   './index.html',
@@ -22,14 +22,14 @@ const APP_SHELL = [
   './cut-tools.js',
   './cut-tools.css',
   './compound-fill.js?v=78-contour-outlines',
-  './paint-layers.js?v=78-contour-outlines',
+  './paint-layers.js?v=79-layer-actions',
   './paint-tools.js?v=41-liquid-paper',
   './pan-tool.js',
   './selection-controls.js?v=67-touch-shell',
   './workspace-actions.js?v=67-touch-shell',
-  './layer-controls.js?v=67-touch-shell',
+  './layer-controls.js?v=79-layer-actions',
   './panel-layout.js?v=1-resizable',
-  './layer-controls.css?v=35-stable-motion',
+  './layer-controls.css?v=79-layer-actions',
   './clipboard-controls.js?v=60-keyboard-copy',
   './web-ppt-client.js?v=60-keyboard-copy',
   './web-ppt-helper.js?v=60-keyboard-copy',
