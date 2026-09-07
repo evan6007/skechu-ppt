@@ -350,6 +350,12 @@ const AutoTrace = (function createAutoTrace() {
   function run({width:w,height:h,data,options={}},progress=()=>{}){
     if(!Number.isInteger(w)||!Number.isInteger(h)||w<3||h<3||w*h>5e6||data.length!==w*h*4)throw new Error('圖片尺寸或像素資料不正確（最多 500 萬像素）。');
     const threshold=clamp(Number(options.threshold)||150,40,220),accuracy=clamp(Number(options.accuracy)||2.5,.3,6),simplify=clamp(Number.isFinite(Number(options.simplify))?Number(options.simplify):90,0,100),minLength=clamp(Number.isFinite(Number(options.minLength))?Number(options.minLength):3,0,30);
+    if(['fill-auto','gradient','native2d'].includes(options.mode)){
+      if(typeof GradientTrace==='undefined'||typeof GradientRegions==='undefined'||typeof IllustrationTrace==='undefined')throw Error('自動填色元件尚未載入，請重新整理頁面。');
+      const choice=GradientTrace.recommend(data,w,h),chosen=['gradient','native2d'].includes(options.mode)?options.mode:choice.mode==='gradient'?'native2d':choice.mode;
+      const result=['gradient','native2d'].includes(chosen)?GradientTrace.vectorize(data,w,h,{toItem,fit},progress,{threshold,accuracy,simplify,minLength,multiAngle:chosen==='native2d',precise:chosen==='native2d'}):IllustrationTrace.run(data,w,h,{threshold,accuracy,simplify,minLength},{toItem},progress);
+      result.stats.fillRecommendation={...choice,chosen,automatic:options.mode==='fill-auto'};return result;
+    }
     const mask=new Uint8Array(w*h);let ink=0;
     for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,j=i*4,a=data[j+3]/255,lum=(.2126*data[j]+.7152*data[j+1]+.0722*data[j+2])*a+255*(1-a);if(lum<threshold){mask[i]=1;ink++}}
     const requested=['line','contour','photo','illustration'].includes(options.mode)?options.mode:'auto',mode=requested==='auto'?(hasSolidAreas(mask,w,h,ink)?(typeof IllustrationTrace!=='undefined'&&hasRichColour(data)?'illustration':'contour'):'line'):requested;
@@ -434,8 +440,8 @@ const AutoTrace = (function createAutoTrace() {
     for(const key of ['pointJunctions','autoTraceReview','pointKinds'])result[key]=Object.fromEntries(Object.entries(source[key]||{}).filter(([i])=>mapping.has(Number(i))).map(([i,value])=>[mapping.get(Number(i)),value]));
     return result;
   }
-  const workerSource=()=>`${typeof IllustrationTrace!=='undefined'?IllustrationTrace.workerSource():''}const AutoTrace=(${createAutoTrace.toString()})();(${autoTraceWorkerRuntime.toString()})();`;
-  const needsIllustration=({data,options={}})=>options.mode==='illustration'||(!options.mode||options.mode==='auto')&&hasRichColour(data);
+  const workerSource=()=>`${typeof IllustrationTrace!=='undefined'?IllustrationTrace.workerSource():''}${typeof GradientTrace!=='undefined'?GradientTrace.workerSource():''}${typeof GradientRegions!=='undefined'?GradientRegions.workerSource():''}const AutoTrace=(${createAutoTrace.toString()})();(${autoTraceWorkerRuntime.toString()})();`;
+  const needsIllustration=({data,width,height,options={}})=>['gradient','native2d'].includes(options.mode)?false:options.mode==='fill-auto'?(width&&height&&typeof GradientTrace!=='undefined'?GradientTrace.recommend(data,width,height).mode==='illustration':true):options.mode==='illustration'||(!options.mode||options.mode==='auto')&&hasRichColour(data);
   return {run,thin,graph,fit,at,toItem,simplifyItem,workerSource,needsIllustration};
 })();
 

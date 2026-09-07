@@ -65,6 +65,15 @@ jobs:
             --add-data "app/ppt-preparation.js;." `
             --add-data "app/paint-tools.css;." `
             --add-data "app/illustration-trace.js;." `
+            --add-data "app/source-gradient.js;." `
+            --add-data "app/gradient-regions.js;." `
+            --add-data "app/color-field.js;." `
+            --add-data "app/color-field-preview.js;." `
+            --add-data "app/color-field-worker.js;." `
+            --add-data "app/image-upscale-core.js;." `
+            --add-data "app/image-upscale-worker.js;." `
+            --add-data "app/image-upscale-ui.js;." `
+            --add-data "app/image-upscale.css;." `
             --add-data "app/vendor;vendor" `
             --add-data "app/auto-trace.js;." `
             --add-data "app/auto-trace-ui.js;." `

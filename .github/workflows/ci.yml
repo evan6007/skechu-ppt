@@ -42,6 +42,12 @@ jobs:
         run: node tests/check_regions.mjs
       - name: Check editable multistop gradients
         run: node tests/check_gradient_fill.mjs
+      - name: Check source-guided gradients and fill recommendations
+        run: node tests/check_source_gradients.mjs
+      - name: Check bounded experimental two-dimensional color fields
+        run: node tests/check_color_field_experiment.mjs
+      - name: Check browser-local image enhancement and lazy model assets
+        run: node tests/check_image_upscale.mjs
       - name: Check image-edge closures and native fill geometry
         run: node tests/check_trace_boundary.mjs
       - name: Check closed illustration regions and editable automatic colors

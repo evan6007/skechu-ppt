@@ -200,8 +200,8 @@ function closeLayerMenu(restoreFocus=false){
 }
 function layerMenuMembers(target=layerMenuTarget){
   if(!target||target.projectId!==activeProject()?.id||target.pageId!==activePageId)return[];
-  const members=layerMembers(target.key);
-  return members.length===target.ids.length&&members.every(it=>target.ids.includes(it.id))?members:[];
+  const members=layerMembers(target.key),ids=new Set(target.ids);
+  return members.length===target.ids.length&&members.every(it=>ids.has(it.id))?members:[];
 }
 function layerMenuDisabled(action,members,key){
   if(!members.length||traceDraft||drag||document.getElementById('auto-trace-dialog')?.open)return true;
@@ -243,7 +243,7 @@ function runLayerAction(action,target=layerMenuTarget){
   const members=layerMenuMembers(target);closeLayerMenu();
   if(layerMenuDisabled(action,members,target?.key))return;
   const key=target.key;
-  const selectMembers=()=>{activateSelectTool();selectedIds=new Set(members.map(it=>it.id));selected=members.at(-1).id;selectedPoint=selectedSegment=null;selectedPoints.clear();editPoints=false;};
+  const selectMembers=()=>{if(tracePenOn||paintTool)activateSelectTool();selectedIds=new Set(members.map(it=>it.id));selected=members.at(-1).id;selectedPoint=selectedSegment=null;selectedPoints.clear();editPoints=false;};
   if(action==='copy'||action==='duplicate'){
     selectMembers();if(copyInternalSelection()&&action==='duplicate')pasteInternalSelection();else refreshSelectionUI();
     if(action==='copy')paintStatus(`已複製 ${members.length} 個圖層到編輯器；按「貼上」或 Ctrl+V 新增`);

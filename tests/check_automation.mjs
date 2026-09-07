@@ -85,6 +85,7 @@ assert.equal(f.host.lastTraceOptions.mode,'illustration');assert.equal(f.host.la
 f.finishTrace();await new Promise(r=>setTimeout(r,0));
 await f.api.execute('apply_trace',{context:await f.ctx(),taskId:task.taskId});assert.equal(f.edits,1);assert.equal(f.doc.items.at(-1).id,'traced');
 assert.equal(f.api.status().task,null);
+for(const mode of ['fill-auto','gradient','native2d']){task=await f.api.execute('trace_image',{context:await f.ctx(),imageId:'ref',mode});assert.equal(f.host.lastTraceOptions.mode,mode);await f.api.execute('cancel_task',{taskId:task.taskId})}
 
 for(const path of ['core.js','editor.js','panel.css','commands.json']){
   assert.ok(read('app/service-worker.js').includes('automation/'+path),'Offline assets include automation');
@@ -93,7 +94,7 @@ for(const path of ['core.js','editor.js','panel.css','commands.json']){
 const traceUi=read('app/auto-trace-ui.js'),workerCalls=[];
 const workerContext=vm.createContext({URL:{},location:{protocol:'https:'},Worker:function(url){workerCalls.push(url)}});
 vm.runInContext(traceUi.slice(0,traceUi.indexOf("document.getElementById('import-reference')")),workerContext);
-workerContext.createAutoTraceJob();assert.deepEqual(workerCalls,['auto-trace-worker.js?v=77-shared-boundaries']);
+workerContext.createAutoTraceJob();assert.deepEqual(workerCalls,['auto-trace-worker.js?v=88-detail-fill']);
 assert.ok(read('app/service-worker.js').includes(`'./${workerCalls[0]}'`),'The current fallback worker must be available offline');
 assert.ok(read('app/service-worker.js').includes("'./auto-trace.js'"),'Fallback worker engine must be available offline');
 console.log('Automation: opt-in scope, strict schemas, atomic batches, undo/redo, locks, stale edits, graph safety, source redaction, staged tracing/cancel and desktop assets OK.');

@@ -550,12 +550,15 @@
             "line",
             "contour",
             "photo",
-            "illustration"
+            "illustration",
+            "fill-auto",
+            "gradient",
+            "native2d"
           ]
         },
         "autoFill": {
           "type": "boolean",
-          "description": "Fill closed illustration regions with colors sampled from the source."
+          "description": "Fill closed regions with source colors. Modes fill-auto (recommended flat or gradient), gradient and native2d (multi-direction native gradient partition) always produce fills; illustration plus autoFill uses flat colors."
         },
         "threshold": {
           "type": "number",

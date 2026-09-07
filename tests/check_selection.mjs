@@ -210,7 +210,7 @@ const runtimeVersions={
   'paint-layers.js':'?v=79-layer-actions',
   'paint-tools.js':'?v=41-liquid-paper',
   'paint-tools.css':'?v=38-responsive-shell',
-  'selection-controls.js':'?v=67-touch-shell',
+  'selection-controls.js':'?v=84-gradient-fields',
 };
 for(const asset of Object.keys(runtimeVersions)) {
   const versioned=asset+runtimeVersions[asset];

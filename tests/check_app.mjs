@@ -13,6 +13,8 @@ for (const [, attributes, source] of scripts) {
   else new Function(source);
 }
 const smoothing=fs.readFileSync(new URL('../app/local-smoothing.js',import.meta.url),'utf8');
+new Function(fs.readFileSync(new URL('../app/source-gradient.js',import.meta.url),'utf8'));
+for(const [file,needle] of [['app/index.html','source-gradient.js?v=88-detail-fill'],['app/service-worker.js','./source-gradient.js?v=88-detail-fill'],['.github/workflows/windows-release.yml','app/source-gradient.js;.']])if(!fs.readFileSync(new URL('../'+file,import.meta.url),'utf8').includes(needle))throw Error('Missing source gradient asset: '+file);
 const starStyles=fs.readFileSync(new URL('../app/github-star.css',import.meta.url),'utf8');
 if(!starStyles.includes('#github-star[aria-pressed="true"] svg{fill:#e3b341;stroke:#e3b341}'))throw new Error('A confirmed GitHub Star must have a yellow fill and outline');
 if(!starStyles.includes('#github-star[aria-pressed="false"] svg{fill:none;stroke:currentColor}'))throw new Error('An unstarred button must remain an unfilled neutral outline, including hover');
@@ -23,7 +25,7 @@ for (const file of ['github-star.js','github-star.css']) {
   if(!fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes('./'+file))throw new Error('Missing Star offline asset '+file);
   if(!fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+file+';.'))throw new Error('Missing packaged Star asset '+file);
 }
-for(const file of ['auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css','compound-fill.js','paint-layers.js','paint-tools.js','paint-tools.css','pan-tool.js','selection-controls.js','workspace-actions.js','layer-controls.js','layer-controls.css','panel-layout.js','theme-controls.js','theme-controls.css','clipboard-controls.js','web-ppt-client.js','web-ppt-helper.js','web-ppt.html','ppt-preparation.js','clipboard-controls.css']){
+for(const file of ['gradient-regions.js','auto-trace.js','auto-trace-ui.js','auto-trace-worker.js','auto-trace.css','compound-fill.js','paint-layers.js','paint-tools.js','paint-tools.css','pan-tool.js','selection-controls.js','workspace-actions.js','layer-controls.js','layer-controls.css','panel-layout.js','theme-controls.js','theme-controls.css','clipboard-controls.js','web-ppt-client.js','web-ppt-helper.js','web-ppt.html','ppt-preparation.js','clipboard-controls.css']){
   const asset=fs.readFileSync(new URL('../app/'+file,import.meta.url),'utf8');
   if(file.endsWith('.js'))new Function(asset);
   if(!fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes('./'+file))throw new Error('Missing offline asset '+file);

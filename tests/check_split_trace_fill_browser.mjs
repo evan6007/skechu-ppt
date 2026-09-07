@@ -33,7 +33,7 @@ try{
  await page.locator('#auto-trace-apply').click();await page.waitForFunction(()=>!autoTraceDialog.open);
  const traceState=await state(page),traceIds=await page.evaluate(()=>items.filter(it=>it.autoTrace&&!it.autoTraceColored).map(it=>it.id));assert.ok(traceIds.length>0);
  await page.locator('#auto-fill').click();await ready(page);
- assert.equal(await page.locator('#auto-trace-title').textContent(),'自動填色');assert.ok(await page.locator('#auto-trace-mode').isDisabled());
+ assert.equal(await page.locator('#auto-trace-title').textContent(),'自動填色');assert.ok(await page.locator('#auto-trace-mode').isEnabled());
  assert.ok(await page.locator('#auto-trace-close-border-label').isHidden());assert.ok(await page.locator('#auto-trace-issues-label').isHidden());
  assert.equal(await page.locator('#auto-trace-color').count(),0,'No combined-output checkbox remains');
  const preview=await page.evaluate(()=>({count:activeAutoTraceResult().items.length,allFill:activeAutoTraceResult().items.every(it=>it.autoTraceColored&&it.width===0)}));

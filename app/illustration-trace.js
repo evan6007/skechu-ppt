@@ -183,7 +183,7 @@ const IllustrationTrace=(function createIllustrationTrace(){
     }
     if(start)throw Error('向量輪廓未封閉');return loops;
   }
-  function fromSVG(svg,geometry,{maxTransitionWidth=0}={}){
+  function fromSVG(svg,geometry,{maxTransitionWidth=0,regionTransform=null,fillsOnly=false}={}){
     const sourceRegions=[];let inputAnchors=0;
     for(const match of svg.matchAll(/<path\b([^>]+)>/g)){
       const attr=match[1],d=attr.match(/\bd="([^"]+)"/)?.[1],color=attr.match(/\bfill="(#[0-9a-f]{6})"/i)?.[1];
@@ -193,18 +193,18 @@ const IllustrationTrace=(function createIllustrationTrace(){
       if(sourceRegions.length>1800||inputAnchors>40000)throw new Error('細碎色區太多；請降低「插畫細節」或增加「細節清理」後重試。');
     }
     splitStraightEdges(sourceRegions);
-    const cleaned=cleanTransitionBands(sourceRegions,maxTransitionWidth),regions=cleaned.regions;
-    const network=strokeNetwork(regions,geometry),items=network.items,colorItems=[];
-    regions.forEach(({loops,color},region)=>{
+    const cleaned=cleanTransitionBands(sourceRegions,maxTransitionWidth),enhanced=regionTransform?regionTransform(cleaned.regions,{polygon,edgeMap,boundaryLoops,components}):null,regions=enhanced?enhanced.regions:cleaned.regions;
+    const network=fillsOnly?{items:[],junctions:0,sharedEdgesRemoved:0}:strokeNetwork(regions,geometry),items=network.items,colorItems=[];
+    regions.forEach(({loops,color,fillGradient},region)=>{
       const joined=[];
       for(const curves of loops){
         // Zero-area, retraced connectors preserve hole winding in native PPT
         // Freeform fills. This representation is never used for visible strokes.
         if(joined.length){const origin=joined[0].p0;joined.push(line(origin,curves[0].p0),...curves,line(curves[0].p0,origin))}else joined.push(...curves);
       }
-      if(joined.length){const fill=geometry.toItem({closed:true},joined,color,0,new Set());fill.fill=color;fill.fillOpacity=1;fill.autoTraceMode='illustration';fill.autoTraceColored=true;fill.autoTraceRegion=region;colorItems.push(fill)}
+      if(joined.length){const fill=geometry.toItem({closed:true},joined,color,0,new Set());fill.fill=color;if(fillGradient)fill.fillGradient=fillGradient;fill.fillOpacity=1;fill.autoTraceMode='illustration';fill.autoTraceColored=true;fill.autoTraceRegion=region;colorItems.push(fill)}
     });
-    return{items,colorItems,issues:[],stats:{mode:'illustration',paths:items.length,anchors:items.reduce((n,it)=>n+it.points.length,0),regions:colorItems.length,junctions:network.junctions,sharedEdgesRemoved:network.sharedEdgesRemoved,transitionBandsRemoved:cleaned.removed,reviewCount:0}};
+    return{items,colorItems,issues:[],stats:{mode:'illustration',paths:items.length,anchors:items.reduce((n,it)=>n+it.points.length,0),regions:colorItems.length,junctions:network.junctions,sharedEdgesRemoved:network.sharedEdgesRemoved,transitionBandsRemoved:cleaned.removed,reviewCount:0,...(enhanced?{shading:enhanced.stats}:{})}};
   }
   function run(data,w,h,options,geometry,progress){
     if(typeof VTracerWasm==='undefined')throw Error('插畫描圖元件尚未載入，請重新整理頁面。');
@@ -215,5 +215,5 @@ const IllustrationTrace=(function createIllustrationTrace(){
     progress(75,'清理過渡細帶，每段共用交界只描一次');
     const result=fromSVG(svg,geometry,{maxTransitionWidth:options.minLength>0?Math.min(6,1+options.minLength):0});progress(100,'獨立線稿與封閉填色區域預覽完成');return result;
   }
-  return{run,fromSVG,parsePath,denoise,wasmBytes,workerSource:()=>`${VTracerWasm.workerSource()}const IllustrationTrace=(${createIllustrationTrace.toString()})();`};
+  return{run,fromSVG,parsePath,denoise,wasmBytes,geometry:{polygon,boundaryLoops,components},workerSource:()=>`${VTracerWasm.workerSource()}const IllustrationTrace=(${createIllustrationTrace.toString()})();`};
 })();

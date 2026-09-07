@@ -14,9 +14,10 @@ try{
  assert.equal(await page.evaluate(()=>items.length),1,'Preview never changes the project');
  await page.locator('#auto-trace-show-image').uncheck();await page.locator('#auto-trace-show-anchors').uncheck();await page.locator('#auto-trace-show-issues').uncheck();
  fs.mkdirSync('.codex-tmp',{recursive:true});await page.locator('#auto-trace-svg').screenshot({path:'.codex-tmp/illustration-lines-browser.png'});
- await page.locator('#auto-trace-color').check();assert.equal(await page.locator('#auto-trace-apply').innerText(),'套用並填色');
+ const lineCount=await page.evaluate(()=>autoTraceResult.items.length);await page.locator('#auto-trace-apply').click();await page.waitForFunction(()=>!autoTraceDialog.open&&items.length>1);
+ await page.locator('#auto-fill').click();await page.locator('#auto-trace-mode').selectOption('illustration');await page.waitForFunction(()=>autoTraceResult&&!autoTraceJob,{},{timeout:60000});assert.equal(await page.locator('#auto-trace-apply').innerText(),'套用色塊');
  assert.ok(await page.locator('#auto-trace-lines path[fill^="#"]').count()>0);await page.locator('#auto-trace-svg').screenshot({path:'.codex-tmp/illustration-fill-browser.png'});
- const count=await page.evaluate(()=>autoTraceResult.colorItems.length),lineCount=await page.evaluate(()=>autoTraceResult.items.length);await page.locator('#auto-trace-apply').click();await page.waitForFunction(count=>items.length===count+1,count+lineCount);
+ const count=await page.evaluate(()=>autoTraceResult.colorItems.length);await page.locator('#auto-trace-apply').click();await page.waitForFunction(count=>items.length===count+1,count+lineCount);
  assert.equal(await page.evaluate(()=>items.filter(i=>i.autoTraceColored&&i.closed&&i.fillOpacity===1&&i.width===0).length),count,'Applied fills are normal editable closed vector shapes, with no raster substitute');
  assert.equal(await page.evaluate(()=>items.filter(i=>i.autoTraceMode==='illustration'&&!i.autoTraceColored&&i.fillOpacity===0).length),lineCount,'Automatic colors keep the unique line art as separate editable objects');
  const exported=await page.evaluate(()=>JSON.parse(nativeRequestBody(items)).items);
@@ -35,11 +36,11 @@ try{
  await page.keyboard.press('Escape');await page.keyboard.press('Control+z');
  // Native cubic representation survives the app's save/restore serializer.
  const snapshot=await page.evaluate(()=>JSON.stringify(items.filter(i=>i.autoTraceColored)));await page.evaluate(()=>{items=JSON.parse(JSON.stringify(items));render()});assert.equal(await page.evaluate(()=>JSON.stringify(items.filter(i=>i.autoTraceColored))),snapshot);
- await page.keyboard.press('Control+z');assert.equal(await page.evaluate(()=>items.length),1,'One Undo removes the entire tracing/fill operation');
+ await page.keyboard.press('Control+z');assert.equal(await page.evaluate(()=>items.length),lineCount+1,'One Undo removes only the independent fill operation');await page.keyboard.press('Control+z');assert.equal(await page.evaluate(()=>items.length),1,'Second Undo removes the separate trace operation');
  // The same closed contours must work without automatic colors, too.
  await page.evaluate(()=>{items[0].hidden=false;setOnlySelected(items[0].id);render()});
  await page.locator('#auto-trace').click();await page.waitForFunction(()=>autoTraceResult?.stats.mode==='illustration'&&!autoTraceJob,{},{timeout:60000});
- await page.locator('#auto-trace-color').uncheck();await page.locator('#auto-trace-apply').click();await page.waitForFunction(()=>items.length>1);
+ await page.locator('#auto-trace-apply').click();await page.waitForFunction(()=>items.length>1);
  await page.evaluate(()=>{items.find(i=>i.referenceOnly).hidden=true;setOnlySelected(null);editPoints=false;render();activePaletteColor='#00c49a';syncPaintColor()});
  await page.locator('#paint-bucket').click();
  const lineProbe=await page.evaluate(p=>{const m=svg.getScreenCTM();return{x:m.a*p.x+m.c*p.y+m.e,y:m.b*p.x+m.d*p.y+m.f}},{x:src?797:210,y:src?595:225});

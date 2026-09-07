@@ -3,7 +3,7 @@ const html=fs.readFileSync('app/index.html','utf8'),plain=value=>JSON.parse(JSON
 const nodes=new Map(),node=id=>{if(!nodes.has(id))nodes.set(id,{hidden:true,open:false,textContent:'',querySelectorAll:()=>[]});return nodes.get(id);};
 let serial=0,status='';
 const ctx=vm.createContext({document:{getElementById:node,querySelectorAll:()=>[]},items:[],selected:null,selectedIds:new Set(),selectedPoints:new Set(),history:[],future:[],
-  activeProject:()=>({id:'project'}),activePageId:'page',traceDraft:null,drag:null,internalClipboard:[],
+  activeProject:()=>({id:'project'}),activePageId:'page',traceDraft:null,tracePenOn:false,paintTool:null,drag:null,internalClipboard:[],
   deepCopy:plain,id:()=>`clone-${++serial}`,uid:prefix=>`${prefix}-${++serial}`,noteInternalCopy(){},
   render(){},refreshSelectionUI(){},activateSelectTool(){},paintStatus:message=>{status=message},prompt:()=>null});
 ctx.byId=id=>ctx.items.find(it=>it.id===id);ctx.commit=()=>{ctx.history.push(JSON.stringify(ctx.items));ctx.future=[];};

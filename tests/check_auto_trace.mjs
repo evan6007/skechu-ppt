@@ -164,11 +164,13 @@ vm.runInContext(app.split('\n').find(l=>l.startsWith('function tracePenStrokeSty
 const settle=async()=>{for(let i=0;i<8;i++)await Promise.resolve()};
 const flush=async()=>{for(const [id,fn] of [...timers]){timers.delete(id);fn()}await settle()};
 const reply=(worker,data)=>worker.onmessage({data});
+element('auto-trace-show-anchors').checked=true; // The real line-preview checkbox starts checked.
 await controller.actions.open();assert.equal(workers.length,1,'Opening predicts immediately');
 assert.equal(workers[0].payload.options.accuracy,2.5);assert.equal(workers[0].payload.options.simplify,90);
 assert.equal(workers[0].payload.options.mode,'auto');assert.equal(element('auto-trace-simplify-value').textContent,'90%');
 reply(workers[0],{type:'result',result});
 assert.equal((element('auto-trace-anchors').innerHTML.match(/data-preview-anchor=/g)||[]).length,result.stats.anchors,'Preview displays every actual editable anchor');
+element('auto-trace-show-anchors').checked=false;element('auto-trace-show-anchors').onchange({target:element('auto-trace-show-anchors')});assert.equal(element('auto-trace-anchors').innerHTML,'','Hidden anchors must not create a large invisible DOM');element('auto-trace-show-anchors').checked=true;element('auto-trace-show-anchors').onchange({target:element('auto-trace-show-anchors')});
 assert.equal(context.transformAutoTraceItems(result,{x:0,y:0,w:100,h:100},100,100,'count',()=>`count-${seq++}`).reduce((n,it)=>n+it.points.length,0),result.stats.anchors,'Apply cannot add hidden anchors');
 assert.match(element('auto-trace-lines').innerHTML,/ C/,'Preview draws cubic pen paths');
 assert.match(element('auto-trace-lines').innerHTML,/stroke="#123f8c"/);assert.equal(element('auto-trace-apply').disabled,false);
@@ -190,14 +192,14 @@ await controller.actions.open();element('auto-trace-mode').value='contour';contr
 reply(workers.at(-1),{type:'result',result:logoResult});assert.match(element('auto-trace-summary').textContent,/Logo 輪廓/);
 element('auto-trace-threshold').value='220';element('auto-trace-reset').onclick();await flush();assert.equal(workers.at(-1).payload.options.mode,'auto');assert.equal(workers.at(-1).payload.options.threshold,150);controller.actions.cancel();
 assert.equal(controller.items.length,1,'Preview and cancel never create canvas objects');
-await controller.actions.open('fill');assert.equal(workers.at(-1).payload.options.mode,'illustration');assert.equal(element('auto-trace-title').textContent,'自動填色');
-assert.equal(element('auto-trace-mode').disabled,true);assert.equal(element('auto-trace-close-border-label').hidden,true);
+await controller.actions.open('fill');assert.equal(workers.at(-1).payload.options.mode,'fill-auto');assert.equal(element('auto-trace-title').textContent,'自動填色');
+assert.equal(element('auto-trace-mode').disabled,false);assert.equal(element('auto-trace-close-border-label').hidden,true);
 reply(workers.at(-1),{type:'result',result:mixedPrediction});assert.equal((element('auto-trace-lines').innerHTML.match(/data-auto-curve=/g)||[]).length,1);
 assert.equal(element('auto-trace-apply').textContent,'套用色塊');assert.match(element('auto-trace-summary').textContent,/不新增線稿/);
 element('auto-trace-threshold').value='190';controller.actions.cancel();await controller.actions.open('trace');assert.equal(workers.at(-1).payload.options.threshold,150,'Fill sliders cannot change trace settings');
 assert.equal(element('auto-trace-mode').disabled,false);assert.equal(element('auto-trace-close-border-label').hidden,false);controller.actions.cancel();
 await controller.actions.open('fill');assert.equal(workers.at(-1).payload.options.threshold,190,'Each action remembers its own settings');
-element('auto-trace-reset').onclick();await flush();assert.equal(workers.at(-1).payload.options.mode,'illustration');assert.equal(workers.at(-1).payload.options.threshold,120);
+element('auto-trace-reset').onclick();await flush();assert.equal(workers.at(-1).payload.options.mode,'fill-auto');assert.equal(workers.at(-1).payload.options.threshold,120);
 reply(workers.at(-1),{type:'result',result:{...result,items:[],colorItems:[colorOnly]}});
 let applications=0;Object.assign(controller,{id:()=>`apply-${seq++}`,commit:()=>applications++,setTracePen(){},setOnlySelected(){},render(){}});
 element('auto-trace-apply').onclick();element('auto-trace-apply').onclick();assert.equal(applications,1,'A double apply cannot add duplicate objects');assert.equal(controller.items.length,2,'Fill action works even when the engine has no line output');

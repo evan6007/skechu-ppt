@@ -1,5 +1,6 @@
 /* Selection gestures are separate from edits: clicking never consumes Undo. */
 const SELECTION_DRAG_PX = 4;
+const MULTI_SELECTION_ANCHOR_BUDGET = 800;
 let suppressSelectionContextMenu = false;
 function refreshSelectionUI() {
   renderSelection(); renderLayers(); syncControls(); syncSplitHandleLengthControls();
@@ -22,7 +23,15 @@ function clearSelectionState(refresh = true) {
 function selectableOnCanvas(it) { return !!it && !it.locked && !it.hidden; }
 function multiSelectionMarkup() {
   const shared = new Set(), primary = byId(selected);
-  const targets = [primary, ...[...selectedIds].filter(id => id !== selected).map(byId)].filter(it => it && selectedIds.has(it.id) && !it.hidden);
+  const targets = [primary, ...items.filter(it=>it.id!==selected&&selectedIds.has(it.id))].filter(it => it && selectedIds.has(it.id) && !it.hidden);
+  const anchorCount=targets.reduce((n,it)=>n+(it.points?.length||4),0);
+  if(anchorCount>MULTI_SELECTION_ANCHOR_BUDGET){
+    let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
+    for(const it of targets){const b=itemBounds(it);x1=Math.min(x1,b.x);y1=Math.min(y1,b.y);x2=Math.max(x2,b.x+b.w);y2=Math.max(y2,b.y+b.h)}
+    // Keep the selection itself intact, but not tens of thousands of hit nodes.
+    // Existing scene targets still select/edit each original object normally.
+    return `<g class="compact-group-selection" data-selection-count="${targets.length}" pointer-events="none"><title>已選取 ${targets.length} 個物件；點選單一物件可編輯錨點</title><rect class="group-outline" x="${x1}" y="${y1}" width="${x2-x1}" height="${y2-y1}"/></g>`;
+  }
   return targets.map(it => {
     if (!it.locked && ['arrow', 'polygon'].includes(it.type) && it.points?.length) {
       return it.points.map((p, index) => {

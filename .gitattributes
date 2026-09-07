@@ -7,3 +7,7 @@
 *.gif binary
 *.ico binary
 *.woff2 binary
+# Keep published model checksums and runtime bytes identical on Windows/Linux.
+app/vendor/super-resolution/anime-v3-f32.bin binary
+app/vendor/super-resolution/anime-v3.json -text
+app/vendor/super-resolution/tf-4.22.0.min.js -text
