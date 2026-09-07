@@ -51,6 +51,9 @@ jobs:
             --add-data "app/touch-gestures.js;." `
             --add-data "app/selection-controls.js;." `
             --add-data "app/workspace-actions.js;." `
+            --add-data "app/project-file-store.js;." `
+            --add-data "app/project-files.js;." `
+            --add-data "app/project-files.css;." `
             --add-data "app/layer-controls.js;." `
             --add-data "app/layer-controls.css;." `
             --add-data "app/panel-layout.js;." `

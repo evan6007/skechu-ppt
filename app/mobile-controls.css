@@ -4,6 +4,10 @@
 .stage-wrap{touch-action:none;overscroll-behavior:contain;overflow-anchor:none}
 .stage-wrap.touch-navigating .stage{cursor:grabbing}
 @media(max-width:900px){
+  /* The brand label is an h1, not the span used by the older mobile rule. */
+  .topbar .brand-name{display:none}
+  .topbar .brand{flex:0 0 44px;min-width:44px;width:44px;height:44px;box-sizing:border-box;padding:7px;gap:0;justify-content:center;overflow:hidden}
+  .topbar .brand-mark{flex:0 0 30px;width:30px;height:30px;margin:0}
   .app{height:100dvh;grid-template-rows:48px 58px minmax(0,1fr) calc(58px + env(safe-area-inset-bottom,0px))}
   button,a,summary{-webkit-tap-highlight-color:transparent}
   .topbar .tool-button{min-width:46px;height:46px;gap:3px}

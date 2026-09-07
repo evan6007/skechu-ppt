@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v81-gradient-fill';
+const CACHE_NAME = 'skechu-ppt-v90-mobile-brand';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const APP_SHELL = [
   './automation/panel.css?v=70-automation',
   './automation/commands.json',
   './mobile-controls.js?v=69-copy-paste',
-  './mobile-controls.css?v=69-copy-paste',
+  './mobile-controls.css?v=90-mobile-brand',
   './touch-gestures.js?v=68-touch-gestures',
   './starter-brain.png',
   './theme-controls.js?v=46-canvas-shapes',
@@ -28,7 +28,10 @@ const APP_SHELL = [
   './paint-tools.js?v=41-liquid-paper',
   './pan-tool.js',
   './selection-controls.js?v=67-touch-shell',
-  './workspace-actions.js?v=67-touch-shell',
+  './workspace-actions.js?v=89-file-save',
+  './project-file-store.js?v=89-file-save',
+  './project-files.js?v=89-file-save',
+  './project-files.css?v=89-file-save',
   './layer-controls.js?v=80-split-trace-fill',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=79-layer-actions',

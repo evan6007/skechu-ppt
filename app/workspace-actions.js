@@ -176,6 +176,7 @@ function readDroppedProject(file) {
     reader.onload = () => {
       try {
         const raw=JSON.parse(reader.result),incoming=raw?.project?[raw.project]:Array.isArray(raw?.projects)?raw.projects:[raw];
+        if(!incoming.length||incoming.some(project=>!project||(!Array.isArray(project.pages)&&!Array.isArray(project.items))))throw Error('Not a Skechu project');
         const base=(file.name || '匯入專案').replace(/\.(?:skc|sktc|sketchou(?:\.json)?|json)$/i,'');
         resolve(incoming.map((project,index)=>normalizeProject(project,`${base} ${index+1}`)));
       } catch (error) {reject(new Error(`${file.name} 不是有效的 Skechu 專案`));}
@@ -185,9 +186,11 @@ function readDroppedProject(file) {
 }
 async function importProjectFiles(files) {
   const batches=await Promise.all(files.map(readDroppedProject)),imported=batches.flat();
-  if(!imported.length)return;
+  if(!imported.length)return[];
+  if(typeof projectFileNames!=='undefined')batches.forEach((batch,index)=>{if(batch.length===1)projectFileNames.set(batch[0].id,files[index].name)});
   syncActivePage();projects.push(...imported);repairItemSequence();openProject(imported[0].id);
   setAutosaveStatus(`已匯入 ${imported.length} 個專案`);
+  return imported;
 }
 function droppedFiles(event) {return Array.from(event.dataTransfer?.files || []);}
 function acceptedDropFiles(files) {return files.filter(file=>projectFile(file)||clipboardImageFiles({files:[file]}).length);}

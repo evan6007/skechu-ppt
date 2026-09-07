@@ -74,7 +74,7 @@
 </style>
 <link rel="stylesheet" href="theme-controls.css?v=55-canvas-color-menu">
 <link rel="stylesheet" href="github-star.css?v=63-instant-star">
-<link rel="stylesheet" href="mobile-controls.css?v=69-copy-paste">
+<link rel="stylesheet" href="mobile-controls.css?v=90-mobile-brand">
 <link rel="stylesheet" href="cut-tools.css">
 <link rel="stylesheet" href="gradient-fill.css?v=81-gradient-fill">
 <link rel="stylesheet" href="automation/panel.css?v=70-automation">
@@ -182,7 +182,10 @@
 <script src="paint-tools.js?v=41-liquid-paper"></script>
 <script src="pan-tool.js"></script>
 <script src="selection-controls.js?v=67-touch-shell"></script>
-<script src="workspace-actions.js?v=67-touch-shell"></script>
+<script src="workspace-actions.js?v=89-file-save"></script>
+<link rel="stylesheet" href="project-files.css?v=89-file-save">
+<script src="project-file-store.js?v=89-file-save"></script>
+<script src="project-files.js?v=89-file-save"></script>
 <script src="layer-controls.js?v=80-split-trace-fill"></script>
 <script src="panel-layout.js?v=1-resizable"></script>
 <script src="clipboard-controls.js?v=81-gradient-fill"></script>
@@ -244,9 +247,9 @@ function canvasPaperPreset(paper=canvasAppearance()){return Object.entries(CANVA
 function makePage(name='圖 1',seed=[],size={}){const paper=canvasAppearance(size);return{id:uid('page'),name,items:deepCopy(seed),canvasWidth:Number(size.width)||1200,canvasHeight:Number(size.height)||675,canvasColor:paper.color,canvasOpacity:paper.opacity}}
 function makeProject(name='未命名專案',seed=[],size={}){const page=makePage('圖 1',seed,size);return{id:uid('project'),name,pages:[page],activePageId:page.id}}
 function normalizeProject(raw,fallbackName='匯入專案'){
- const p={id:uid('project'),name:String(raw?.name||fallbackName),pages:[]};
+ const p={...deepCopy(raw||{}),id:uid('project'),name:String(raw?.name||fallbackName),pages:[]};
  const sourcePages=Array.isArray(raw?.pages)&&raw.pages.length?raw.pages:[{name:'圖 1',items:Array.isArray(raw?.items)?raw.items:[]}];
- p.pages=sourcePages.map((page,i)=>makePage(String(page?.name||`圖 ${i+1}`),Array.isArray(page?.items)?page.items:[],{width:page?.canvasWidth,height:page?.canvasHeight,color:page?.canvasColor,opacity:page?.canvasOpacity}));p.activePageId=p.pages[0].id;return p
+ p.pages=sourcePages.map((page,i)=>({...deepCopy(page),...makePage(String(page?.name||`圖 ${i+1}`),Array.isArray(page?.items)?page.items:[],{width:page?.canvasWidth,height:page?.canvasHeight,color:page?.canvasColor,opacity:page?.canvasOpacity})}));p.activePageId=p.pages[Math.max(0,sourcePages.findIndex(page=>page.id===raw?.activePageId))].id;return p
 }
 function repairItemSequence(){let max=0;projects.forEach(project=>project.pages.forEach(page=>(page.items||[]).forEach(it=>{const m=String(it.id||'').match(/^item-(\d+)$/);if(m)max=Math.max(max,+m[1])})));seq=Math.max(seq,max+1)}
 function ensureUniqueItemIds(){repairItemSequence();const seen=new Set;projects.forEach(project=>project.pages.forEach(page=>(page.items||[]).forEach(it=>{if(!it.id||seen.has(it.id))it.id=id();seen.add(it.id)})))}
@@ -258,7 +261,7 @@ function openWorkspaceDb(){if(workspaceDb)return workspaceDb;workspaceDb=new Pro
 async function readWorkspace(){const db=await openWorkspaceDb();return await new Promise((resolve,reject)=>{const tx=db.transaction('workspace','readonly'),req=tx.objectStore('workspace').get('current');req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error)})}
 async function writeWorkspace(payload){const db=await openWorkspaceDb();await new Promise((resolve,reject)=>{const tx=db.transaction('workspace','readwrite');tx.objectStore('workspace').put(payload,'current');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
 function workspacePayload(){syncActivePage();const project=activeProject();if(project)project.activePageId=activePageId;return{version:2,activeProjectId,projects:deepCopy(projects)}}
-function queueAutosave(){if(!workspaceReady)return;clearTimeout(autosaveTimer);setAutosaveStatus('儲存中…');autosaveTimer=setTimeout(async()=>{try{await writeWorkspace(workspacePayload());setAutosaveStatus('已自動保存')}catch(err){console.error(err);setAutosaveStatus('自動保存失敗，請下載工程檔',true)}},450)}
+function queueAutosave(){if(!workspaceReady)return;if(typeof refreshProjectFileStatus==='function')refreshProjectFileStatus();clearTimeout(autosaveTimer);setAutosaveStatus('瀏覽器暫存中…');autosaveTimer=setTimeout(async()=>{const payload=workspacePayload();if(typeof observeProjectFiles==='function'&&!drag&&!traceDraft)observeProjectFiles(payload);try{await writeWorkspace(payload);setAutosaveStatus('已存瀏覽器')}catch(err){console.error(err);setAutosaveStatus('瀏覽器暫存失敗，請儲存 SKC',true)}},450)}
 function canvasSize(page=activePage()){return{width:Number(page?.canvasWidth)||1200,height:Number(page?.canvasHeight)||675}}
 function applyCanvasSize(){const size=canvasSize(),paper=canvasAppearance(),bg=document.getElementById('stage-background'),widthInput=document.getElementById('canvas-width'),heightInput=document.getElementById('canvas-height'),colorInputs=[document.getElementById('canvas-paper-color'),document.getElementById('toolbar-canvas-paper-color')],opacityInputs=[document.getElementById('canvas-paper-opacity'),document.getElementById('toolbar-canvas-paper-opacity')],opacityValues=[document.getElementById('canvas-paper-opacity-value'),document.getElementById('toolbar-canvas-paper-opacity-value')],menu=document.querySelector('.canvas-color-menu'),preset=canvasPaperPreset(paper);svg.setAttribute('viewBox',`0 0 ${size.width} ${size.height}`);svg.setAttribute('aria-label',`${activePage()?.name||'圖頁'}分層編輯畫布`);bg.setAttribute('width',size.width);bg.setAttribute('height',size.height);bg.style.fill=paper.color;bg.style.fillOpacity=String(paper.opacity);if(widthInput&&document.activeElement!==widthInput)widthInput.value=size.width;if(heightInput&&document.activeElement!==heightInput)heightInput.value=size.height;colorInputs.forEach(input=>{if(input&&document.activeElement!==input)input.value=paper.color});opacityInputs.forEach(input=>{if(input&&document.activeElement!==input)input.value=String(Math.round(paper.opacity*100))});opacityValues.forEach(value=>{if(value)value.textContent=`${Math.round(paper.opacity*100)}%`});document.querySelectorAll('[data-canvas-paper-preset]').forEach(button=>{const active=button.dataset.canvasPaperPreset===preset;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))});if(menu){menu.dataset.paperPreset=preset;menu.style.setProperty('--canvas-color-swatch',paper.color);menu.style.setProperty('--canvas-color-opacity',String(paper.opacity))}if(gridOn)renderCanvasGrid()}
 function updateCanvasSize(){const page=activePage(),widthInput=document.getElementById('canvas-width'),heightInput=document.getElementById('canvas-height');if(!page||!widthInput||!heightInput)return;const before=canvasSize(page),width=Math.round(clamp(Number(widthInput.value)||before.width,50,10000)),height=Math.round(clamp(Number(heightInput.value)||before.height,50,10000));page.canvasWidth=width;page.canvasHeight=height;widthInput.value=width;heightInput.value=height;applyCanvasSize();renderWorkspacePages();render();queueAutosave();requestAnimationFrame(fitView);document.getElementById('status').textContent=`工作空間已調整為 ${width} × ${height}；超出邊界的物件會保留在外側`}
@@ -670,6 +673,7 @@ initializeMobileControls();
 initializeTouchGestures();
 initializeAutomationControls();
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./service-worker.js').catch(error=>console.info('Offline install unavailable.',error));
-initializeWorkspace().then(stabilizeTypography);
+initializeProjectFiles();
+initializeWorkspace().then(stabilizeTypography).then(restoreProjectFiles);
 </script>
 </body></html>

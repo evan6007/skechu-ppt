@@ -62,6 +62,8 @@ jobs:
         run: node tests/check_touch_gestures.mjs
       - name: Check page actions and image paste
         run: node tests/check_workspace_actions.mjs
+      - name: Check original SKC file saving and conflict protection
+        run: node tests/check_project_files.mjs
       - name: Check layer folders and drag ordering
         run: node tests/check_layers.mjs
       - name: Check layer menu actions and whole-group deletion

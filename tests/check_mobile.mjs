@@ -5,13 +5,15 @@ import assert from 'node:assert/strict';
 const read = file => fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const source = read('app/mobile-controls.js'), css = read('app/mobile-controls.css'), html = read('app/index.html');
 for (const file of ['mobile-controls.js','mobile-controls.css']) {
-  const version='?v=69-copy-paste';
+  const version=file.endsWith('.css')?'?v=90-mobile-brand':'?v=69-copy-paste';
   assert.ok(html.includes(file+version));
   assert.ok(read('app/service-worker.js').includes(file+version));
   assert.ok(read('.github/workflows/windows-release.yml').includes('app/'+file+';.'));
 }
 assert.ok(html.includes('initializeMobileControls();') && html.includes('syncMobileControls();'));
 assert.ok(css.includes('@media(max-width:900px)'));
+assert.ok(css.includes('.topbar .brand-name{display:none}'),'Mobile hides the actual h1 brand label, not an obsolete span');
+assert.ok(css.includes('.topbar .brand{flex:0 0 44px')&&css.includes('justify-content:center;overflow:hidden'),'Mobile logo keeps its own fixed touch target without overflowing into Select');
 assert.ok(css.includes('height:clamp(180px,32dvh,280px)'),'Sheets stay compact instead of becoming full-screen sidebars');
 assert.ok(css.includes('min-height:44px'),'Direct actions have touch-sized targets');
 assert.ok(css.includes('.topbar #undo,.topbar #redo{display:none}'),'Select all remains accessible while undo/redo move to the dock');
