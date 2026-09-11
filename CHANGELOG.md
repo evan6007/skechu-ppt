@@ -2,6 +2,17 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.7] - 2026-09-12
+
+### Added
+
+- In-page Windows connector installation guide after an unavailable/old native-copy connection: a direct all-in-one installer download, included-runtime and desktop-PowerPoint requirements, short steps, and an explicit retry using the current selection. Already connected users still copy with Ctrl+C alone; downloads, installation and clipboard writes are never retried automatically.
+- Non-Windows clients receive honest SVG/PNG alternatives without probing the Windows connector. Connection guidance covers an already-installed service and denied local-network permission without claiming to detect installed programs.
+
+### Changed
+
+- The installer completion action starts the bundled connector in the background and leaves the web drawing in its original tab. Updated installer assets include browser HD, detail-first native gradients and original SKC saving from the complete web release.
+
 ## [Unreleased]
 
 ### Added

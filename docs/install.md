@@ -20,10 +20,12 @@ The Windows edition is required only for **Copy to PPT**, which creates separate
 
 ### Copy from Open Web directly to PowerPoint
 
-1. Install **v0.1.4 or later** from the Windows download above. Open **Skechu-PPT** once to start its local service, and leave it running. Desktop PowerPoint must be installed.
+1. Install the current [Windows all-in-one package](https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe). It includes the Python runtime, Windows COM connector and editor assets; you do not install Python, pip packages or browser extensions separately. **Microsoft PowerPoint is not bundled**; desktop PowerPoint must already be installed. Keep **Start PowerPoint connector** checked at the end of setup. It starts in the background without opening another editor tab. After restarting Windows, open **Skechu-PPT** from the Start menu to start the local service again.
 2. Keep drawing in [Open Web](https://evan6007.github.io/skechu-ppt/). Select objects and click **複製到 PPT**, press Ctrl+C, or use **全選並複製**.
 3. Copy stays in the editor. If Chrome or Edge asks to access your local network on first use, allow it so the website can reach the installed service. There is no separate Skechu connection window or additional approval button.
 4. Wait until the website says **已複製，前往 PPT 貼上**. Switch to a desktop PowerPoint slide and press Ctrl+V. Ungroup when needed to edit individual shapes; traced curves retain their editable nodes.
+
+If Ctrl+C cannot reach the companion, the same page now shows a prominent **下載 Windows 必要連接元件** button and short installation steps. Download and run that single installer, then return to the unchanged drawing and press Ctrl+C or **已安裝，重試複製**. An old companion shows **下載更新安裝包** instead. There is no automatic download, installation or clipboard retry, and no project transfer is needed. A connection failure cannot prove that software is missing: the guide also explains how to start an existing installation and restore the site's local-network permission. Non-Windows devices get the SVG/PNG alternatives instead of a native-copy connection attempt.
 
 No project download/reload is needed. Drawing data passes directly from your browser to the service on your own computer, not to GitHub or another server. The service accepts only the official website and local editor origins, validates the submitted drawing, and binds only to loopback. Closing the editor stops new requests; a copy already sent to PowerPoint may still finish. Browser local-network permission can be revoked in the site's browser settings.
 

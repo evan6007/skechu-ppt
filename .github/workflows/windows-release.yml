@@ -83,7 +83,6 @@ jobs:
             --add-data "app/service-worker.js;." `
             --add-data "app/skechu-mark.svg;." `
             --add-data "app/skechu-icon.png;." `
-            --add-data "app/vendor;vendor" `
             app/bridge.py
       - name: Smoke-test packaged application
         shell: pwsh
@@ -103,7 +102,8 @@ jobs:
             $capabilities = $bridgeStatus.Content | ConvertFrom-Json
             if ($capabilities.protocol -ne 1 -or 'inline-copy' -notin $capabilities.capabilities -or 'gradient-fill-v1' -notin $capabilities.capabilities) { throw 'Packaged inline PPT connection unavailable.' }
             if ($bridgeStatus.Headers['Access-Control-Allow-Origin'] -ne 'https://evan6007.github.io') { throw 'Packaged web origin mismatch.' }
-            foreach ($asset in @('web-ppt.html','web-ppt-helper.js','web-ppt-client.js','ppt-preparation.js','gradient-fill.js','gradient-fill.css','layer-controls.js','layer-controls.css','panel-layout.js','theme-controls.js','theme-controls.css')) {
+            if ($response.Content -notmatch 'id="clipboard-install"') { throw 'Packaged editor is missing the direct installer guide.' }
+            foreach ($asset in @('web-ppt.html','web-ppt-helper.js','web-ppt-client.js','clipboard-controls.js','clipboard-controls.css','ppt-preparation.js','gradient-fill.js','gradient-fill.css','layer-controls.js','layer-controls.css','panel-layout.js','theme-controls.js','theme-controls.css','project-file-store.js','project-files.js','image-upscale-ui.js','image-upscale-worker.js','source-gradient.js','gradient-regions.js','vendor/super-resolution/anime-v3.json','vendor/super-resolution/anime-v3-f32.bin','vendor/super-resolution/tf-4.22.0.min.js')) {
               $assetResponse = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:8877/$asset" -TimeoutSec 2
               if ($assetResponse.StatusCode -ne 200) { throw "Missing packaged asset: $asset" }
             }

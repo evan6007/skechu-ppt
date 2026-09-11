@@ -21,6 +21,18 @@
 .clipboard-actions button,.clipboard-actions a{font-size:12px;padding:6px 9px;border-radius:6px}
 .clipboard-actions a{color:#6d28d9;text-decoration:underline}
 .clipboard-actions[hidden]{display:none}
+.clipboard-feedback{max-height:calc(100dvh - 136px);overflow-y:auto;overscroll-behavior:contain}
+.clipboard-setup[hidden]{display:none}
+.clipboard-install{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;padding:12px 10px;min-height:44px;box-sizing:border-box;border:1px solid #7c3aed;border-radius:9px;background:#6d28d9;color:#fff;text-decoration:none;font-weight:700;line-height:1.4}
+.clipboard-install:hover{background:#5b21b6;color:#fff}
+.clipboard-install:focus-visible,#clipboard-retry:focus-visible{outline:3px solid #a78bfa;outline-offset:3px}
+.clipboard-install svg{width:20px;height:20px;flex:0 0 20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.clipboard-package-note{font-size:12px;opacity:.85}
+.clipboard-setup ol{padding-left:20px;margin:12px 0;overflow-wrap:anywhere}
+.clipboard-setup li+li{margin-top:6px}
+#clipboard-retry{width:100%;min-height:42px;font:inherit;border:1px solid var(--line,#cbd5e1);border-radius:8px;background:var(--surface,#f1f5f9);color:inherit;padding:8px 10px}
+.clipboard-setup details{margin-top:12px;font-size:12px}
+.clipboard-setup summary{cursor:pointer;padding:6px 0}
 .file-entry-notice{padding:8px 16px;background:#fff7ed;border-bottom:1px solid #fed7aa;color:#9a3412;font-size:12px;line-height:1.5}
 .file-entry-notice a{color:#6d28d9;font-weight:700;margin-left:8px}
 .file-entry-notice[hidden]{display:none}

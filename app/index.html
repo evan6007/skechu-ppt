@@ -34,7 +34,7 @@
 <link rel="stylesheet" href="image-upscale.css?v=86-browser-hd">
 <link rel="stylesheet" href="paint-tools.css?v=38-responsive-shell">
 <link rel="stylesheet" href="layer-controls.css?v=79-layer-actions">
-<link rel="stylesheet" href="clipboard-controls.css?v=59-inline-ppt">
+<link rel="stylesheet" href="clipboard-controls.css?v=92-connector-setup">
 <meta name="theme-color" content="#141518">
 <link rel="stylesheet" href="vendor/katex/katex.min.css?v=01611-local">
 <script src="vendor/katex/katex.min.js?v=01611-local"></script>
@@ -110,6 +110,13 @@
   <section id="clipboard-feedback" class="clipboard-feedback" aria-label="PowerPoint 複製結果" hidden>
     <button id="clipboard-dismiss" type="button" aria-label="關閉複製訊息">×</button>
     <div role="status" aria-live="polite"><strong id="clipboard-title"></strong><p id="clipboard-message"></p></div>
+    <div id="clipboard-setup" class="clipboard-setup" hidden>
+      <a id="clipboard-install" class="clipboard-install" href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe" download="Skechu-PPT-Windows-Setup.exe"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg><span id="clipboard-install-label">下載 Windows 必要連接元件</span></a>
+      <p class="clipboard-package-note">單一安裝包，已包含執行環境與 PPT 連接元件，不用另裝 Python 或插件。<br>需要已有桌面版 Microsoft PowerPoint（不含在此安裝包）。</p>
+      <ol><li>下載後開啟 <b>Skechu-PPT-Windows-Setup.exe</b>。</li><li>完成安裝，保留勾選「Start PowerPoint connector」。</li><li>回到這裡按 Ctrl+C；瀏覽器詢問本機網路權限時，選擇允許。</li></ol>
+      <button id="clipboard-retry" type="button">已安裝，重試複製</button>
+      <details><summary>已安裝還是連不上？</summary><p>請從開始功能表啟動 Skechu-PPT。若先前拒絕瀏覽器權限，在網址列左側的網站設定中允許「本機網路存取」，再重試。不需要關閉防火牆或防毒，也不要清除網站資料。</p><p>若 Windows 提示未知發行者，先確認下載來自本專案的 GitHub Releases；此安裝包目前尚未數位簽章。</p></details>
+    </div>
     <div id="clipboard-web-actions" class="clipboard-actions" hidden><button id="clipboard-copy-image" class="primary" type="button">複製圖片到 PPT</button><button id="clipboard-download-image" type="button">下載 PNG</button><button id="clipboard-download-svg" type="button">下載選取 SVG</button><button id="clipboard-save-project" type="button" title="下載 .skc 後，在 Windows 本機版載入，再複製可編輯物件">另存專案給本機版</button><a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe" target="_blank" rel="noopener">下載／更新 Windows 連接服務</a></div>
   </section>
   <main class="workspace">
@@ -189,7 +196,7 @@
 <script src="project-files.js?v=89-file-save"></script>
 <script src="layer-controls.js?v=84-gradient-fields"></script>
 <script src="panel-layout.js?v=1-resizable"></script>
-<script src="clipboard-controls.js?v=81-gradient-fill"></script>
+<script src="clipboard-controls.js?v=92-connector-setup"></script>
 <script src="web-ppt-client.js?v=81-gradient-fill"></script>
 <script src="ppt-preparation.js?v=81-gradient-fill"></script>
 <script src="vendor/vtracer.js?v=1.0.0-alpha.4"></script>

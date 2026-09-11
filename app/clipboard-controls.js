@@ -5,7 +5,24 @@ function clipboardFeedback(title, message, kind = 'info', webActions = false) {
   document.getElementById('clipboard-title').textContent = title;
   document.getElementById('clipboard-message').textContent = message;
   document.getElementById('clipboard-web-actions').hidden = !webActions;
+  document.getElementById('clipboard-setup').hidden = true;
   document.getElementById('status').textContent = message;
+}
+function clipboardNeedsWindows() {
+  const platform=navigator.userAgentData?.platform||navigator.platform||'';
+  return !!platform&&!/^win/i.test(platform);
+}
+function clipboardSetupFeedback(error) {
+  if (clipboardNeedsWindows()) {
+    clipboardFeedback('原生 PPT 複製需要 Windows 電腦', '這部裝置仍可繼續畫圖與下載 SVG；可編輯的 PPT 物件需要在 Windows 安裝連接元件及桌面 PowerPoint。PNG 貼上後是圖片。', 'warning', true);
+    return;
+  }
+  const update=error.code==='WEB_PPT_UPDATE';
+  clipboardFeedback(update?'請更新 Windows 連接元件':'先安裝 Windows 連接元件，即可複製到 PPT', update
+    ? error.message
+    : '尚未連上本機服務。第一次使用請下載下方整合安裝包；若已安裝，請先啟動 Skechu-PPT。圖稿留在這裡，不必重新開啟。', 'warning');
+  document.getElementById('clipboard-setup').hidden = false;
+  document.getElementById('clipboard-install-label').textContent = update?'下載更新安裝包':'下載 Windows 必要連接元件';
 }
 function clipboardSelection() {
   const ids = selectedIds.size ? [...selectedIds] : selected ? [selected] : [];
@@ -22,12 +39,15 @@ function validateClipboardSelection() {
 }
 function setClipboardBusy(busy) {
   pptCopyRunning = busy;
-  for (const id of ['copy-ppt', 'copy-all-ppt', 'clipboard-copy-image', 'clipboard-download-image', 'clipboard-download-svg']) document.getElementById(id).disabled = busy;
+  for (const id of ['copy-ppt', 'copy-all-ppt', 'clipboard-retry', 'clipboard-copy-image', 'clipboard-download-image', 'clipboard-download-svg']) document.getElementById(id).disabled = busy;
   document.getElementById('copy-ppt').setAttribute('aria-busy', String(busy));
 }
 async function copySelectionToClipboard() {
   if (pptCopyRunning) return;
   if (!validateClipboardSelection()) return;
+  if (!HAS_NATIVE_PPT_BRIDGE && clipboardNeedsWindows()) {
+    clipboardSetupFeedback({code:'WEB_PPT_CONNECT'}); return;
+  }
   if (!HAS_NATIVE_PPT_BRIDGE && location.protocol === 'file:') {
     const fromFile = location.protocol === 'file:';
     clipboardFeedback(fromFile ? '目前直接開啟 HTML，尚未連接 PPT 服務' : '網頁版：請選擇貼上方式', fromFile
@@ -65,7 +85,8 @@ async function copySelectionToClipboard() {
     document.getElementById('copy-ppt').title=`複製完成${timing}`;
   } catch (error) {
     const setup=error.code==='WEB_PPT_CONNECT'||error.code==='WEB_PPT_UPDATE';
-    clipboardFeedback('尚未複製到 PowerPoint', setup?error.message:`${error.message || error}。請確認桌面 PowerPoint 正常執行；完成前請勿貼上，以免使用舊的剪貼簿內容。`, 'error');
+    if (setup) clipboardSetupFeedback(error);
+    else clipboardFeedback('尚未複製到 PowerPoint', `${error.message || error}。請確認桌面 PowerPoint 正常執行；完成前請勿貼上，以免使用舊的剪貼簿內容。`, 'error');
     // Do not erase the user's existing clipboard when Office reports an error.
   } finally {
     bar.hidden = true; bar.value = 0; setClipboardBusy(false); queueNativePrepare();
@@ -108,6 +129,9 @@ function initializeClipboardControls() {
     document.getElementById('select-all').click(); copySelectedObjects();
   };
   document.getElementById('clipboard-dismiss').onclick = () => { document.getElementById('clipboard-feedback').hidden = true; };
+  // Explicit retry uses the current selection; never copy automatically after
+  // installing, returning to the tab, or an uncertain clipboard response.
+  document.getElementById('clipboard-retry').onclick = copySelectionToClipboard;
   document.getElementById('clipboard-copy-image').onclick = copySelectionPicture;
   document.getElementById('clipboard-download-image').onclick = () => downloadClipboardSelection(true);
   document.getElementById('clipboard-download-svg').onclick = () => downloadClipboardSelection(false);

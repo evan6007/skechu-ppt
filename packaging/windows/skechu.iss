@@ -29,4 +29,4 @@ Name: "{autodesktop}\Skechu-PPT"; Filename: "{app}\Skechu-PPT.exe"; Tasks: deskt
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Shortcuts:"; Flags: checkedonce
 
 [Run]
-Filename: "{app}\Skechu-PPT.exe"; Description: "Open Skechu-PPT"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Skechu-PPT.exe"; Parameters: "--no-open-browser"; Description: "Start PowerPoint connector (return to your web tab to copy)"; Flags: nowait postinstall skipifsilent
