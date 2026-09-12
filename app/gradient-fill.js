@@ -58,7 +58,7 @@ function changeGradient(mutator,session=null){
  const next=deepCopy(it.fillGradient);mutator(next);
  if(!GradientFill.normalize(next)||JSON.stringify(next)===JSON.stringify(it.fillGradient))return false;
  if(!session||gradientEditSession!==session){commit();gradientEditSession=session}
- it.fillGradient=next;render();return true;
+ it.fillGradient=next;renderStylePreview(it);return true;
 }
 function syncGradientFillControls(){
  const panel=document.getElementById('gradient-editor');if(!panel||panel.hidden)return;

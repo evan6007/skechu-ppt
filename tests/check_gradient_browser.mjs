@@ -54,7 +54,7 @@ try{
  },exported);assert.ok(new Set(pixels.map(p=>p.join(','))).size>1,'Exported SVG must retain gradient colors');
  // .skc uses JSON metadata; autosave reload must retain all stops exactly.
  await page.evaluate(()=>syncActivePage());const saved=await state(page);await page.evaluate(()=>queueAutosave());
- await page.waitForFunction(()=>document.getElementById('autosave-status')?.textContent==='已自動保存');
+ await page.waitForFunction(()=>document.getElementById('autosave-status')?.textContent==='已存瀏覽器');
  await page.reload();await page.waitForFunction(()=>workspaceReady);assert.equal(await state(page),saved,'Persisted gradient survives a real browser reload');
  // Isolated page roundtrip through the actual project switch path.
  await page.evaluate(()=>openPage(activePageId));assert.equal(await state(page),saved);assert.ok(await page.locator('#gradient-editor').isHidden());

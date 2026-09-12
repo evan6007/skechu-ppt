@@ -49,6 +49,7 @@ jobs:
             --add-data "app/gradient-fill.js;." `
             --add-data "app/gradient-fill.css;." `
             --add-data "app/paint-layers.js;." `
+            --add-data "app/editor-render.js;." `
             --add-data "app/compound-fill.js;." `
             --add-data "app/paint-tools.js;." `
             --add-data "app/pan-tool.js;." `

@@ -88,8 +88,17 @@ function layerRowMarkup(key, members, group = null, child = false) {
 }
 function renderLayerTree() {
   const host = document.getElementById('layers'), scroll = host.scrollTop;
-  host.innerHTML = layerEntries().map(entry => entry.group ? `<div class="layer-folder">${layerRowMarkup(entry.key, entry.members, entry.group)}${entry.group.collapsed?'':entry.members.map(it=>layerRowMarkup('item:'+it.id,[it],null,true)).join('')}</div>` : layerRowMarkup(entry.key,entry.members)).join('');
-  host.scrollTop = scroll;
+  const entries = layerEntries();
+  // Geometry/color edits do not change layer controls. Avoid generating every
+  // row/icon again when a large folder is expanded during a canvas drag.
+  const signature = JSON.stringify(entries.map(e=>[e.key,e.group&&[e.group.id,e.group.name,!!e.group.collapsed],e.members.map(it=>[it.id,it.name,it.type,!!it.locked,!!it.hidden,!!it.referenceOnly,selectedIds.has(it.id)])]));
+  if (renderLayerTree.signature === signature && renderLayerTree.host === host && host.childElementCount === entries.length && !host.querySelector('input')) return;
+  renderLayerTree.signature = signature;
+  const markup = entries.map(entry => entry.group ? `<div class="layer-folder">${layerRowMarkup(entry.key, entry.members, entry.group)}${entry.group.collapsed?'':entry.members.map(it=>layerRowMarkup('item:'+it.id,[it],null,true)).join('')}</div>` : layerRowMarkup(entry.key,entry.members)).join('');
+  if (renderLayerTree.markup !== markup || renderLayerTree.host !== host || host.querySelector('input')) {
+    host.innerHTML = markup; host.scrollTop = scroll;
+    renderLayerTree.markup = markup; renderLayerTree.host = host;
+  }
   const chosen = items.filter(it => selectedIds.has(it.id));
   document.getElementById('group-layers').disabled = chosen.filter(it=>!it.referenceOnly&&!it.locked).length < 2;
   document.getElementById('ungroup-layers').disabled = !chosen.some(it=>layerGroupOf(it)&&!it.locked);

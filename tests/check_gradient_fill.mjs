@@ -19,7 +19,7 @@ assert.equal(sampled.color,'#800080');assert.equal(sampled.opacity,1);
 const shape={id:'a',type:'box',x:10,y:20,w:200,h:100,fill:'#ff0000',stroke:'#000000',strokeWidth:2,fillGradient:g};
 const painted=ctx.paintSceneItems([shape]);assert.equal(painted.length,2);assert.equal(JSON.stringify(painted[0].fillGradient),saved);assert.equal(painted[1].opacity,0);
 const html=read('app/index.html');
-assert.match(html,/gradient-fill.js\?v=81-gradient-fill/);assert.match(html,/initializeGradientFillControls\(\)/);assert.match(html,/delete it.fillGradient/);
+assert.match(html,/gradient-fill.js\?v=96-live-color/);assert.match(html,/initializeGradientFillControls\(\)/);assert.match(html,/delete it.fillGradient/);
 assert.match(html,/markup:gradient\?`<g \$\{paintAttrs\}>\$\{gradient.defs\}\$\{markup\}<\/g>`/,'Gradient definitions stay inside their item root');
 assert.match(html,/out.innerHTML=sceneMarkup\(chosen,'selection-'\)/,'Selection SVG must render the selected data, including nested shared partitions');
 assert.match(read('app/service-worker.js'),/gradient-fill.css\?v=81-gradient-fill/);

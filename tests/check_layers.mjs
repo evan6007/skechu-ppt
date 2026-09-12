@@ -128,7 +128,7 @@ const stableLayerWrites=targetRow.style.writes;events.get('layers:pointermove:fa
 events.get('layers:pointerup:false')(event(50));assert.equal(bodyChildren[0].removed,true,'Floating copy fades and is removed after drop');
 assert.equal(targetRow.style.transform,'');
 for(const asset of ['layer-controls.js','layer-controls.css']){
-  const version=asset.endsWith('.js')?'?v=84-gradient-fields':'?v=79-layer-actions';
+  const version=asset.endsWith('.js')?'?v=96-live-color':'?v=79-layer-actions';
   assert.ok(html.includes(asset+version));
   assert.ok(fs.readFileSync(new URL('../app/service-worker.js',import.meta.url),'utf8').includes(asset+version));
   assert.ok(fs.readFileSync(new URL('../.github/workflows/windows-release.yml',import.meta.url),'utf8').includes('app/'+asset+';.'));

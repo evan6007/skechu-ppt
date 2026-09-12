@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v95-copy-recovery';
+const CACHE_NAME = 'skechu-ppt-v96-live-color';
 const APP_SHELL = [
   './',
   './index.html',
@@ -21,10 +21,11 @@ const APP_SHELL = [
   './path-cut.js',
   './cut-tools.js',
   './cut-tools.css',
-  './gradient-fill.js?v=81-gradient-fill',
+  './gradient-fill.js?v=96-live-color',
   './gradient-fill.css?v=81-gradient-fill',
   './compound-fill.js?v=78-contour-outlines',
   './paint-layers.js?v=79-layer-actions',
+  './editor-render.js?v=96-live-color',
   './paint-tools.js?v=41-liquid-paper',
   './pan-tool.js',
   './selection-controls.js?v=84-gradient-fields',
@@ -32,7 +33,7 @@ const APP_SHELL = [
   './project-file-store.js?v=89-file-save',
   './project-files.js?v=89-file-save',
   './project-files.css?v=89-file-save',
-  './layer-controls.js?v=84-gradient-fields',
+  './layer-controls.js?v=96-live-color',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=79-layer-actions',
   './clipboard-controls.js?v=95-copy-recovery',
