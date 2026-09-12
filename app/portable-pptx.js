@@ -1,4 +1,4 @@
-/* Browser-only, native DrawingML export. No Office/COM, uploads, images,
+/* Browser-only, native DrawingML export. No Office/COM, uploads,
  * external relationships, or executable clipboard formats. Input is a bounded
  * geometry snapshot, never arbitrary XML. One px = .75 pt = 9525 EMU.
  */
@@ -29,10 +29,19 @@ const PortablePptx = (() => {
   }
   function validate(scene) {
     if (scene?.version !== 1 || !Array.isArray(scene.shapes) || !scene.shapes.length || scene.shapes.length > 10000) throw Error('請選取 1–10,000 個可編輯物件');
-    let segments = 0, characters = 0;
+    let segments = 0, characters = 0, imageBytes = 0;
     return scene.shapes.map(s => {
       const box = {x:number(s.x,-100000,100000,'位置'),y:number(s.y,-100000,100000,'位置'),w:number(s.w,.001,5000,'寬度'),h:number(s.h,.001,5000,'高度')};
       const base = {...box,rotation:number(s.rotation ?? 0,-36000,36000,'旋轉角度')};
+      if (s.kind === 'image') {
+        if(typeof s.src!=='string'||s.src.length>12000000||!/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(s.src))throw Error('底圖必須是內嵌 PNG，不能使用外部連結或本機路徑');
+        const bytes=Uint8Array.from(atob(s.src.slice(22)),c=>c.charCodeAt(0));
+        const view=new DataView(bytes.buffer);
+        if(bytes.length<33||view.getUint32(0)!==0x89504e47||view.getUint32(4)!==0x0d0a1a0a||view.getUint32(8)!==13||view.getUint32(12)!==0x49484452)throw Error('PNG 檔頭不正確');
+        const w=view.getUint32(16),h=view.getUint32(20);
+        if(!w||!h||w>8192||h>8192||w*h>16000000||(imageBytes+=bytes.length)>9000000)throw Error('底圖過大，請分批匯出');
+        return {...base,kind:'image',bytes};
+      }
       if (s.kind === 'text') {
         if (typeof s.text !== 'string' || typeof s.font !== 'string' || s.font.length > 128 || (characters += s.text.length) > 200000) throw Error('文字過長或字型格式不正確');
         const margins = (s.margins ?? [0,0,0,0]);
@@ -64,6 +73,7 @@ const PortablePptx = (() => {
   function shapeXml(s,index,origin) {
     const w=Math.max(1,emu(s.w)),h=Math.max(1,emu(s.h));
     const transform=`<a:xfrm rot="${Math.round(((s.rotation%360+360)%360)*60000)}"><a:off x="${emu(s.x-origin.x)}" y="${emu(s.y-origin.y)}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm>`;
+    if(s.kind==='image')return `<p:pic><p:nvPicPr><p:cNvPr id="${index+2}" name="Skechu picture ${index+1}"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="${s.relId}"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr>${transform}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>`;
     const nonvisual=`<p:nvSpPr><p:cNvPr id="${index+2}" name="Skechu ${s.kind} ${index+1}"/><p:cNvSpPr${s.kind==='text'?' txBox="1"':''}/><p:nvPr/></p:nvSpPr>`;
     if (s.kind==='text') {
       const runProps=`sz="${Math.round(s.size*75)}" b="${s.bold?1:0}" i="${s.italic?1:0}"`;
@@ -92,6 +102,12 @@ const PortablePptx = (() => {
   }
   function parts(scene) {
     const shapes=validate(scene),b=bounds(shapes),files={};
+    const slideRelations=[['slideLayout','../slideLayouts/slideLayout1.xml']];
+    for(const s of shapes)if(s.kind==='image'){
+      const name=`picture${slideRelations.length}.png`;
+      files[`ppt/media/${name}`]=s.bytes;
+      slideRelations.push(['image',`../media/${name}`]);s.relId=`rId${slideRelations.length}`;
+    }
     const document=(name,body)=>files[name]=declaration+body;
     const ns=`xmlns:a="${A}" xmlns:r="${R}" xmlns:p="${P}"`;
     const types={'ppt/presentation.xml':'presentationml.presentation.main','ppt/slides/slide1.xml':'presentationml.slide','ppt/slideMasters/slideMaster1.xml':'presentationml.slideMaster','ppt/slideLayouts/slideLayout1.xml':'presentationml.slideLayout','ppt/theme/theme1.xml':'theme'};
@@ -105,7 +121,8 @@ const PortablePptx = (() => {
     document('ppt/slideLayouts/slideLayout1.xml',`<p:sldLayout ${ns} type="blank" preserve="1"><p:cSld name="Blank"><p:spTree>${groupRoot()}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>`);
     files['ppt/slideLayouts/_rels/slideLayout1.xml.rels']=relations([['slideMaster','../slideMasters/slideMaster1.xml']]);
     document('ppt/slides/slide1.xml',`<p:sld ${ns}><p:cSld><p:spTree>${groupRoot()}${shapes.map((s,i)=>shapeXml(s,i,b)).join('')}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`);
-    files['ppt/slides/_rels/slide1.xml.rels']=relations([['slideLayout','../slideLayouts/slideLayout1.xml']]);
+    files['ppt/slides/_rels/slide1.xml.rels']=relations(slideRelations);
+    if(slideRelations.length>1)files['[Content_Types].xml']=files['[Content_Types].xml'].replace('</Types>','<Default Extension="png" ContentType="image/png"/></Types>');
     const colors=['000000','FFFFFF','172033','F5F5F5','6D28D9','2563EB','16A34A','FF7920','DC2626','475569','0000FF','800080'];
     const names=['dk1','lt1','dk2','lt2','accent1','accent2','accent3','accent4','accent5','accent6','hlink','folHlink'];
     const ph='<a:solidFill><a:schemeClr val="phClr"/></a:solidFill>';
@@ -117,7 +134,7 @@ const PortablePptx = (() => {
   const crcTable=Uint32Array.from({length:256},(_,n)=>{for(let k=0;k<8;k++)n=n&1?0xedb88320^(n>>>1):n>>>1;return n>>>0});
   function crc32(data){let n=0xffffffff;for(const byte of data)n=crcTable[(n^byte)&255]^(n>>>8);return(n^0xffffffff)>>>0}
   function zip(files){
-    const entries=Object.entries(files).map(([name,data])=>({name:encoder.encode(name),data:encoder.encode(data)}));
+    const entries=Object.entries(files).map(([name,data])=>({name:encoder.encode(name),data:data instanceof Uint8Array?data:encoder.encode(data)}));
     const size=entries.reduce((n,e)=>n+76+e.name.length*2+e.data.length,22);
     if(size>LIMIT)throw Error('匯出超過 24 MB，請縮小選取範圍或分批匯出');
     const result=new Uint8Array(size),view=new DataView(result.buffer);let offset=0;

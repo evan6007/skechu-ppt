@@ -2,6 +2,18 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.8 / Web v95] - 2026-09-12
+
+### Fixed
+
+- Explicitly selected reference images can be copied. A single picture uses the browser PNG clipboard without an Office probe. Mixed selections preserve independent pictures and editable vectors in native PPTX and the updated Windows bridge; hidden images remain excluded.
+- Bound local copy/preparation waits to three minutes, release the busy UI after failure, and expose a current-selection retry. Terminal stream results no longer wait for socket EOF. Browser permission/network denial no longer launches a second hidden transport.
+- Never replay an uncertain PowerPoint clipboard write through a native-cache rebuild. Invalid/missing image files fail visibly instead of being silently dropped. Embedded PNG input is bounded and validated without allowing remote URLs or arbitrary local paths.
+
+### Changed
+
+- Add consistent Windows executable version/publisher metadata, release checksum and actual Authenticode status. Releases remain unsigned while free OSS signing application materials are prepared; no approval or removal of SmartScreen warnings is claimed. See [Code signing policy](docs/code-signing-policy.md).
+
 ## [Web v94] - 2026-09-12
 
 ### Added

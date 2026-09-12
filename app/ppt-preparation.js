@@ -16,10 +16,10 @@ function pptKey(value) {
   let hash=2166136261;for(const char of value)hash=Math.imul(hash^char.charCodeAt(0),16777619);
   return (hash>>>0).toString(36);
 }
-function nativeRequestBody(sourceItems=items) {
-  const payload=JSON.parse(nativeBody(sourceItems));
+function nativeRequestBody(sourceItems=items, includeReferences=false) {
+  const payload=JSON.parse(nativeBody(sourceItems, includeReferences));
   payload.items=payload.items.map(({locked,layerGroup,name,autoTraceBatch,...item})=>item);
-  const all=exportableItems(items),selected=exportableItems(sourceItems);
+  const all=exportableItems(items),selected=includeReferences?sourceItems.filter(it=>!it.hidden):exportableItems(sourceItems);
   const scope=selected.length===all.length&&selected.every((it,i)=>it.id===all[i].id)
     ?'all':'selection-'+pptKey(JSON.stringify(selected.map(it=>it.id)));
   payload.cacheId=pptCacheSession+':'+pptKey(String(activeProjectId)+':'+String(activePageId))+':'+scope;
@@ -65,7 +65,7 @@ function finishPptPrepareProgress(ready) {
 function cancelSupersededNativePrepare(nextBody) {
   if(!pptPrepareRunning||!pptPreparingBody||nextBody===pptPreparingBody||pptPrepareCancelPromise)return;
   if(!HAS_NATIVE_PPT_BRIDGE&&typeof cancelWebPptPrepare!=='function')return;
-  pptPrepareCancelPromise=(HAS_NATIVE_PPT_BRIDGE?fetch('/cancel-prepare',{method:'POST'}):cancelWebPptPrepare())
+  pptPrepareCancelPromise=(HAS_NATIVE_PPT_BRIDGE?fetch('/cancel-prepare',{method:'POST',signal:AbortSignal.timeout(5000)}):cancelWebPptPrepare())
     .catch(()=>null)
     .finally(()=>{pptPrepareCancelPromise=null});
 }
@@ -97,7 +97,7 @@ function runNativePrepare() {
           if(HAS_NATIVE_PPT_BRIDGE&&typeof requireLocalGradientCapability==='function')await requireLocalGradientCapability(body);
           const progress=event=>showPptPrepareProgress(event);
           const result=HAS_NATIVE_PPT_BRIDGE
-            ?await readNativeStream(await fetch('/prepare',{method:'POST',headers:{'Content-Type':'application/json'},body}),progress)
+            ?await runLocalPptOperation('prepare',body,progress)
             :await requestWebPptPrepare(body,progress);
           if(!result.prepared||!(result.count>0))throw new Error('Native preparation not confirmed');
           lastResult=result;pptPreparedBody=body;pptPrepareRetryAt=0;

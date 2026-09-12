@@ -34,7 +34,7 @@
 <link rel="stylesheet" href="image-upscale.css?v=86-browser-hd">
 <link rel="stylesheet" href="paint-tools.css?v=38-responsive-shell">
 <link rel="stylesheet" href="layer-controls.css?v=79-layer-actions">
-<link rel="stylesheet" href="clipboard-controls.css?v=94-system-copy">
+<link rel="stylesheet" href="clipboard-controls.css?v=95-copy-recovery">
 <meta name="theme-color" content="#141518">
 <link rel="stylesheet" href="vendor/katex/katex.min.css?v=01611-local">
 <script src="vendor/katex/katex.min.js?v=01611-local"></script>
@@ -115,8 +115,9 @@
       <p class="clipboard-package-note">單一安裝包，已包含執行環境與 PPT 連接元件，不用另裝 Python 或插件。<br>需要已有桌面版 Microsoft PowerPoint（不含在此安裝包）。</p>
       <ol><li>下載後開啟 <b>Skechu-PPT-Windows-Setup.exe</b>。</li><li>完成安裝，保留勾選「Start PowerPoint connector」。</li><li>回到這裡按 Ctrl+C；瀏覽器詢問本機網路權限時，選擇允許。</li></ol>
       <button id="clipboard-retry" type="button">已安裝，重試複製</button>
-      <details><summary>已安裝還是連不上？</summary><p>請從開始功能表啟動 Skechu-PPT。若先前拒絕瀏覽器權限，在網址列左側的網站設定中允許「本機網路存取」，再重試。不需要關閉防火牆或防毒，也不要清除網站資料。</p><p>若 Windows 提示未知發行者，先確認下載來自本專案的 GitHub Releases；此安裝包目前尚未數位簽章。</p></details>
+      <details><summary>已安裝還是連不上？</summary><p>請從開始功能表啟動 Skechu-PPT。若先前拒絕瀏覽器權限，在網址列左側的網站設定中允許「本機網路存取」，再重試。不需要關閉防火牆或防毒，也不要清除網站資料。</p><p>若 Windows 提示未知發行者，先確認下載來自本專案的 GitHub Releases；安裝包目前尚未數位簽章。<a href="https://github.com/evan6007/skechu-ppt/blob/main/docs/code-signing-policy.md" target="_blank" rel="noopener">Code signing policy／簽章與安全說明</a></p></details>
     </div>
+    <div id="clipboard-recovery" class="clipboard-actions" hidden><button id="clipboard-retry-operation" type="button">重試複製</button><p>使用目前選取的內容重試。不會自動重送或清空你的剪貼簿。</p></div>
     <div id="clipboard-portable-actions" class="clipboard-actions" hidden><button id="clipboard-download-pptx" class="primary" type="button">匯出選取 PPTX</button><p>Mac 可用桌面 PowerPoint；Linux／Ubuntu 可用網頁版 PowerPoint 開啟 PPTX。不同接收端的貼上能力仍需實機驗證。</p></div>
     <div id="clipboard-web-actions" class="clipboard-actions" hidden><button id="clipboard-copy-image" class="primary" type="button">複製圖片到 PPT</button><button id="clipboard-download-image" type="button">下載 PNG</button><button id="clipboard-download-svg" type="button">下載選取 SVG</button><button id="clipboard-save-project" type="button" title="下載 .skc 後，在 Windows 本機版載入，再複製可編輯物件">另存專案給本機版</button><a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe" target="_blank" rel="noopener">下載／更新 Windows 連接服務</a></div>
   </section>
@@ -197,11 +198,12 @@
 <script src="project-files.js?v=89-file-save"></script>
 <script src="layer-controls.js?v=84-gradient-fields"></script>
 <script src="panel-layout.js?v=1-resizable"></script>
-<script src="portable-pptx.js?v=94-system-copy"></script>
-<script src="portable-ppt-controls.js?v=94-system-copy"></script>
-<script src="clipboard-controls.js?v=94-system-copy"></script>
-<script src="web-ppt-client.js?v=81-gradient-fill"></script>
-<script src="ppt-preparation.js?v=94-system-copy"></script>
+<script src="portable-pptx.js?v=95-copy-recovery"></script>
+<script src="portable-ppt-controls.js?v=95-copy-recovery"></script>
+<script src="clipboard-controls.js?v=95-copy-recovery"></script>
+<script src="clipboard-images.js?v=95-copy-recovery"></script>
+<script src="web-ppt-client.js?v=95-copy-recovery"></script>
+<script src="ppt-preparation.js?v=95-copy-recovery"></script>
 <script src="vendor/vtracer.js?v=1.0.0-alpha.4"></script>
 <script src="illustration-trace.js?v=84-gradient-fields"></script>
 <script src="source-gradient.js?v=88-detail-fill"></script>
@@ -284,8 +286,15 @@ function updateCanvasSize(){const page=activePage(),widthInput=document.getEleme
 function updateCanvasAppearance(){const page=activePage(),colorInput=document.getElementById('canvas-paper-color'),opacityInput=document.getElementById('canvas-paper-opacity');if(!page||!colorInput||!opacityInput)return;page.canvasColor=colorInput.value;page.canvasOpacity=clamp(Number(opacityInput.value)/100,0,1);applyCanvasSize();renderWorkspacePages();queueAutosave()}
 function setCanvasAppearance(color,opacity){const page=activePage();if(!page)return;page.canvasColor=/^#[0-9a-f]{6}$/i.test(String(color))?String(color):'#ffffff';page.canvasOpacity=clamp(Number(opacity),0,1);applyCanvasSize();renderWorkspacePages();queueAutosave()}
 function exportableItems(sourceItems=items){return sourceItems.filter(it=>!it.referenceOnly&&!it.hidden)}
-function nativeBody(sourceItems=items){return JSON.stringify({items:paintSceneItems(exportableItems(sourceItems))})}
-async function readNativeStream(response,onProgress){if(!response.ok)throw new Error((await response.json().catch(()=>null))?.error||`PowerPoint bridge ${response.status}`);if(!response.body)throw new Error('瀏覽器不支援串流進度');const reader=response.body.getReader(),decoder=new TextDecoder;let buffer='',result=null;const accept=line=>{if(!line.trim())return;const event=JSON.parse(line);if(event.type==='progress')onProgress?.(event);else if(event.type==='result')result=event};while(true){const {value,done}=await reader.read();buffer+=decoder.decode(value||new Uint8Array,{stream:!done});const lines=buffer.split('\n');buffer=lines.pop();for(const line of lines)accept(line);if(done)break}if(buffer.trim())accept(buffer);if(!result?.ok)throw new Error(result?.error||'PowerPoint bridge failed');return result}
+function nativeBody(sourceItems=items,includeReferences=false){return JSON.stringify({items:paintSceneItems(includeReferences?sourceItems.filter(it=>!it.hidden):exportableItems(sourceItems))})}
+async function readNativeStream(response,onProgress){
+ if(!response.ok)throw new Error((await response.json().catch(()=>null))?.error||`PowerPoint bridge ${response.status}`);
+ if(!response.body)throw new Error('瀏覽器不支援串流進度');
+ const reader=response.body.getReader(),decoder=new TextDecoder;let buffer='',result=null;
+ const accept=line=>{if(!line.trim()||result)return;const event=JSON.parse(line);if(event.type==='progress')onProgress?.(event);else if(event.type==='result')result=event};
+ try{while(!result){const {value,done}=await reader.read();buffer+=decoder.decode(value||new Uint8Array,{stream:!done});if(buffer.length>1000000)throw Error('PowerPoint 回應格式過大');const lines=buffer.split('\n');buffer=lines.pop();for(const line of lines)accept(line);if(done){if(buffer.trim())accept(buffer);break}}if(!result?.ok)throw Error(result?.error||'連線提前結束，未收到複製完成確認');return result}
+ finally{void reader.cancel().catch(()=>{});reader.releaseLock()}
+}
 function currentNativeItems(){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]);return ids.length?items.filter(it=>ids.includes(it.id)):items}
 function renderProjectNav(){
  window.automationPageChanged?.();
@@ -629,8 +638,12 @@ document.getElementById('backward').onclick=()=>nudgeSelectedLayers('below');
 document.getElementById('undo').onclick=()=>{if(!history.length)return;future.push(state());restore(history.pop())};document.getElementById('redo').onclick=()=>{if(!future.length)return;history.push(state());restore(future.pop())};
 document.getElementById('select-all').onclick=()=>{activateSelectTool();selectedIds=new Set(items.filter(selectableOnCanvas).map(it=>it.id));selected=[...selectedIds].at(-1)||null;selectedPoint=selectedSegment=null;selectedPoints.clear();editPoints=!!byId(selected)?.points;refreshSelectionUI();document.getElementById('status').textContent=`已切換到選取並全選 ${selectedIds.size} 個可編輯物件；曲線錨點已顯示`};
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-async function selectionSvgBlob(stripText=false){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]);if(!ids.length)throw new Error('請先選取元素');const chosen=exportableItems(items.filter(it=>ids.includes(it.id)));if(!chosen.length)throw new Error('描圖底圖不會匯出，請選取線條或色塊');const bs=chosen.map(itemBounds),pad=12,x=Math.min(...bs.map(b=>b.x))-pad,y=Math.min(...bs.map(b=>b.y))-pad,x2=Math.max(...bs.map(b=>b.x+b.w))+pad,y2=Math.max(...bs.map(b=>b.y+b.h))+pad,out=document.createElementNS('http://www.w3.org/2000/svg','svg');out.setAttribute('xmlns','http://www.w3.org/2000/svg');out.setAttribute('viewBox',`${x} ${y} ${x2-x} ${y2-y}`);out.setAttribute('width',x2-x);out.setAttribute('height',y2-y);out.innerHTML=sceneMarkup(chosen,'selection-');out.querySelectorAll('.arrow-hit,[data-region-preview]').forEach(n=>n.remove());if(stripText)out.querySelectorAll('text').forEach(n=>n.remove());for(const im of out.querySelectorAll('image')){const href=im.getAttribute('href');if(!href||href.startsWith('data:'))continue;const blob=await fetch(new URL(href,location.href)).then(r=>r.blob()),data=await new Promise(ok=>{const fr=new FileReader;fr.onload=()=>ok(fr.result);fr.readAsDataURL(blob)});im.setAttribute('href',data)}return{blob:new Blob([new XMLSerializer().serializeToString(out)],{type:'image/svg+xml'}),x,y,w:x2-x,h:y2-y}}
-async function svgToPng(svgPromise){const {blob,w,h}=await svgPromise,url=URL.createObjectURL(blob),im=new Image;await new Promise((ok,bad)=>{im.onload=ok;im.onerror=bad;im.src=url});const scale=Math.min(4,Math.max(2,2400/Math.max(w,h))),c=document.createElement('canvas');c.width=Math.ceil(w*scale);c.height=Math.ceil(h*scale);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);return await new Promise(ok=>c.toBlob(ok,'image/png'))}
+async function selectionSvgBlob(stripText=false){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]);if(!ids.length)throw new Error('請先選取元素');const chosen=items.filter(it=>ids.includes(it.id)&&!it.hidden);if(!chosen.length)throw new Error('請選取可見的線條、色塊或底圖');const bs=chosen.map(itemBounds),pad=12,x=Math.min(...bs.map(b=>b.x))-pad,y=Math.min(...bs.map(b=>b.y))-pad,x2=Math.max(...bs.map(b=>b.x+b.w))+pad,y2=Math.max(...bs.map(b=>b.y+b.h))+pad,out=document.createElementNS('http://www.w3.org/2000/svg','svg');out.setAttribute('xmlns','http://www.w3.org/2000/svg');out.setAttribute('viewBox',`${x} ${y} ${x2-x} ${y2-y}`);out.setAttribute('width',x2-x);out.setAttribute('height',y2-y);out.innerHTML=sceneMarkup(chosen,'selection-');out.querySelectorAll('.arrow-hit,[data-region-preview]').forEach(n=>n.remove());if(stripText)out.querySelectorAll('text').forEach(n=>n.remove());for(const im of out.querySelectorAll('image')){const href=im.getAttribute('href');if(!href||href.startsWith('data:'))continue;const blob=await fetch(new URL(href,location.href)).then(r=>r.blob()),data=await new Promise(ok=>{const fr=new FileReader;fr.onload=()=>ok(fr.result);fr.readAsDataURL(blob)});im.setAttribute('href',data)}return{blob:new Blob([new XMLSerializer().serializeToString(out)],{type:'image/svg+xml'}),x,y,w:x2-x,h:y2-y}}
+async function svgToPng(svgPromise){
+ const {blob,w,h}=await svgPromise,url=URL.createObjectURL(blob),im=new Image;
+ try{await new Promise((ok,bad)=>{const timer=setTimeout(()=>{im.src='';bad(Error('圖片轉換逾時，請縮小範圍後重試'))},15000);im.onload=()=>{clearTimeout(timer);ok()};im.onerror=()=>{clearTimeout(timer);bad(Error('圖片無法解碼'))};im.src=url});const scale=Math.min(4,Math.max(2,2400/Math.max(w,h)),Math.sqrt(16000000/(w*h))),c=document.createElement('canvas');if(!(w>0&&h>0)||w*scale>8192||h*scale>8192)throw Error('選取範圍過大，請分批複製');c.width=Math.max(1,Math.floor(w*scale));c.height=Math.max(1,Math.floor(h*scale));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return await new Promise((ok,bad)=>c.toBlob(b=>b?ok(b):bad(Error('圖片轉換失敗')),'image/png'))}
+ finally{URL.revokeObjectURL(url)}
+}
 async function selectionHtmlBlob(){const ids=selectedIds.size?[...selectedIds]:(selected?[selected]:[]),meta=await selectionSvgBlob(true),png=await svgToPng(Promise.resolve(meta)),pngData=await new Promise(ok=>{const fr=new FileReader;fr.onload=()=>ok(fr.result);fr.readAsDataURL(png)}),layers=items.filter(it=>ids.includes(it.id)).map(it=>{let text='',tx=0,ty=0,size=20,color='#24313a',tw=0,rot=0;if(it.type==='polygon'&&it.label){const c=centroid(it.points);text=it.label;tx=it.labelX??c.x;ty=it.labelY??c.y+7;size=it.fontSize||20;color=it.labelColor||'#24313a';tw=Math.max(50,itemBounds(it).w)}else if(it.type==='text'&&it.text){text=it.text;tx=it.x;ty=it.y;size=it.size||20;color=it.color||'#24313a';tw=Math.max(50,itemBounds(it).w);rot=it.r||0}if(!text)return'';return`<div style="position:absolute;left:${tx-meta.x-tw/2}px;top:${ty-size-meta.y}px;width:${tw}px;height:${size*1.5}px;font-family:Arial,sans-serif;font-size:${size}px;color:${color};text-align:center;line-height:${size*1.3}px;white-space:pre-wrap;transform:rotate(${rot}deg);transform-origin:center">${esc(text)}</div>`}).join('');const html=`<div style="position:relative;width:${meta.w}px;height:${meta.h}px;overflow:visible"><img src="${pngData}" width="${meta.w}" height="${meta.h}" style="position:absolute;left:0;top:0;width:${meta.w}px;height:${meta.h}px">${layers}</div>`;return new Blob([html],{type:'text/html'})}
 
 

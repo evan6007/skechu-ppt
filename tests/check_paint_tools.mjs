@@ -37,7 +37,7 @@ assert.equal(ctx.paintSceneItems([poly])[1].label,'visible label');
 const arrow={...divider,closed:true,fill:'#f00',fillOpacity:1};
 assert.equal(ctx.paintSceneItems([arrow])[1].fillOpacity,0);
 assert.equal(ctx.paintSceneItems([arrow])[0].endHead,false);
-assert.match(html,/items:paintSceneItems\(exportableItems\(sourceItems\)\)/,'Native and editor share paint ordering');
+assert.match(html,/items:paintSceneItems\(includeReferences\?sourceItems\.filter\(it=>!it\.hidden\):exportableItems\(sourceItems\)\)/,'Native and editor share paint ordering; explicit reference copy uses the same paint bands');
 assert.match(html,/const entries=paintSceneItems\(sourceItems\)\.map/);
 assert.match(html,/it\.paintSourceId\|\|it\.id/,'Rendered fill still selects the original object');
 assert.match(html,/out.innerHTML=sceneMarkup\(chosen,'selection-'\)/,'Selection SVG includes selected fill and stroke data but excludes reference');

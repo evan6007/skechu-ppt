@@ -127,6 +127,13 @@ If you explicitly enable automation, requested object data and exports can be re
 
 ## Project status
 
+### Code signing policy
+
+The Windows installer is currently unsigned; free open-source signing application
+materials are being prepared. Approval has not been granted. See the
+[code signing policy, privacy details and installation safety](docs/code-signing-policy.md).
+The browser editor and editable PPTX export do not require a Windows installation.
+
 Skechu-PPT is an open-source public preview. Detailed keyboard controls are in the [user guide](docs/guide.md); implementation details are in the [architecture notes](docs/architecture.md); current work is tracked in the [roadmap](ROADMAP.md) and [changelog](CHANGELOG.md).
 
 <details>

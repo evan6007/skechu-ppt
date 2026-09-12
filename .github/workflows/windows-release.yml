@@ -23,7 +23,11 @@ jobs:
       - name: Build portable application
         shell: pwsh
         run: |
+          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '0.2.0-dev' }
+          $env:SKECHU_VERSION = $version
+          python packaging/windows/write-version-info.py packaging/windows/generated-version-info.txt
           pyinstaller --noconfirm --clean --windowed --name Skechu-PPT `
+            --version-file packaging/windows/generated-version-info.txt `
             --icon assets/brand/skechu-ppt-mark.ico `
             --add-data "app/index.html;." `
             --add-data "app/about.html;." `
@@ -58,6 +62,7 @@ jobs:
             --add-data "app/layer-controls.css;." `
             --add-data "app/panel-layout.js;." `
             --add-data "app/clipboard-controls.js;." `
+            --add-data "app/clipboard-images.js;." `
             --add-data "app/portable-pptx.js;." `
             --add-data "app/portable-ppt-controls.js;." `
             --add-data "app/portable-ppt-worker.js;." `
@@ -103,7 +108,7 @@ jobs:
             if (-not $ready) { throw 'Packaged Skechu-PPT did not start.' }
             $bridgeStatus = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8877/web-ppt/status -Headers @{Origin='https://evan6007.github.io'} -TimeoutSec 2
             $capabilities = $bridgeStatus.Content | ConvertFrom-Json
-            if ($capabilities.protocol -ne 1 -or 'inline-copy' -notin $capabilities.capabilities -or 'gradient-fill-v1' -notin $capabilities.capabilities) { throw 'Packaged inline PPT connection unavailable.' }
+            if ($capabilities.protocol -ne 1 -or 'inline-copy' -notin $capabilities.capabilities -or 'gradient-fill-v1' -notin $capabilities.capabilities -or 'inline-image-v1' -notin $capabilities.capabilities) { throw 'Packaged inline PPT connection unavailable.' }
             if ($bridgeStatus.Headers['Access-Control-Allow-Origin'] -ne 'https://evan6007.github.io') { throw 'Packaged web origin mismatch.' }
             if ($response.Content -notmatch 'id="clipboard-install"') { throw 'Packaged editor is missing the direct installer guide.' }
             foreach ($asset in @('web-ppt.html','web-ppt-helper.js','web-ppt-client.js','clipboard-controls.js','clipboard-controls.css','ppt-preparation.js','gradient-fill.js','gradient-fill.css','layer-controls.js','layer-controls.css','panel-layout.js','theme-controls.js','theme-controls.css','project-file-store.js','project-files.js','image-upscale-ui.js','image-upscale-worker.js','source-gradient.js','gradient-regions.js','vendor/super-resolution/anime-v3.json','vendor/super-resolution/anime-v3-f32.bin','vendor/super-resolution/tf-4.22.0.min.js')) {
@@ -121,18 +126,21 @@ jobs:
           $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '0.2.0-dev' }
           $env:SKECHU_VERSION = $version
           & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' packaging/windows/skechu.iss
+      - name: Record installer signature and checksum
+        shell: pwsh
+        run: ./packaging/windows/write-release-info.ps1
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: Skechu-PPT-Windows-Setup
-          path: dist-installer/Skechu-PPT-Windows-Setup.exe
+          path: dist-installer/*
       - name: Publish GitHub release
         if: github.ref_type == 'tag'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create '${{ github.ref_name }}' dist-installer/Skechu-PPT-Windows-Setup.exe `
+          gh release create '${{ github.ref_name }}' dist-installer/Skechu-PPT-Windows-Setup.exe dist-installer/SHA256SUMS.txt dist-installer/signature-status.json `
             --repo '${{ github.repository }}' `
             --title "Skechu-PPT ${{ github.ref_name }}" `
-            --generate-notes
+            --notes-file dist-installer/release-notes.md --generate-notes

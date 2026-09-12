@@ -14,6 +14,8 @@ const ctx=vm.createContext({crypto:{randomUUID:()=> 'tab'},Date:{now:()=>now},se
   readNativeStream:async(response,onProgress)=>{onProgress?.({percent:54,stage:'建立 PowerPoint 物件',current:1,total:2});return response},
   canWebPptPrepare:()=>false,
 });
+ctx.runLocalPptOperation=async(kind,body,progress)=>ctx.readNativeStream(await ctx.fetch('/'+kind,{body}),progress);
+ctx.AbortSignal=AbortSignal;
 vm.runInContext(source,ctx);
 const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve()};
 const tick=async(ms=1800)=>{const pending=[...timers.entries()].filter(([,timer])=>timer.ms===ms);pending.forEach(([id,timer])=>{timers.delete(id);timer.fn()});await flush()};

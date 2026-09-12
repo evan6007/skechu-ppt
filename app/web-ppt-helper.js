@@ -6,7 +6,7 @@ function validWebPptPayload(body) {
   if(!Array.isArray(payload.items)||!payload.items.length||payload.items.length>10000)throw new Error('沒有可複製物件，或物件超過一萬個');
   for(const item of payload.items){
     if(!item||!['box','ellipse','polygon','arrow','text','image'].includes(item.type))throw new Error('不支援的物件格式');
-    if(item.type==='image'&&!(typeof item.src==='string'&&item.src.startsWith('assets/')&&!/[\\:\x00]/.test(item.src)&&!item.src.split('/').includes('..')))throw new Error('網頁原生複製不接受本機檔案路徑；請改用線條或形狀');
+    if(item.type==='image'&&!(typeof item.src==='string'&&(/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(item.src)||(item.src.startsWith('assets/')&&!/[\\:\x00]/.test(item.src)&&!item.src.split('/').includes('..')))))throw new Error('底圖必須是內嵌 PNG，不接受本機檔案路徑');
     if(item.points&&(!Array.isArray(item.points)||item.points.length>100000||item.points.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y))))throw new Error('曲線座標不正確');
   }
   return payload;
@@ -27,6 +27,7 @@ function initializeWebPptHelper() {
   allow.onclick=async()=>{const revision=++connectionRevision;
     try{const info=await fetch('/native-capabilities',{cache:'no-store',signal:AbortSignal.timeout(1500)}).then(r=>r.json());
       if(info.capabilities?.includes('gradient-fill-v1')&&!capabilities.includes('gradient-fill-v1'))capabilities.push('gradient-fill-v1');
+      if(info.capabilities?.includes('inline-image-v1')&&!capabilities.includes('inline-image-v1'))capabilities.push('inline-image-v1');
     }catch{}
     if(revision!==connectionRevision)return;
     approved=true;allow.hidden=true;disconnect.hidden=false;status.textContent='已連接。改動後會背景準備，不會寫入剪貼簿；按複製才會寫入。請保留此視窗。';reply('approved',{capabilities});};

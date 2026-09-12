@@ -41,7 +41,7 @@ const ctx=vm.createContext({
   location:{protocol:'https:'},
   HAS_NATIVE_PPT_BRIDGE:true,pptCopyRunning:false,pptPrepareTimer:null,pptPrepareWanted:null,pptPreparedBody:null,pptPreparePromise:null,pptPreparingBody:null,traceDraft:null,
   queueNativePrepare(){},noteNativeCopy(){},
-  selected:'a',selectedIds:new Set(['a']),items:[{id:'ref',referenceOnly:true},{id:'a',type:'box'}],
+  selected:'a',selectedIds:new Set(['a']),items:[{id:'ref',type:'image',referenceOnly:true},{id:'a',type:'box'}],
   document:{getElementById:node},clearTimeout(){},
   exportableItems:items=>items.filter(it=>!it.referenceOnly),nativeRequestBody:items=>JSON.stringify({items}),
   fetch:async(url,options)=>{requestCount++;assert.equal(url,'/copy');assert.deepEqual(JSON.parse(options.body).items,[{id:'a',type:'box'}]);return{}},
@@ -51,6 +51,7 @@ const ctx=vm.createContext({
   selectionSvgBlob:async()=>({blob:'svg'}),svgToPng:async promise=>{await promise;return 'png'},download:(blob,name)=>downloads.push({blob,name}),
   copySelectedObjects:()=>ctx.copySelectionToClipboard(),
 });
+ctx.runLocalPptOperation=async(kind,body,progress)=>ctx.readNativeStream(await ctx.fetch('/'+kind,{body}),progress);
 vm.runInContext(source,ctx);
 vm.runInContext(fs.readFileSync(new URL('../app/portable-ppt-controls.js',import.meta.url),'utf8'),ctx);
 ctx.initializeClipboardControls();
@@ -58,11 +59,12 @@ assert.equal(node('copy-ppt').hidden,false);assert.match(node('copy-ppt-mode').t
 await node('copy-ppt').onclick();assert.equal(requestCount,1);assert.match(node('clipboard-title').textContent,/已複製/);assert.match(node('clipboard-message').textContent,/可編輯物件.*Ctrl\+V/);
 assert.equal(node('clipboard-feedback').dataset.kind,'success');assert.equal(ctx.pptCopyRunning,false);
 ctx.pptPreparePromise=new Promise(()=>{});await ctx.copySelectionToClipboard();assert.equal(requestCount,2,'A click must not await unrelated background preparation');ctx.pptPreparePromise=null;
-failNative=true;await ctx.copySelectionToClipboard();assert.match(node('clipboard-title').textContent,/尚未複製/);assert.match(node('clipboard-message').textContent,/PowerPoint unavailable/);
+failNative=true;await ctx.copySelectionToClipboard();assert.match(node('clipboard-title').textContent,/尚未確認/);assert.match(node('clipboard-message').textContent,/PowerPoint unavailable/);
+assert.equal(node('clipboard-recovery').hidden,false);
 assert.equal(node('clipboard-feedback').dataset.kind,'error');assert.equal(node('copy-ppt').disabled,false);failNative=false;
 ctx.selected=null;ctx.selectedIds.clear();const countBefore=requestCount;await ctx.copySelectionToClipboard();
 assert.match(node('clipboard-title').textContent,/還沒有/);assert.equal(requestCount,countBefore);
-ctx.selected='ref';ctx.selectedIds=new Set(['ref']);await ctx.copySelectionToClipboard();assert.equal(requestCount,countBefore,'Reference is never copied');
+ctx.selected='ref';ctx.selectedIds=new Set(['ref']);await ctx.copySelectionToClipboard();assert.equal(requestCount,countBefore,'A lone reference does not need Office');assert.deepEqual(writes,['png']);writes.length=0;
 node('select-all').onclick=()=>{ctx.selected='a';ctx.selectedIds=new Set(['a'])};await node('copy-all-ppt').onclick();
 // The button starts the async request synchronously; wait for its completion.
 await new Promise(resolve=>setTimeout(resolve,0));assert.equal(requestCount,countBefore+1);

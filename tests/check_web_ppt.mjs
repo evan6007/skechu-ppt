@@ -3,7 +3,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const client=fs.readFileSync(new URL('../app/web-ppt-client.js',import.meta.url),'utf8');
 const html=fs.readFileSync(new URL('../app/index.html',import.meta.url),'utf8');
-const streamCode=html.split('\n').find(line=>line.startsWith('async function readNativeStream('));
+const streamCode=html.match(/async function readNativeStream\([\s\S]*?\n}/)[0];
 const requests=[],timers=new Map();let nextTimer=0,handler;
 const response=(events,status=200)=>new Response(events.map(event=>JSON.stringify(event)).join('\n')+'\n',
   {status,headers:{'Content-Type':'application/x-ndjson'}});
@@ -91,7 +91,7 @@ ctx.window.removeEventListener=(name,listener)=>{if(frameListener===listener)fra
 ctx.document={createElement:()=>frame={isConnected:false,attributes:{},setAttribute(k,v){this.attributes[k]=v;},
   remove(){this.isConnected=false;},contentWindow:{postMessage:(data,origin)=>posted.push({data,origin})}},
   body:{appendChild(value){value.isConnected=true;}}};
-handler=()=>{throw new TypeError('old status route has no CORS');};
+handler=()=>new Response('',{status:404});
 const fallbackCopy=ctx.requestWebPptCopy(body);await flush();
 assert.equal(frame.hidden,true);assert.equal(frame.tabIndex,-1);
 assert.equal(posted.length,0,'No artwork before a validated helper handshake');
@@ -137,6 +137,25 @@ for(const src of ['C:/private.png','assets/../private.png','https://example.com/
 assert.equal(helperFetches,1,'Unsafe paths never reach Office');
 helperNodes.get('disconnect').onclick();await helperListener(event);assert.equal(helperFetches,1);
 console.log('Compatibility copy OK: automatic hidden connection, exact message boundary, one copy per keypress, no second button and no image downgrade.');
+
+// A blocked browser permission must not start a second permission transport.
+reset(); frame=undefined; handler=()=>{throw new TypeError('local network denied')};
+await assert.rejects(ctx.requestWebPptCopy(body),/啟動/);
+assert.equal(frame,undefined);assert.equal(requests.length,1);
+
+// A terminal result is sufficient even if the server never closes its socket.
+let cancelled=false;
+const hanging=new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode('{"type":"result","ok":true,"count":1}\n'))},cancel(){cancelled=true}}));
+assert.equal((await ctx.readNativeStream(hanging)).count,1);assert.ok(cancelled);
+await assert.rejects(ctx.readNativeStream(new Response('{"type":"progress"}\n')),/提前結束/);
+for(const kind of ['copy','prepare']){
+  requests.length=0;
+  handler=(_url,{signal})=>new Promise((_resolve,reject)=>signal.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError'))));
+  const operation=ctx.runLocalPptOperation(kind,body,()=>{});await flush();
+  const timeout=[...timers.values()].find(t=>t.ms===180000);assert.ok(timeout);timeout.fn();
+  await assert.rejects(operation,/超過三分鐘/);assert.equal(timers.size,0);assert.equal(requests.length,1,'No automatic retry after timeout');
+}
+console.log('Copy recovery: terminal stream without EOF, truncated stream, local copy/prepare timeout, no permission cascade or POST replay.');
 
 ctx.location.protocol='https:';reset();handler=url=>url.endsWith('/status')?status():okCopy();
 const gradientBody=JSON.stringify({items:[{id:'g',type:'box',fillGradient:{type:'linear',angle:0,stops:[{color:'#ff0000',position:0,opacity:1},{color:'#0000ff',position:1,opacity:1}]}}]});

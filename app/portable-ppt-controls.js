@@ -55,11 +55,12 @@ function portableSelectionSnapshot(source=clipboardSelection()) {
   for(const it of source){
     points+=it.points?.length||0;
     if(points>50000)throw Error('目前選取超過 50,000 個錨點，請分批匯出');
-    if(!['text','box','ellipse','polygon','arrow'].includes(it.type))throw Error(`跨平台原生 PPTX 尚未支援 ${it.type} 物件；請取消選取後重試，不會省略或轉成圖片。`);
+    if(!['image','text','box','ellipse','polygon','arrow'].includes(it.type))throw Error(`跨平台原生 PPTX 尚未支援 ${it.type} 物件；請取消選取後重試，不會省略或轉成圖片。`);
     if(it.latex)throw Error('跨平台原生 PPTX 尚未支援 LaTeX 公式，請取消選取公式後重試。');
   }
   const shapes=[];
   for(const it of paintSceneItems(source)){
+    if(it.type==='image'){shapes.push({kind:'image',x:it.x,y:it.y,w:it.w,h:it.h,rotation:it.r||0,src:it.src});continue}
     if(it.type==='text'){shapes.push(portableTextSnapshot(it));continue}
     const arrow=it.type==='arrow',rotate=!arrow&&it.type!=='polygon'?(it.r||0):0;
     const boundaries=it.compoundContours?it.compoundContours.map(c=>fillBoundaryPath({...c,hidden:false,referenceOnly:false})): [fillBoundaryPath({...it,r:0})];
@@ -96,7 +97,9 @@ async function downloadPortableSelection() {
   clipboardFeedback('正在建立原生 PPTX','在這部裝置處理選取物件，不會上傳圖稿。');
   try{
     // Snapshot before yielding: a later selection/edit never changes this export.
-    const snapshot=portableSelectionSnapshot();
+    const chosen=clipboardSelection();
+    const source=chosen.some(it=>it.type==='image')?await clipboardImageSnapshot(chosen):chosen;
+    const snapshot=portableSelectionSnapshot(source);
     await new Promise(resolve=>setTimeout(resolve,0));
     const bytes=await encodePortablePptx(snapshot);
     download(new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'}),'skechu-selection.pptx');
@@ -116,7 +119,7 @@ function encodePortablePptx(snapshot){
     let worker,timer;
     const finish=(error,bytes)=>{clearTimeout(timer);worker?.terminate();error?reject(error):resolve(bytes)};
     try{
-      worker=new Worker('portable-ppt-worker.js?v=94-system-copy');
+      worker=new Worker('portable-ppt-worker.js?v=95-copy-recovery');
       timer=setTimeout(()=>finish(Error('PPTX 產生逾時，請分批選取後重試。')),30000);
       worker.onmessage=event=>event.data?.error?finish(Error(event.data.error)):event.data?.bytes instanceof Uint8Array?finish(null,event.data.bytes):finish(Error('PPTX 產生結果不完整'));
       worker.onerror=()=>finish(Error('PPTX 工作程式未能啟動，請重新整理網頁後再試。'));

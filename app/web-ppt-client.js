@@ -76,7 +76,11 @@ async function connectWebPpt(progress) {
       response=await fetch(WEB_PPT_ORIGIN+'/web-ppt/status',{
         mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal,
       });
-    } catch (_) {return connectWebPptFrame();}
+    } catch (_) {
+      // A refused/blocked local-network request is not a signal to launch a
+      // second transport (and another browser permission prompt).
+      throw webPptConnectionError();
+    }
     if(!response.ok)return connectWebPptFrame();
     const info=await response.json().catch(()=>null);
     if(!info?.ok||info.protocol!==1||!Array.isArray(info.capabilities)||!info.capabilities.includes('inline-copy')){
@@ -88,12 +92,22 @@ async function connectWebPpt(progress) {
   finally {clearTimeout(timer);webPptConnecting=null;}
 }
 async function requireLocalGradientCapability(body) {
-  if(!JSON.parse(body).items?.some(it=>it.fillGradient))return;
+  const pictures=JSON.parse(body).items?.some(it=>it.type==='image'&&it.src?.startsWith('data:'));
+  if(!pictures&&!JSON.parse(body).items?.some(it=>it.fillGradient))return;
   let info;
   try{info=await fetch('/native-capabilities',{cache:'no-store',signal:AbortSignal.timeout(2000)}).then(r=>r.json())}catch{}
-  if(!info?.capabilities?.includes('gradient-fill-v1'))throw webPptError('請更新並重新啟動 Windows 版，才能複製可編輯的 PPT 漸層。SVG 匯出仍可使用。','WEB_PPT_UPDATE');
+  if(pictures&&!info?.capabilities?.includes('inline-image-v1'))throw webPptError('這次包含底圖；請更新 Windows 連接元件後再複製。也可使用「匯出選取 PPTX」，底圖與向量都會保留。','WEB_PPT_UPDATE');
+  if(JSON.parse(body).items?.some(it=>it.fillGradient)&&!info?.capabilities?.includes('gradient-fill-v1'))throw webPptError('請更新並重新啟動 Windows 版，才能複製可編輯的 PPT 漸層。SVG 匯出仍可使用。','WEB_PPT_UPDATE');
+}
+async function runLocalPptOperation(kind,body,progress) {
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),180000);
+  try{return await readNativeStream(await fetch('/'+kind,{method:'POST',headers:{'Content-Type':'application/json'},body,signal:controller.signal}),progress)}
+  catch(error){if(controller.signal.aborted)throw webPptError('PowerPoint 等待超過三分鐘，已停止等待；作業可能仍在完成，請核對剪貼簿內容後再自行重試。','WEB_PPT_INTERRUPTED');throw error}
+  finally{clearTimeout(timer)}
 }
 async function runWebPptOperation(kind,body,progress) {
+  if(JSON.parse(body).items?.some(it=>it.type==='image'&&it.src?.startsWith('data:'))&&!webPptSession?.capabilities?.includes('inline-image-v1'))
+    throw webPptError('這次包含底圖；請更新 Windows 連接元件，或使用「匯出選取 PPTX」。不會省略底圖。','WEB_PPT_UPDATE');
   if(JSON.parse(body).items?.some(it=>it.fillGradient)&&!webPptSession?.capabilities?.includes('gradient-fill-v1'))
     throw webPptError('這些物件包含漸層；請更新並重新啟動 Windows 版，才能複製可編輯的 PPT 漸層。SVG 匯出仍可使用。','WEB_PPT_UPDATE');
   if(webPptSession?.transport==='frame')return runWebPptFrameOperation(kind,body,progress);

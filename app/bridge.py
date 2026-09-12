@@ -1,10 +1,14 @@
 import argparse
+import base64
 import hashlib
 import json
 import math
 import os
 import re
 import sys
+import struct
+import tempfile
+import zlib
 import threading
 import time
 import webbrowser
@@ -811,6 +815,39 @@ def add_cached_region_fill(slide, item, min_x, min_y, scale):
     return shape
 
 
+def inline_png(src):
+    """Accept bounded embedded PNG only; never fetch a URL or open client paths."""
+    if not isinstance(src, str) or len(src) > 12_000_000 or not src.startswith('data:image/png;base64,'):
+        raise ValueError('底圖必須是內嵌 PNG，且不超過 9 MB')
+    try:
+        raw = base64.b64decode(src[22:], validate=True)
+        if len(raw) < 45 or raw[:8] != b'\x89PNG\r\n\x1a\n' or raw[8:16] != b'\x00\x00\x00\rIHDR':
+            raise ValueError()
+        w, h = struct.unpack('>II', raw[16:24])
+        if not 0 < w <= 8192 or not 0 < h <= 8192 or w * h > 16_000_000:
+            raise ValueError()
+        offset, pixels, ended = 8, False, False
+        while offset + 12 <= len(raw):
+            length = struct.unpack('>I', raw[offset:offset + 4])[0]
+            end = offset + 12 + length
+            if end > len(raw):
+                raise ValueError()
+            chunk = raw[offset + 4:offset + 8]
+            crc = struct.unpack('>I', raw[end - 4:end])[0]
+            if zlib.crc32(raw[offset + 4:end - 4]) & 0xffffffff != crc:
+                raise ValueError()
+            pixels |= chunk == b'IDAT'
+            if chunk == b'IEND':
+                ended = length == 0 and end == len(raw)
+                break
+            offset = end
+        if not pixels or not ended:
+            raise ValueError()
+        return raw
+    except Exception as exc:
+        raise ValueError('底圖 PNG 資料損壞或尺寸超出限制') from exc
+
+
 def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
     payload = native_payload(payload)
     for item in payload.get("items", []):
@@ -820,6 +857,7 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
         started = time.perf_counter()
         last_progress = {"percent": -1, "stage": None}
         scratch = {"presentation": None}
+        clipboard_attempted = False
 
         def cancel_if_requested():
             if cancel_event is None or not cancel_event.is_set():
@@ -885,12 +923,17 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
             try:
                 if copy_clipboard:
                     report(88, "使用既有快取", force=True)
+                    clipboard_attempted = True
                     STATE["cached_group"].Copy()
                 report(100, "完成", STATE.get("cached_count", 0), STATE.get("cached_count", 0), True)
                 return {"count": STATE.get("cached_count", 0), "cached": True,
                         "prepared": not copy_clipboard,
                         "seconds": round(time.perf_counter() - started, 2)}
             except Exception:
+                if clipboard_attempted:
+                    STATE['cache_key'] = None
+                    STATE['cached_group'] = None
+                    raise  # Never replay an uncertain clipboard write.
                 STATE["cache_key"] = None
                 STATE["cached_group"] = None
         cached_hashes = STATE.get("item_hashes") or {}
@@ -943,6 +986,7 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
                 group = slide.Shapes.Range(names).Group() if len(names) > 1 else slide.Shapes.Range(names)
                 if copy_clipboard:
                     report(96, "寫入剪貼簿", len(names), len(names), True)
+                    clipboard_attempted = True
                     group.Copy()
                 STATE["cache_key"] = cache_key
                 STATE["cached_group"] = group
@@ -956,6 +1000,10 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
                         "changed": len(existing_changed_items) + len(added_items),
                         "seconds": round(time.perf_counter() - started, 2)}
             except Exception:
+                if clipboard_attempted:
+                    STATE['cache_key'] = None
+                    STATE['cached_group'] = None
+                    raise
                 # Regrouping support varies between Office builds. A clean full
                 # rebuild below remains the safe fallback.
                 pass
@@ -991,6 +1039,7 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
                         group.GroupItems.Range(foreground_names).ZOrder(0)
                 if copy_clipboard:
                     report(96, "寫入剪貼簿", changed_total, changed_total, True)
+                    clipboard_attempted = True
                     group.Copy()
                 STATE["cache_key"] = cache_key
                 STATE["item_hashes"] = current_hashes
@@ -1000,6 +1049,10 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
                         "prepared": not copy_clipboard, "changed": len(changed_items),
                         "seconds": round(time.perf_counter() - started, 2)}
             except Exception:
+                if clipboard_attempted:
+                    STATE['cache_key'] = None
+                    STATE['cached_group'] = None
+                    raise
                 # Fall back to a complete rebuild if this PowerPoint build
                 # rejects direct edits to a child of the cached native group.
                 pass
@@ -1192,10 +1245,21 @@ def copy_native(payload, progress=None, copy_clipboard=True, cancel_event=None):
                 arrow_style_groups.setdefault(style_key, []).append(shape_name)
             elif kind == "image":
                 src = item.get("src", "")
+                if src.startswith('data:'):
+                    raw = inline_png(src)
+                    x, y, w, h = bounds(item)
+                    with tempfile.TemporaryDirectory(prefix='skechu-picture-') as folder:
+                        path = os.path.join(folder, 'picture.png')
+                        with open(path, 'wb') as picture:
+                            picture.write(raw)
+                        shape = slide.Shapes.AddPicture(path, False, True, (x-min_x)*scale, (y-min_y)*scale, w*scale, h*scale)
+                    shape.Rotation = item.get('r', 0)
+                    remember(shape, item)
+                    continue
                 if src.startswith("assets/"):
                     src = os.path.join(BASE_DIR, *src.split("/"))
                 if not os.path.isfile(src):
-                    continue
+                    raise ValueError('底圖檔案無法讀取，未複製；請重新載入圖片')
                 x, y, w, h = bounds(item)
                 shape = slide.Shapes.AddPicture(src, False, True, (x - min_x) * scale, (y - min_y) * scale, w * scale, h * scale)
                 shape.Rotation = item.get("r", 0)
@@ -1313,7 +1377,9 @@ def validate_web_ppt_payload(payload):
             validate_compound_contours(item["compoundContours"])
         if item["type"] == "image":
             src = item.get("src", "")
-            if (not isinstance(src, str) or not src.startswith("assets/")
+            if isinstance(src, str) and src.startswith('data:'):
+                inline_png(src)
+            elif (not isinstance(src, str) or not src.startswith("assets/")
                     or any(char in src for char in ("\\", ":", "\x00")) or ".." in src.split("/")):
                 raise ValueError("網頁原生複製不接受本機檔案路徑；請改用線條或形狀")
         points = item.get("points")
@@ -1375,7 +1441,7 @@ class Handler(SimpleHTTPRequestHandler):
                 self.json_response(403, {"ok": False, "error": "不允許此網頁連接"})
                 return
             self.json_response(200, {"ok": True, "protocol": 1,
-                "capabilities": ["inline-copy", "prepare", "cache-contexts", "cancel-prepare", "gradient-fill-v1"]})
+                "capabilities": ["inline-copy", "prepare", "cache-contexts", "cancel-prepare", "gradient-fill-v1", "inline-image-v1"]})
             return
         super().do_GET()
 

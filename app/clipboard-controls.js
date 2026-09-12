@@ -7,6 +7,7 @@ function clipboardFeedback(title, message, kind = 'info', webActions = false) {
   document.getElementById('clipboard-web-actions').hidden = !webActions;
   document.getElementById('clipboard-setup').hidden = true;
   document.getElementById('clipboard-portable-actions').hidden = true;
+  document.getElementById('clipboard-recovery').hidden = kind !== 'error';
   document.getElementById('status').textContent = message;
 }
 // Low-entropy local hints only. OS detection selects guidance, not proof that
@@ -44,29 +45,32 @@ function clipboardSetupFeedback(error) {
     ? error.message
     : '尚未連上本機服務。第一次使用請下載下方整合安裝包；若已安裝，請先啟動 Skechu-PPT。圖稿留在這裡，不必重新開啟。', 'warning');
   document.getElementById('clipboard-setup').hidden = false;
+  if(update)document.getElementById('clipboard-portable-actions').hidden=false;
   document.getElementById('clipboard-install-label').textContent = update?'下載更新安裝包':'下載 Windows 必要連接元件';
 }
 function clipboardSelection() {
   const ids = selectedIds.size ? [...selectedIds] : selected ? [selected] : [];
-  return exportableItems(items.filter(item => ids.includes(item.id)));
+  return items.filter(item => ids.includes(item.id) && !item.hidden);
 }
 function validateClipboardSelection() {
   if (traceDraft) {
     clipboardFeedback('請先完成這一筆', '按 Enter 完成描圖，再複製到 PowerPoint。', 'warning'); return false;
   }
   if (!clipboardSelection().length) {
-    clipboardFeedback('還沒有選到可複製物件', '請選取線條或形狀，或按「全選並複製」。參考底圖不會輸出。', 'warning'); return false;
+    clipboardFeedback('還沒有選到可複製物件', '請選取線條、形狀或底圖，再按複製。隱藏的物件不會輸出。', 'warning'); return false;
   }
   return true;
 }
 function setClipboardBusy(busy) {
   pptCopyRunning = busy;
-  for (const id of ['copy-ppt', 'copy-all-ppt', 'clipboard-retry', 'clipboard-copy-image', 'clipboard-download-image', 'clipboard-download-svg', 'export-pptx', 'clipboard-download-pptx', 'ppt-transfer-mode']) document.getElementById(id).disabled = busy;
+  for (const id of ['copy-ppt', 'copy-all-ppt', 'clipboard-retry', 'clipboard-retry-operation', 'clipboard-copy-image', 'clipboard-download-image', 'clipboard-download-svg', 'export-pptx', 'clipboard-download-pptx', 'ppt-transfer-mode']) document.getElementById(id).disabled = busy;
   document.getElementById('copy-ppt').setAttribute('aria-busy', String(busy));
 }
 async function copySelectionToClipboard() {
   if (pptCopyRunning) return;
   if (!validateClipboardSelection()) return;
+  // A single picture does not require Office or a local-network permission.
+  if (clipboardSelection().length === 1 && clipboardSelection()[0].type === 'image') return copySelectionPicture();
   if (clipboardNeedsWindows()) {
     clipboardSetupFeedback({code:'WEB_PPT_CONNECT'}); return;
   }
@@ -83,7 +87,9 @@ async function copySelectionToClipboard() {
   bar.hidden = false; bar.value = 0;
   clipboardFeedback('正在複製到 PowerPoint', '正在建立可編輯物件，請等到「複製成功」再切到 PPT 貼上。');
   try {
-    const body = nativeRequestBody(clipboardSelection());
+    const chosen = clipboardSelection();
+    const source = chosen.some(it=>it.type==='image') ? await clipboardImageSnapshot(chosen) : chosen;
+    const body = nativeRequestBody(source, true);
     if(HAS_NATIVE_PPT_BRIDGE&&typeof requireLocalGradientCapability==='function')await requireLocalGradientCapability(body);
     const progress = event => {
       bar.value = event.percent || 0;
@@ -96,19 +102,20 @@ async function copySelectionToClipboard() {
       clipboardFeedback('正在複製到 PowerPoint', pptPreparingBody===body?'正在接手背景快取並優先複製。':'正在中止背景準備，優先複製目前選取物件。');
     }
     const result = HAS_NATIVE_PPT_BRIDGE
-      ? await readNativeStream(await fetch('/copy', {method:'POST', headers:{'Content-Type':'application/json'}, body}), progress)
+      ? await runLocalPptOperation('copy', body, progress)
       : await requestWebPptCopy(body, progress);
     if (!(result.count > 0)) throw new Error('PowerPoint 未回傳可複製物件');
     noteNativeCopy(body,result); bar.value = 100;
     const speed=result.cached?'快取':result.incremental?`更新 ${result.changed} 個改動`:'首次建立';
     const totalSeconds=(performance.now()-clickedAt)/1000;
     const timing=Number.isFinite(result.seconds)?`（${speed} ${result.seconds} 秒${totalSeconds>result.seconds+.35?`；按下後共 ${totalSeconds.toFixed(2)} 秒`:''}）`:'';
-    clipboardFeedback('已複製，前往 PPT 貼上', `${result.count} 個可編輯物件。到 PowerPoint 按 Ctrl+V；取消群組後可分別編輯。`, 'success');
+    clipboardFeedback('已複製，前往 PPT 貼上', `${result.count} 個可編輯物件${source.some(it=>it.type==='image')?'（底圖保留為獨立圖片）':''}。到 PowerPoint 按 Ctrl+V；取消群組後可分別編輯。`, 'success');
     document.getElementById('copy-ppt').title=`複製完成${timing}`;
   } catch (error) {
     const setup=error.code==='WEB_PPT_CONNECT'||error.code==='WEB_PPT_UPDATE';
     if (setup) clipboardSetupFeedback(error);
-    else clipboardFeedback('尚未複製到 PowerPoint', `${error.message || error}。請確認桌面 PowerPoint 正常執行；完成前請勿貼上，以免使用舊的剪貼簿內容。`, 'error');
+    else clipboardFeedback('尚未確認複製成功', `${error.message || error}。請先關閉 PowerPoint 的對話框，確認它能正常操作，再按「重試複製」。連線中斷不代表剪貼簿一定沒更新；請核對貼上內容。`, 'error');
+    pptPrepareRetryAt = Date.now() + 15000;
     // Do not erase the user's existing clipboard when Office reports an error.
   } finally {
     bar.hidden = true; bar.value = 0; setClipboardBusy(false); queueNativePrepare();
@@ -161,6 +168,7 @@ function initializeClipboardControls() {
   // Explicit retry uses the current selection; never copy automatically after
   // installing, returning to the tab, or an uncertain clipboard response.
   document.getElementById('clipboard-retry').onclick = copySelectionToClipboard;
+  document.getElementById('clipboard-retry-operation').onclick = copySelectionToClipboard;
   document.getElementById('clipboard-copy-image').onclick = copySelectionPicture;
   document.getElementById('clipboard-download-image').onclick = () => downloadClipboardSelection(true);
   document.getElementById('clipboard-download-svg').onclick = () => downloadClipboardSelection(false);
