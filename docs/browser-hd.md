@@ -1,6 +1,15 @@
 # Browser-local image HD
 
-Choose **圖片高清** beside **新增底圖**. The selected reference (or a new PNG/JPEG/WebP upload) can be enhanced independently of automatic tracing/filling. Press **開始高清**, compare left/original and right/enhanced with the divider, pan and zoom, then download a PNG or **建立高清圖頁**. The original page stays intact. New reference images are unlocked and have the usual 50% opacity; the PNG itself retains its full colors.
+Choose **圖片高清** beside **新增底圖**. The selected reference (or a new PNG/JPEG/WebP upload/drop) can be enhanced independently of automatic tracing/filling. Press **開始高清** in the fixed bottom-right action area. When processing finishes, that area's primary action becomes **建立高清圖頁**, with PNG download and reprocessing beside it. The original page stays intact. New reference images are unlocked and have the usual 50% opacity; the PNG itself retains its full colors.
+
+## Comparing the whole image
+
+- **原圖 / 對照 / 高清** selects the original, split view, or the entire enhanced result. The whole image is processed; the divider only controls what the preview displays.
+- Drag the central **double-arrow handle or divider line** left/right with a mouse or one finger. It remains touch-sized when zoomed. Double-click the divider or press **置中** to return to 50%.
+- Drag elsewhere on the image to pan. Use the wheel, zoom buttons, or two fingers to zoom; **全圖** returns to the full image. Changing comparison mode preserves the view.
+- Keyboard users can focus the divider and use arrow keys (1%), Shift+arrows (10%), Home/End, or the range input below the image.
+- Before a result exists, comparison controls are disabled rather than implying half the image is already enhanced. Output dimensions and device-dependent limits are shown before processing, and oversize requests cannot start.
+- The action footer stays visible on small screens while settings and preview scroll independently. Uploaded/dropped files remain in the HD dialog until the user explicitly creates a new page.
 
 ## Static-site operation
 
@@ -27,3 +36,5 @@ Model provenance, sizes, licenses and conversion details: [vendor notice](../app
 - Browser tests exercise lazy downloads, actual AI Workers, cancellation, PNG dimensions, untouched original pages, new unlocked references, stale-context rejection, modal keyboard isolation, mobile layout and Chromium touch pinch events. Physical iOS/Android GPU testing is still pending.
 
 Run `node tests/check_image_upscale.mjs`. With Playwright/Chrome available, serve `app` via `node tests/serve_app.mjs`, then run `node tests/check_image_upscale_browser.mjs` and `node tests/check_image_upscale_model_browser.mjs`. Set `SKECHU_HD_SOURCE` to a private 640×360 test file to include the optional full-image visual test; generated files stay in ignored `.codex-tmp/`.
+
+The v97 interaction update (2026-09-12) also adds `node tests/check_image_upscale_ux_browser.mjs`: bottom-right actions at desktop, 390px and short-phone heights; mouse/touch divider dragging; keyboard and full-result modes; separate pan/pinch; upload/drop isolation and device-size preflight. `check_image_upscale_cache_browser.mjs` verifies that UI/offline installation still does not download AI weights until explicit use. These browser checks do not substitute for physical phone GPU testing.

@@ -36,5 +36,8 @@ for(const file of ['image-upscale-core.js','image-upscale-ui.js','image-upscale-
 const shell=read('app/service-worker.js').split('];')[0],html=read('app/index.html');
 assert.ok(!shell.includes('tf-4.22.0')&&!shell.includes('anime-v3'),'Large assets must not be precached');assert.ok(!html.includes('tf-4.22.0')&&!html.includes('anime-v3'));
 for(const name of ['image-upscale-ui.js','image-upscale-core.js','image-upscale-worker.js','image-upscale.css']){assert.ok(shell.includes(name));assert.ok(read('.github/workflows/windows-release.yml').includes('app/'+name+';.'))}
-assert.ok(html.includes('image-upscale-ui.js?v=86-browser-hd'));assert.ok(html.includes('image-upscale.css?v=86-browser-hd'));
+assert.ok(html.includes('image-upscale-ui.js?v=97-hd-compare'));assert.ok(html.includes('image-upscale.css?v=97-hd-compare'));
+const ui=read('app/image-upscale-ui.js'),template=ui.slice(ui.indexOf('<dialog'),ui.indexOf("const dialog=$"));
+assert.ok(template.indexOf('id="image-upscale-start"')>template.indexOf('<footer>'),'The primary HD start action belongs in the bottom footer');
+for(const marker of ['id="image-upscale-handle" role="slider"','id="image-upscale-divider-hit"','data-upscale-mode="before"','data-upscale-mode="split"','data-upscale-mode="after"','id="image-upscale-details"'])assert.ok(template.includes(marker),'Missing HD interaction: '+marker);
 console.log('Image HD core OK: caps, alpha, interpolation, valid-core tiling, native reduction, checksums, syntax, lazy assets and packaging.');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v96-live-color';
+const CACHE_NAME = 'skechu-ppt-v97-hd-compare';
 const APP_SHELL = [
   './',
   './index.html',
@@ -63,10 +63,10 @@ const APP_SHELL = [
   './color-field-preview.js?v=85-field-preview',
   './color-field-worker.js?v=85-field-preview',
   './color-field-worker.js',
-  './image-upscale-ui.js?v=86-browser-hd',
+  './image-upscale-ui.js?v=97-hd-compare',
   './image-upscale-core.js?v=86-browser-hd',
   './image-upscale-worker.js?v=86-browser-hd',
-  './image-upscale.css?v=86-browser-hd',
+  './image-upscale.css?v=97-hd-compare',
   // Super-resolution engine and weights are cached only after explicit use.
   './auto-trace-worker.js',
   './auto-trace-worker.js?v=88-detail-fill',
