@@ -34,7 +34,7 @@
 <link rel="stylesheet" href="image-upscale.css?v=86-browser-hd">
 <link rel="stylesheet" href="paint-tools.css?v=38-responsive-shell">
 <link rel="stylesheet" href="layer-controls.css?v=79-layer-actions">
-<link rel="stylesheet" href="clipboard-controls.css?v=92-connector-setup">
+<link rel="stylesheet" href="clipboard-controls.css?v=94-system-copy">
 <meta name="theme-color" content="#141518">
 <link rel="stylesheet" href="vendor/katex/katex.min.css?v=01611-local">
 <script src="vendor/katex/katex.min.js?v=01611-local"></script>
@@ -104,7 +104,7 @@
     <div class="mobile-repo-actions" aria-label="GitHub Star"><a class="repo-link star" href="https://github.com/evan6007/skechu-ppt" target="_blank" rel="noopener" title="開啟 GitHub 專案並按 Star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg><span>Star</span></a></div>
     <div class="project-identity"><strong>專案</strong><select id="project-select" title="切換專案"></select><input id="project-name" type="text" aria-label="專案名稱" placeholder="專案名稱"><button class="compact" id="new-project" type="button">＋ 新專案</button><button class="compact danger" id="delete-project" type="button">刪除專案</button></div>
     <div class="top-page-controls" aria-hidden="true"><div class="page-tabs" id="page-tabs"></div><input id="page-name" type="text" aria-label="目前圖頁名稱" placeholder="圖頁名稱"><button class="compact" id="add-page" type="button">＋ 新增圖頁</button><button class="compact" id="duplicate-page" type="button">複製圖頁</button><button class="compact danger" id="delete-page" type="button">刪除圖頁</button></div>
-    <div class="export-actions"><span class="autosave" id="autosave-status">準備中…</span><progress id="ppt-progress" class="ppt-progress" max="100" value="0" hidden aria-label="PowerPoint 複製進度"></progress><button id="copy-ppt" class="ppt-copy-button" type="button" aria-label="複製可編輯物件到 PowerPoint" title="複製可編輯物件到 PowerPoint"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="7" width="12" height="14" rx="2"/><path d="M15 7V3H4v14h4"/></svg><span class="sr-only">複製到 PPT</span><small id="copy-ppt-mode" class="sr-only"></small></button><details class="action-menu export-menu"><summary aria-label="開啟專案與匯出選單" title="專案與匯出"><svg class="project-files-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8H6.5A3.5 3.5 0 0 0 3 11.5v5A3.5 3.5 0 0 0 6.5 20h10a3.5 3.5 0 0 0 3.5-3.5V14"/><path d="M13 4h7v7M20 4l-9 9"/></svg></summary><div class="action-menu-popover"><button id="copy-all-ppt" type="button" title="全選可輸出的物件並複製，不包含底圖">全選並複製到 PPT</button><button id="save-json">下載專案</button><label><input id="load-json" type="file" accept=".skc,.sktc,.sketchou,.sketchou.json,.json,application/json" hidden><button id="load-button" type="button">載入專案</button></label><button id="export-svg">匯出 SVG</button><a class="about-link" href="about.html" target="_blank" rel="noopener">關於 Skechu · 功能說明</a></div></details></div>
+    <div class="export-actions"><span class="autosave" id="autosave-status">準備中…</span><progress id="ppt-progress" class="ppt-progress" max="100" value="0" hidden aria-label="PowerPoint 複製進度"></progress><button id="copy-ppt" class="ppt-copy-button" type="button" aria-label="複製可編輯物件到 PowerPoint" title="複製可編輯物件到 PowerPoint"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="7" width="12" height="14" rx="2"/><path d="M15 7V3H4v14h4"/></svg><span class="sr-only">複製到 PPT</span><small id="copy-ppt-mode" class="sr-only"></small></button><details class="action-menu export-menu"><summary aria-label="開啟專案與匯出選單" title="專案與匯出"><svg class="project-files-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8H6.5A3.5 3.5 0 0 0 3 11.5v5A3.5 3.5 0 0 0 6.5 20h10a3.5 3.5 0 0 0 3.5-3.5V14"/><path d="M13 4h7v7M20 4l-9 9"/></svg></summary><div class="action-menu-popover"><details class="ppt-platform-settings"><summary id="ppt-platform-note">自動辨識系統</summary><select id="ppt-transfer-mode" aria-label="PowerPoint 傳送方式"><option value="auto">自動識別系統（建議）</option><option value="windows">手動：Windows 連接元件</option><option value="portable">手動：跨平台 PPTX 匯出</option></select></details><button id="copy-all-ppt" type="button" title="全選可輸出的物件並複製，不包含底圖">全選並複製到 PPT</button><button id="save-json">下載專案</button><label><input id="load-json" type="file" accept=".skc,.sktc,.sketchou,.sketchou.json,.json,application/json" hidden><button id="load-button" type="button">載入專案</button></label><button id="export-pptx" type="button" title="跨平台匯出原生曲線、文字與漸層">匯出選取 PPTX</button><button id="export-svg">匯出 SVG</button><a class="about-link" href="about.html" target="_blank" rel="noopener">關於 Skechu · 功能說明</a></div></details></div>
   </nav>
   <div id="file-entry-notice" class="file-entry-notice" hidden>目前直接開啟 HTML：描圖可用，但可編輯 PPT 複製需要本機服務。請先下載 .skc 保存圖稿，再雙擊資料夾裡的「啟動Skechu-PPT.cmd」並載入專案。<a href="http://127.0.0.1:8766/" target="_blank" rel="noopener">開啟本機服務 ↗</a></div>
   <section id="clipboard-feedback" class="clipboard-feedback" aria-label="PowerPoint 複製結果" hidden>
@@ -117,6 +117,7 @@
       <button id="clipboard-retry" type="button">已安裝，重試複製</button>
       <details><summary>已安裝還是連不上？</summary><p>請從開始功能表啟動 Skechu-PPT。若先前拒絕瀏覽器權限，在網址列左側的網站設定中允許「本機網路存取」，再重試。不需要關閉防火牆或防毒，也不要清除網站資料。</p><p>若 Windows 提示未知發行者，先確認下載來自本專案的 GitHub Releases；此安裝包目前尚未數位簽章。</p></details>
     </div>
+    <div id="clipboard-portable-actions" class="clipboard-actions" hidden><button id="clipboard-download-pptx" class="primary" type="button">匯出選取 PPTX</button><p>Mac 可用桌面 PowerPoint；Linux／Ubuntu 可用網頁版 PowerPoint 開啟 PPTX。不同接收端的貼上能力仍需實機驗證。</p></div>
     <div id="clipboard-web-actions" class="clipboard-actions" hidden><button id="clipboard-copy-image" class="primary" type="button">複製圖片到 PPT</button><button id="clipboard-download-image" type="button">下載 PNG</button><button id="clipboard-download-svg" type="button">下載選取 SVG</button><button id="clipboard-save-project" type="button" title="下載 .skc 後，在 Windows 本機版載入，再複製可編輯物件">另存專案給本機版</button><a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe" target="_blank" rel="noopener">下載／更新 Windows 連接服務</a></div>
   </section>
   <main class="workspace">
@@ -196,9 +197,11 @@
 <script src="project-files.js?v=89-file-save"></script>
 <script src="layer-controls.js?v=84-gradient-fields"></script>
 <script src="panel-layout.js?v=1-resizable"></script>
-<script src="clipboard-controls.js?v=92-connector-setup"></script>
+<script src="portable-pptx.js?v=94-system-copy"></script>
+<script src="portable-ppt-controls.js?v=94-system-copy"></script>
+<script src="clipboard-controls.js?v=94-system-copy"></script>
 <script src="web-ppt-client.js?v=81-gradient-fill"></script>
-<script src="ppt-preparation.js?v=81-gradient-fill"></script>
+<script src="ppt-preparation.js?v=94-system-copy"></script>
 <script src="vendor/vtracer.js?v=1.0.0-alpha.4"></script>
 <script src="illustration-trace.js?v=84-gradient-fields"></script>
 <script src="source-gradient.js?v=88-detail-fill"></script>
@@ -678,6 +681,7 @@ initializeSelectionControls();
 initializeLayerControls();
 initializePanelLayout();
 initializeClipboardControls();
+initializePortablePptControls();
 initializeWebPptClient();
 initializeWorkspaceActions();
 initializeCutTools();

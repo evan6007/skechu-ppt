@@ -10,7 +10,7 @@
 
 <p align="center">免安裝、免登入。匯入圖片，描線、填色，再把每個物件繼續改。<br><a href="https://evan6007.github.io/skechu-ppt/about.html">Skechu 功能與使用說明</a></p>
 
-<p align="center">Works on Windows, macOS, Linux, Chromebook, iPhone, iPad, and Android.<br>Need native editable PowerPoint layers? <a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe">Get the Windows installer →</a></p>
+<p align="center">Works on Windows, macOS, Linux, Chromebook, iPhone, iPad, and Android.<br>Need direct native PowerPoint copy/paste? <a href="https://github.com/evan6007/skechu-ppt/releases/latest/download/Skechu-PPT-Windows-Setup.exe">Get the Windows installer →</a></p>
 
 <p align="center">
   <a href="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/evan6007/skechu-ppt/actions/workflows/ci.yml/badge.svg"></a>
@@ -56,7 +56,7 @@
 - **Scissors for editable paths:** split lines with point, straight or freehand cuts. Toggle **畫完直接切斷** off to add anchors without breaking paths. Hold Ctrl for horizontal/vertical cuts, or right-click / long-press an anchor for point cutting. Anchors are immediately editable, with one-step undo.
 - **A workspace that stays organized:** pages, layers, groups, locks, and adjustable canvas size and color.
 - **Touch controls:** two-finger pan and zoom, compact panels, separate copy/paste, and a visible delete button.
-- **Portable work:** save `.skc` projects, export SVG, or copy native objects to PowerPoint with the Windows companion.
+- **Portable work:** save `.skc` projects, export SVG or native editable PPTX in your browser, or copy native objects directly to PowerPoint with the Windows companion. The export menu detects your system and lets you correct the chosen route.
 - **Programmatic editing:** an opt-in command API and local MCP connector for supported AI clients. Batch edits share the editor's undo history.
 
 **One flow:** add a reference → trace → refine → export. Use the illustration above as an example, not a restriction on what you can draw.
@@ -88,6 +88,8 @@ The **browser command API** works in the web editor. The **optional MCP connecto
 
 Want the web edition to feel like a normal app? Follow the **[click-by-click install guide](docs/install.md)**—no command line required.
 
+**Native PPTX export on the web:** [cross-platform selection export](docs/portable-powerpoint.md) keeps curves, independent fills and gradient stops editable without Windows conversion. The editor detects your system: Windows keeps direct connector copy; other platforms get the native-file workflow. You can correct detection in the export menu. This exports a file, not universal system-clipboard paste; an Office add-in is not yet available.
+
 <details>
 <summary><strong>Detailed workflow, tracing controls, and clipboard behavior</strong></summary>
 
@@ -111,6 +113,7 @@ Want the web edition to feel like a normal app? Follow the **[click-by-click ins
 | Local autosave | ✓ | ✓ |
 | Download and load `.skc` projects | ✓ | ✓ |
 | Export editable SVG | ✓ | ✓ |
+| Export native editable PPTX selection | ✓ | Use Web; packaged update pending |
 | Install as an app | ✓ | ✓ |
 | Copy native editable layers to PowerPoint | ✓ with Windows companion | ✓ |
 

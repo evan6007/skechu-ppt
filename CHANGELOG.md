@@ -2,6 +2,13 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Web v94] - 2026-09-12
+
+### Added
+
+- Browser-only native PPTX selection export: editable cubic Freeforms, independent hole contours, multistop linear gradients and native text, with a bounded offline worker. This exports a file, not universal system-clipboard paste or an Office add-in. Windows PowerPoint editability was checked on isolated scratch decks; Mac, Linux/web and mobile Office receivers remain unverified. Unsupported formulas/images fail without a partial or bitmap export.
+- Automatic Windows, Mac, Linux/Ubuntu, ChromeOS, iPhone/iPad and Android routing, including a desktop-mode iPad heuristic. The export menu shows detection and allows an explicit remembered correction. Non-Windows and unknown devices use the portable route without probing/preparing Windows Office, including on localhost. Detection/settings alone never copy or download.
+
 ## [0.1.7] - 2026-09-12
 
 ### Added

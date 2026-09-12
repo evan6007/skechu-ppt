@@ -6,15 +6,37 @@ function clipboardFeedback(title, message, kind = 'info', webActions = false) {
   document.getElementById('clipboard-message').textContent = message;
   document.getElementById('clipboard-web-actions').hidden = !webActions;
   document.getElementById('clipboard-setup').hidden = true;
+  document.getElementById('clipboard-portable-actions').hidden = true;
   document.getElementById('status').textContent = message;
 }
+// Low-entropy local hints only. OS detection selects guidance, not proof that
+// Office/the connector is installed. Unknown platforms never get auto-probed.
+let pptTransferMode = 'auto';
+function detectPptPlatform(nav=navigator) {
+  const hint=String(nav.userAgentData?.platform||'').toLowerCase(),legacy=String(nav.platform||'').toLowerCase(),ua=String(nav.userAgent||'').toLowerCase();
+  if(/windows phone/.test(ua))return{id:'other',name:'行動裝置'};
+  if(/ipad|iphone|ipod/.test(hint+' '+legacy+' '+ua)||((hint==='macos'||hint==='mac os'||legacy.startsWith('mac'))&&Number(nav.maxTouchPoints)>1))return{id:'ios',name:/iphone|ipod/.test(ua+' '+legacy)?'iPhone':'iPad'};
+  const parse=value=>/^win|windows/.test(value)?{id:'windows',name:'Windows'}:/android/.test(value)?{id:'android',name:'Android'}:/chrome ?os|cros/.test(value)?{id:'chromeos',name:'ChromeOS'}:/mac|darwin/.test(value)?{id:'mac',name:'Mac'}:/linux|ubuntu/.test(value)?{id:'linux',name:/ubuntu/.test(value)?'Ubuntu':'Linux／Ubuntu'}:null;
+  // UA-CH is preferred when available. Without it, mobile/ChromeOS UA tokens
+  // take priority over their generic Linux platform string.
+  return parse(hint)||(/android|cros/.test(ua)?parse(ua):null)||parse(legacy)||parse(ua)||{id:'unknown',name:'未辨識系統'};
+}
 function clipboardNeedsWindows() {
-  const platform=navigator.userAgentData?.platform||navigator.platform||'';
-  return !!platform&&!/^win/i.test(platform);
+  return pptTransferMode==='portable'||(pptTransferMode!=='windows'&&detectPptPlatform().id!=='windows');
+}
+function syncClipboardPlatform() {
+  const platform=detectPptPlatform(),portable=clipboardNeedsWindows(),mode=portable?'可編輯 PPTX 匯出':'Windows 直接複製（需連接元件）';
+  document.getElementById('ppt-platform-note').textContent=`${pptTransferMode==='auto'?'自動辨識':'手動模式'}：${platform.name} · ${mode}`;
+  const copy=document.getElementById('copy-ppt');
+  copy.title=portable?`${platform.name}：PPTX 匯出與貼上說明`:'複製選取的可編輯物件到 PowerPoint（Ctrl+C）';
+  copy.setAttribute('aria-label',copy.title);copy.dataset.pptRoute=portable?'portable':'windows';
+  document.getElementById('copy-ppt-mode').textContent=portable?'可編輯 PPTX':location.protocol==='file:'?'尚未連接服務':'可編輯物件';
+  document.getElementById('file-entry-notice').hidden=location.protocol!=='file:'||portable;
+  document.getElementById('ppt-transfer-mode').value=pptTransferMode;
 }
 function clipboardSetupFeedback(error) {
   if (clipboardNeedsWindows()) {
-    clipboardFeedback('原生 PPT 複製需要 Windows 電腦', '這部裝置仍可繼續畫圖與下載 SVG；可編輯的 PPT 物件需要在 Windows 安裝連接元件及桌面 PowerPoint。PNG 貼上後是圖片。', 'warning', true);
+    portableCopyGuidance();
     return;
   }
   const update=error.code==='WEB_PPT_UPDATE';
@@ -39,13 +61,13 @@ function validateClipboardSelection() {
 }
 function setClipboardBusy(busy) {
   pptCopyRunning = busy;
-  for (const id of ['copy-ppt', 'copy-all-ppt', 'clipboard-retry', 'clipboard-copy-image', 'clipboard-download-image', 'clipboard-download-svg']) document.getElementById(id).disabled = busy;
+  for (const id of ['copy-ppt', 'copy-all-ppt', 'clipboard-retry', 'clipboard-copy-image', 'clipboard-download-image', 'clipboard-download-svg', 'export-pptx', 'clipboard-download-pptx', 'ppt-transfer-mode']) document.getElementById(id).disabled = busy;
   document.getElementById('copy-ppt').setAttribute('aria-busy', String(busy));
 }
 async function copySelectionToClipboard() {
   if (pptCopyRunning) return;
   if (!validateClipboardSelection()) return;
-  if (!HAS_NATIVE_PPT_BRIDGE && clipboardNeedsWindows()) {
+  if (clipboardNeedsWindows()) {
     clipboardSetupFeedback({code:'WEB_PPT_CONNECT'}); return;
   }
   if (!HAS_NATIVE_PPT_BRIDGE && location.protocol === 'file:') {
@@ -120,9 +142,16 @@ async function downloadClipboardSelection(asPng) {
 function initializeClipboardControls() {
   const copy = document.getElementById('copy-ppt');
   copy.hidden = false; copy.removeAttribute('aria-hidden');
-  copy.title = '複製選取的可編輯物件到 PowerPoint（Ctrl+C）';
-  document.getElementById('copy-ppt-mode').textContent = location.protocol === 'file:' ? '尚未連接服務' : '可編輯物件';
-  document.getElementById('file-entry-notice').hidden = location.protocol !== 'file:';
+  try{const saved=localStorage.getItem('skechu-ppt-transfer-mode-v1');if(['auto','windows','portable'].includes(saved))pptTransferMode=saved}catch(_){}
+  syncClipboardPlatform();
+  document.getElementById('ppt-transfer-mode').onchange=event=>{
+    pptTransferMode=['auto','windows','portable'].includes(event.target.value)?event.target.value:'auto';
+    try{localStorage.setItem('skechu-ppt-transfer-mode-v1',pptTransferMode)}catch(_){}
+    clearTimeout(pptPrepareTimer);pptPrepareWanted=null;
+    syncClipboardPlatform();
+    document.getElementById('clipboard-feedback').hidden=true;
+    // Changing guidance alone never connects, copies, installs or downloads.
+  };
   copy.onclick = copySelectedObjects;
   document.getElementById('copy-all-ppt').onclick = () => {
     if (pptCopyRunning) return;

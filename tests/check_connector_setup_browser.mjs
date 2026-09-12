@@ -61,9 +61,9 @@ try {
   assert.equal(await page.locator('#clipboard-setup').isVisible(),false);assert.match(await page.locator('#clipboard-message').textContent(),/連線中斷/);
   const beforeUnsupported=serviceRequests;
   await page.evaluate(()=>{Object.defineProperty(navigator,'userAgentData',{value:{platform:'Android'},configurable:true})});
-  await page.keyboard.press('Control+c');await page.waitForFunction(()=>document.getElementById('clipboard-title').textContent.includes('Windows 電腦'));
+  await page.keyboard.press('Control+c');await page.waitForFunction(()=>document.getElementById('clipboard-title').textContent.includes('可編輯 PPTX'));
   assert.equal(serviceRequests,beforeUnsupported);assert.equal(await page.locator('#clipboard-setup').isVisible(),false);
-  assert.equal(await page.locator('#clipboard-download-svg').isVisible(),true);
+  assert.equal(await page.locator('#clipboard-download-pptx').isVisible(),true);
   await context.close();assert.deepEqual(errors,[]);
   console.log('Connector installation UI OK: offline guide, direct user-clicked download, no popup or drawing loss, desktop/narrow layouts, current-selection retry, direct subsequent Ctrl+C, no retry of uncertain writes, and unsupported-platform alternatives. Copy responses and installer body were controlled test fixtures.');
 } finally {await browser.close()}

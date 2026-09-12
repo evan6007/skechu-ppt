@@ -32,6 +32,12 @@ jobs:
         run: node tests/check_curves.mjs
       - name: Check clipboard shortcuts
         run: node tests/check_clipboard.mjs
+      - name: Check automatic OS routing and explicit correction
+        run: node tests/check_ppt_platform.mjs
+      - name: Check cross-platform native PPTX serializer
+        run: node tests/check_portable_pptx.mjs
+      - name: Validate portable package XML and ZIP
+        run: python tests/check_portable_pptx_native.py
       - name: Check web-native PowerPoint connection
         run: node tests/check_web_ppt.mjs
       - name: Check GitHub Star authorization boundaries

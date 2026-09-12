@@ -58,6 +58,9 @@ jobs:
             --add-data "app/layer-controls.css;." `
             --add-data "app/panel-layout.js;." `
             --add-data "app/clipboard-controls.js;." `
+            --add-data "app/portable-pptx.js;." `
+            --add-data "app/portable-ppt-controls.js;." `
+            --add-data "app/portable-ppt-worker.js;." `
             --add-data "app/clipboard-controls.css;." `
             --add-data "app/web-ppt-client.js;." `
             --add-data "app/web-ppt-helper.js;." `

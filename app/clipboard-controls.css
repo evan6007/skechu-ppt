@@ -21,6 +21,11 @@
 .clipboard-actions button,.clipboard-actions a{font-size:12px;padding:6px 9px;border-radius:6px}
 .clipboard-actions a{color:#6d28d9;text-decoration:underline}
 .clipboard-actions[hidden]{display:none}
+#clipboard-download-pptx{min-height:44px;min-width:150px}
+#clipboard-portable-actions p{font-size:12px;opacity:.85;margin-top:2px}
+.ppt-platform-settings{max-width:100%;padding:6px 4px;border-bottom:1px solid var(--line,#cbd5e1);font-size:12px;white-space:normal}
+.ppt-platform-settings summary{cursor:pointer;line-height:1.5;padding:5px 2px;overflow-wrap:anywhere}
+.ppt-platform-settings select{width:100%;max-width:100%;min-height:40px;margin:5px 0;border:1px solid var(--line,#cbd5e1);border-radius:7px;background:var(--surface,#f8fafc);color:inherit;font:inherit;padding:6px}
 .clipboard-feedback{max-height:calc(100dvh - 136px);overflow-y:auto;overscroll-behavior:contain}
 .clipboard-setup[hidden]{display:none}
 .clipboard-install{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;padding:12px 10px;min-height:44px;box-sizing:border-box;border:1px solid #7c3aed;border-radius:9px;background:#6d28d9;color:#fff;text-decoration:none;font-weight:700;line-height:1.4}

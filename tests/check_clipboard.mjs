@@ -46,12 +46,14 @@ const ctx=vm.createContext({
   exportableItems:items=>items.filter(it=>!it.referenceOnly),nativeRequestBody:items=>JSON.stringify({items}),
   fetch:async(url,options)=>{requestCount++;assert.equal(url,'/copy');assert.deepEqual(JSON.parse(options.body).items,[{id:'a',type:'box'}]);return{}},
   readNativeStream:async(response,progress)=>{progress({stage:'寫入剪貼簿',percent:96});if(failNative)throw new Error('PowerPoint unavailable');return {ok:true,count:1}},
-  navigator:{clipboard:{write:async entries=>{if(failWrite)throw new Error('NotAllowedError');writes.push(await entries[0].data['image/png'])},writeText(){throw new Error('Must never clear existing clipboard')}}},
+  navigator:{platform:'Win32',clipboard:{write:async entries=>{if(failWrite)throw new Error('NotAllowedError');writes.push(await entries[0].data['image/png'])},writeText(){throw new Error('Must never clear existing clipboard')}}},
   ClipboardItem:class{constructor(data){this.data=data}},
   selectionSvgBlob:async()=>({blob:'svg'}),svgToPng:async promise=>{await promise;return 'png'},download:(blob,name)=>downloads.push({blob,name}),
   copySelectedObjects:()=>ctx.copySelectionToClipboard(),
 });
-vm.runInContext(source,ctx);ctx.initializeClipboardControls();
+vm.runInContext(source,ctx);
+vm.runInContext(fs.readFileSync(new URL('../app/portable-ppt-controls.js',import.meta.url),'utf8'),ctx);
+ctx.initializeClipboardControls();
 assert.equal(node('copy-ppt').hidden,false);assert.match(node('copy-ppt-mode').textContent,/可編輯/);
 await node('copy-ppt').onclick();assert.equal(requestCount,1);assert.match(node('clipboard-title').textContent,/已複製/);assert.match(node('clipboard-message').textContent,/可編輯物件.*Ctrl\+V/);
 assert.equal(node('clipboard-feedback').dataset.kind,'success');assert.equal(ctx.pptCopyRunning,false);
@@ -83,7 +85,7 @@ completeRetry({ok:true,count:1});await retry;assert.match(node('clipboard-title'
 ctx.requestWebPptCopy=async()=>{retryCount++;const error=new Error('Connection interrupted');error.code='WEB_PPT_INTERRUPTED';throw error};
 await ctx.copySelectionToClipboard();assert.equal(node('clipboard-setup').hidden,true,'Uncertain writes never offer installation as if no copy was sent');
 ctx.navigator.platform='MacIntel';const priorRetries=retryCount;await ctx.copySelectionToClipboard();
-assert.equal(retryCount,priorRetries,'Non-Windows devices must not probe for a Windows companion');assert.equal(node('clipboard-setup').hidden,true);assert.match(node('clipboard-title').textContent,/Windows 電腦/);
+assert.equal(retryCount,priorRetries,'Non-Windows devices must not probe for a Windows companion');assert.equal(node('clipboard-setup').hidden,true);assert.match(node('clipboard-title').textContent,/可編輯 PPTX/);assert.equal(node('clipboard-portable-actions').hidden,false);
 ctx.navigator.platform='Win32';ctx.selected='a';ctx.selectedIds=new Set(['a']);
 const install=html.match(/<a id="clipboard-install"[^>]*>/)?.[0];assert.ok(install);
 assert.match(install,/href="https:\/\/github.com\/evan6007\/skechu-ppt\/releases\/latest\/download\/Skechu-PPT-Windows-Setup.exe"/);

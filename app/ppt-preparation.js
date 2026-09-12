@@ -26,6 +26,7 @@ function nativeRequestBody(sourceItems=items) {
   return JSON.stringify(payload);
 }
 function canPreparePpt() {
+  if(typeof clipboardNeedsWindows==='function'&&clipboardNeedsWindows())return false;
   return HAS_NATIVE_PPT_BRIDGE || (typeof canWebPptPrepare==='function' && canWebPptPrepare());
 }
 function pptCacheLabel(text) {const label=document.getElementById('copy-ppt-mode');if(label)label.textContent=text;}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v92-connector-setup';
+const CACHE_NAME = 'skechu-ppt-v94-system-copy';
 const APP_SHELL = [
   './',
   './index.html',
@@ -35,12 +35,15 @@ const APP_SHELL = [
   './layer-controls.js?v=84-gradient-fields',
   './panel-layout.js?v=1-resizable',
   './layer-controls.css?v=79-layer-actions',
-  './clipboard-controls.js?v=92-connector-setup',
+  './clipboard-controls.js?v=94-system-copy',
+  './portable-pptx.js?v=94-system-copy',
+  './portable-ppt-controls.js?v=94-system-copy',
+  './portable-ppt-worker.js?v=94-system-copy',
   './web-ppt-client.js?v=81-gradient-fill',
   './web-ppt-helper.js?v=81-gradient-fill',
-  './ppt-preparation.js?v=81-gradient-fill',
+  './ppt-preparation.js?v=94-system-copy',
   './web-ppt.html',
-  './clipboard-controls.css?v=92-connector-setup',
+  './clipboard-controls.css?v=94-system-copy',
   './paint-tools.css?v=38-responsive-shell',
   './illustration-trace.js?v=84-gradient-fields',
   './illustration-trace.js',
