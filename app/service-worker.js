@@ -1,15 +1,16 @@
-const CACHE_NAME = 'skechu-ppt-v98-deep-learning-diagrams';
+const CACHE_NAME = 'skechu-ppt-v99-diagram3d';
 const APP_SHELL = [
   './',
   './index.html',
   './about.html',
-  './automation/core.js?v=70-automation',
+  './automation/core.js?v=99-diagram3d',
   './automation/editor.js?v=87-native-fill',
   './automation/panel.css?v=70-automation',
   './automation/commands.json',
-  './deep-learning-diagrams.js?v=1',
-  './deep-learning-ui.js?v=1',
-  './deep-learning-ui.css?v=1',
+  './diagram-3d.js?v=1',
+  './deep-learning-diagrams.js?v=2',
+  './deep-learning-ui.js?v=2',
+  './deep-learning-ui.css?v=2',
   './mobile-controls.js?v=69-copy-paste',
   './mobile-controls.css?v=90-mobile-brand',
   './touch-gestures.js?v=68-touch-gestures',

@@ -72,6 +72,8 @@ jobs:
         run: node tests/check_automation.mjs
       - name: Check editable deep-learning diagram templates and components
         run: node --test tests/test-deep-learning-diagrams.cjs
+      - name: Check adjustable 3D network blocks and layout
+        run: node --test tests/test-diagram-3d.cjs
       - name: Check two-finger canvas navigation
         run: node tests/check_touch_gestures.mjs
       - name: Check page actions and image paste

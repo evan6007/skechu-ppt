@@ -402,6 +402,45 @@
     }
   },
   {
+    "name": "create_diagram_block_3d",
+    "description": "Insert an editable axonometric neural-network feature volume. Control camera yaw and elevation, volume dimensions, layer count, spacing, color and captions. Three native polygon faces per layer; one undo step.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "object",
+          "properties": {
+            "projectId": {"type": "string", "minLength": 1, "maxLength": 160},
+            "pageId": {"type": "string", "minLength": 1, "maxLength": 160},
+            "revision": {"type": "integer", "minimum": 0}
+          },
+          "required": ["projectId", "pageId", "revision"],
+          "additionalProperties": false
+        },
+        "x": {"type": "number", "minimum": -10000, "maximum": 10000},
+        "y": {"type": "number", "minimum": -10000, "maximum": 10000},
+        "width": {"type": "number", "minimum": 35, "maximum": 260},
+        "height": {"type": "number", "minimum": 30, "maximum": 270},
+        "depth": {"type": "number", "minimum": 8, "maximum": 90},
+        "count": {"type": "integer", "minimum": 1, "maximum": 10},
+        "gap": {"type": "number", "minimum": 0, "maximum": 36},
+        "yaw": {"type": "number", "minimum": -60, "maximum": 60},
+        "elevation": {"type": "number", "minimum": 0, "maximum": 55},
+        "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+        "title": {"type": "string", "maxLength": 80},
+        "detail": {"type": "string", "maxLength": 80}
+      },
+      "required": ["context", "x", "y"],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
     "name": "delete_objects",
     "description": "Delete explicit unlocked objects only after the user confirms in the editor. Cancel is safe. One undo step.",
     "inputSchema": {

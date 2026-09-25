@@ -8,7 +8,20 @@
     const open=document.getElementById('open-deep-learning'),close=document.getElementById('close-deep-learning');
     const search=document.getElementById('deep-learning-search');
     const templates=document.getElementById('deep-learning-templates'),components=document.getElementById('deep-learning-components');
+    const controls=document.getElementById('dl-3d-controls'),preview=document.getElementById('dl-3d-preview');
+    const error=document.getElementById('dl-3d-error'),viewLabel=document.getElementById('dl-3d-view-label');
+    const insert3d=document.getElementById('dl-3d-insert'),update3d=document.getElementById('dl-3d-update'),network3d=document.getElementById('dl-3d-network');
     let populated=false;
+    function blockOptions(){const values=Object.fromEntries(new FormData(controls));return root.SkechuDiagram3D.normalize(values)}
+    function fillBlockControls(options){for(const [key,value] of Object.entries(options)){const input=controls.elements.namedItem(key);if(input)input.value=value}refreshBlockPreview()}
+    function refreshBlockPreview(){
+      try{
+        const options=blockOptions();preview.innerHTML=bridge.previewBlock3D(options);
+        for(const key of ['yaw','elevation'])controls.querySelector(`[data-for="${key}"]`).textContent=`${options[key]}°`;
+        viewLabel.textContent=`水平 ${options.yaw}° · 俯視 ${options.elevation}° · ${options.count} 層 · ${options.width} × ${options.height} × ${options.depth}`;
+        error.textContent='';insert3d.disabled=false;update3d.disabled=false;network3d.disabled=false;
+      }catch(cause){error.textContent=cause.message;insert3d.disabled=true;update3d.disabled=true;network3d.disabled=true}
+    }
     function card(meta,kind){
       const button=document.createElement('button');button.type='button';
       button.className=kind==='template'?'dl-template-card':'dl-component-card';
@@ -33,10 +46,20 @@
       populated=true;
     }
     function filter(){const term=search.value.trim().toLocaleLowerCase();dialog.querySelectorAll('[data-template],[data-component]').forEach(button=>{button.hidden=!!term&&!button.textContent.toLocaleLowerCase().includes(term)});}
-    open.addEventListener('click',()=>{populate();search.value='';filter();dialog.showModal();search.focus();});
+    open.addEventListener('click',()=>{
+      populate();search.value='';filter();const selected=bridge.selectedBlock3D();update3d.hidden=!selected;
+      if(selected)fillBlockControls(selected.options);else refreshBlockPreview();
+      dialog.showModal();controls.elements.namedItem('yaw').focus();
+    });
     close.addEventListener('click',()=>dialog.close());
     dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()});
     search.addEventListener('input',filter);
+    controls.addEventListener('input',refreshBlockPreview);
+    controls.addEventListener('submit',event=>event.preventDefault());
+    function runBlockAction(action){try{action(blockOptions());dialog.close()}catch(cause){error.textContent=cause.message;bridge.notify(cause.message||'無法建立立體方塊')}}
+    insert3d.addEventListener('click',()=>runBlockAction(options=>bridge.insertBlock3D(options)));
+    update3d.addEventListener('click',()=>runBlockAction(options=>bridge.updateBlock3D(options)));
+    network3d.addEventListener('click',()=>runBlockAction(options=>bridge.insertNetwork3D({yaw:options.yaw,elevation:options.elevation})));
     dialog.addEventListener('click',event=>{
       const template=event.target.closest('[data-template]'),component=event.target.closest('[data-component]');
       if(!template&&!component)return;

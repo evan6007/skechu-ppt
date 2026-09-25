@@ -1,0 +1,101 @@
+/* Parametric, editable axonometric feature-map blocks for architecture figures. */
+(function(root,factory){
+  const api=factory();
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  root.SkechuDiagram3D=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  'use strict';
+  const limits={width:[35,260],height:[30,270],depth:[8,90],count:[1,10],gap:[0,36],yaw:[-60,60],elevation:[0,55]};
+  const defaults=Object.freeze({width:142,height:168,depth:32,count:3,gap:12,yaw:34,elevation:27,color:'#5187D2',title:'Conv feature maps',detail:'56 × 56 × 128'});
+  function normalize(input={}){
+    const out={...defaults};
+    for(const [key,[min,max]] of Object.entries(limits)){
+      const value=input[key]===undefined?out[key]:Number(input[key]);
+      if(!Number.isFinite(value)||value<min||value>max||key==='count'&&!Number.isInteger(value))throw new RangeError(`${key} must be between ${min} and ${max}`);
+      out[key]=value;
+    }
+    for(const key of ['title','detail']){
+      if(input[key]!==undefined){if(typeof input[key]!=='string'||input[key].length>80)throw new TypeError(`${key} must be short text`);out[key]=input[key]}
+    }
+    if(input.color!==undefined){if(typeof input.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(input.color))throw new TypeError('color must be #RRGGBB');out.color=input.color}
+    return out;
+  }
+  function mix(hex,target,weight){
+    const v=hex.slice(1).match(/../g).map(part=>parseInt(part,16)),t=target===255?255:0;
+    return '#'+v.map(channel=>Math.round(channel*(1-weight)+t*weight).toString(16).padStart(2,'0')).join('').toUpperCase();
+  }
+  function project(x,y,z,camera){
+    return {x:x*camera.cy+y*camera.sy,y:x*camera.sy*camera.se-y*camera.cy*camera.se+z*camera.ce};
+  }
+  function polygon(points,fill,stroke,name,group,serial){
+    return {id:`cube-${serial}`,type:'polygon',name,points,cornerRadius:0,fill,stroke,strokeWidth:1.6,opacity:1,label:'',r:0,layerGroup:{...group}};
+  }
+  function caption(value,x,y,w,h,size,color,group,serial,bold=false){
+    return {id:`cube-${serial}`,type:'text',box:true,name:`文字 · ${value}`,x,y,w,h,text:value,size,fontFamily:'Arial',align:'center',valign:'middle',marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1.08,bold,italic:false,color,r:0,opacity:1,layerGroup:{...group}};
+  }
+  function createBlock(input={}){
+    const options=normalize(input),x=Number(input.x??0),y=Number(input.y??0);
+    if(!Number.isFinite(x)||!Number.isFinite(y))throw new TypeError('x and y must be finite');
+    const yaw=options.yaw*Math.PI/180,elev=options.elevation*Math.PI/180;
+    const camera={cy:Math.cos(yaw),sy:Math.sin(yaw),se:Math.sin(elev),ce:Math.cos(elev)};
+    const raw=[],all=[];
+    const P=(a,b,c)=>{const p=project(a,b,c,camera);all.push(p);return p};
+    for(let layer=options.count-1;layer>=0;layer--){
+      const front=layer*(options.depth+options.gap),back=front+options.depth;
+      const A=P(0,front,0),B=P(options.width,front,0),C=P(options.width,front,options.height),D=P(0,front,options.height);
+      const E=P(0,back,0),F=P(options.width,back,0),G=P(options.width,back,options.height),H=P(0,back,options.height);
+      const tint=layer%2?mix(options.color,255,.12):options.color;
+      raw.push({points:[A,B,F,E],fill:mix(tint,255,.38),name:`第 ${layer+1} 層 · 上面`});
+      if(options.yaw>=0)raw.push({points:[B,F,G,C],fill:mix(tint,0,.19),name:`第 ${layer+1} 層 · 側面`});
+      else raw.push({points:[E,A,D,H],fill:mix(tint,0,.19),name:`第 ${layer+1} 層 · 側面`});
+      raw.push({points:[A,B,C,D],fill:tint,name:`第 ${layer+1} 層 · 正面`,leader:layer===0});
+    }
+    const minX=Math.min(...all.map(p=>p.x)),maxX=Math.max(...all.map(p=>p.x));
+    const minY=Math.min(...all.map(p=>p.y)),maxY=Math.max(...all.map(p=>p.y));
+    const geometryWidth=maxX-minX,geometryHeight=maxY-minY;
+    const width=Math.max(geometryWidth,145),left=x+(width-geometryWidth)/2;
+    const group={id:'diagram-3d-group',name:options.title||'立體神經網路方塊',collapsed:true};
+    let serial=0;
+    const items=raw.map(face=>{
+      const points=face.points.map(p=>({x:+(left+p.x-minX).toFixed(3),y:+(y+34+p.y-minY).toFixed(3)}));
+      const item=polygon(points,face.fill,mix(options.color,0,.28),face.name,group,++serial);
+      if(face.leader)item.diagram3d={...options};
+      return item;
+    });
+    if(options.title)items.push(caption(options.title,x,y,width,28,16,'#17243A',group,++serial,true));
+    if(options.detail)items.push(caption(options.detail,x,y+38+geometryHeight,width,24,13,'#586B80',group,++serial));
+    return {items,width,height:64+geometryHeight,options};
+  }
+  function createNetwork(input={}){
+    const view=normalize({yaw:input.yaw,elevation:input.elevation});
+    const common={yaw:view.yaw,elevation:view.elevation};
+    const stages=[
+      {title:'Input',detail:'224 × 224 × 3',width:160,height:230,depth:17,count:1,gap:0,color:'#6E9FCB'},
+      {title:'Conv 1',detail:'112 × 112 × 64',width:122,height:174,depth:16,count:3,gap:8,color:'#E4A95D'},
+      {title:'Pool',detail:'56 × 56 × 64',width:96,height:135,depth:14,count:2,gap:7,color:'#D67D96'},
+      {title:'Conv 2',detail:'28 × 28 × 128',width:83,height:110,depth:17,count:4,gap:7,color:'#6F8DD7'},
+      {title:'GAP',detail:'1 × 1 × 128',width:49,height:64,depth:22,count:1,gap:0,color:'#69B69F'},
+      {title:'Classifier',detail:'1 × 1 × K',width:44,height:54,depth:15,count:3,gap:5,color:'#9A82CB'}
+    ];
+    const blocks=[],positions=[];let cursor=52,serial=0;
+    for(let i=0;i<stages.length;i++){
+      const spec=stages[i],atY=205+(230-spec.height)*.43;
+      const block=createBlock({...spec,...common,x:cursor,y:atY});
+      block.items.forEach(it=>{it.id=`network-item-${++serial}`;it.layerGroup.id=`network-stage-${i+1}`});
+      blocks.push(...block.items);positions.push({x:cursor,y:atY,width:block.width,height:block.height});
+      cursor+=block.width+(i===stages.length-1?0:43);
+    }
+    if(cursor>1160)throw new RangeError('Network layout exceeds the canvas');
+    const g={id:'network-guide',name:'標題與流程連線',collapsed:true};
+    const lines=[];
+    lines.push({id:`network-item-${++serial}`,type:'text',box:true,name:'文字 · 立體 CNN 架構',x:53,y:34,w:1070,h:47,text:'Perspective CNN architecture',size:31,fontFamily:'Arial',align:'left',valign:'middle',marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1.05,bold:true,color:'#17243A',r:0,opacity:1,layerGroup:{...g}});
+    lines.push({id:`network-item-${++serial}`,type:'text',box:true,name:'文字 · 視角',x:53,y:84,w:1050,h:24,text:`Editable 3D feature volumes   ·   yaw ${view.yaw}°   ·   elevation ${view.elevation}°`,size:14,fontFamily:'Arial',align:'left',valign:'middle',marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1.05,bold:false,color:'#586B80',r:0,opacity:1,layerGroup:{...g}});
+    for(let i=0;i<positions.length-1;i++){
+      const a=positions[i],b=positions[i+1],cy=365;
+      lines.push({id:`network-item-${++serial}`,type:'arrow',name:`階段 ${i+1} → ${i+2}`,points:[{x:a.x+a.width+5,y:cy},{x:b.x-9,y:cy}],color:'#345268',width:2.4,head:9,headShape:'triangle',startHead:false,endHead:true,style:'solid',closed:false,fill:'#ffffff',fillOpacity:0,curved:false,r:0,opacity:1,layerGroup:{...g}});
+    }
+    lines.push({id:`network-item-${++serial}`,type:'text',box:true,name:'文字 · 示意註記',x:53,y:585,w:1095,h:28,text:'Example layout · replace stage names, tensor sizes and operations with the actual model before publication.',size:13,fontFamily:'Arial',align:'center',valign:'middle',marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1.05,bold:false,color:'#586B80',r:0,opacity:1,layerGroup:{...g}});
+    return {name:'可調視角立體 CNN 架構',width:1200,height:675,items:[...lines,...blocks]};
+  }
+  return Object.freeze({defaults,limits,normalize,createBlock,createNetwork});
+});

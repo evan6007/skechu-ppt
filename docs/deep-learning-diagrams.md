@@ -1,8 +1,10 @@
 # Deep learning architecture diagrams
 
-Use **架構圖** in the top toolbar to build editable research figures. The gallery contains five starting layouts: attention and multi-branch fusion, perspective CNN feature maps, conditional diffusion with U-Net, graph and tensor diffusion, and material-aware monocular depth. Each template creates a **new page** so the current drawing is preserved.
+Use **架構圖** in the top toolbar to build editable research figures. The top **立體神經網路方塊** designer creates actual three-face cuboids. Drag **水平視角** (−60° to 60°) and **俯視角** (0° to 55°); set width, height, depth, number of layers, spacing, color and labels. The preview updates immediately. **加入目前圖頁** inserts the stack as native polygon and text layers. Select a face, reopen **架構圖**, and use **更新選取方塊** to change the whole stack later. **以這個視角建立 CNN 範例** creates a new six-stage CNN page.
 
-The same gallery offers six reusable pieces for the current page: a perspective feature-map stack, attention block, U-Net with skip connections, colored tensor grid, merge operator, and single diffusion step. Search by topic, click a piece, then drag or edit its native layers. Related layers appear in a named group in the layer panel. Inserting a piece is one Undo step.
+The gallery also contains five older flat-layout starters: attention and multi-branch fusion, planar CNN feature maps, conditional diffusion with U-Net, graph and tensor diffusion, and material-aware monocular depth. Each template creates a **new page** so the current drawing is preserved.
+
+The same gallery offers six reusable flat pieces for the current page: a planar feature-map stack, attention block, U-Net with skip connections, colored tensor grid, merge operator, and single diffusion step. Search by topic, click a piece, then drag or edit its native layers. Related layers appear in a named group in the layer panel. Inserting a piece is one Undo step.
 
 ## Make a figure that explains the model
 
@@ -14,4 +16,4 @@ The same gallery offers six reusable pieces for the current page: a perspective 
 
 All template shapes, arrows, and text use the existing Skechu item types; no reference bitmap is pasted into the page. The sample figures are original layouts inspired by common scientific diagram conventions. Check mathematical notation, dataset labels, and architecture claims against your own work before submitting a figure.
 
-The generator lives in [`app/deep-learning-diagrams.js`](../app/deep-learning-diagrams.js). Developers can add a template to `templateMeta`/`createTemplate` or a component to `componentMeta`/`createComponent`. The built-in canvas size is 1200 × 675. The returned items must use supported native types and stay within their reported bounds. Run `node --test tests/test-deep-learning-diagrams.cjs` after changes.
+The cuboid generator lives in [`app/diagram-3d.js`](../app/diagram-3d.js). It also backs the opt-in `create_diagram_block_3d` browser API and MCP command. The older layouts live in [`app/deep-learning-diagrams.js`](../app/deep-learning-diagrams.js). The built-in canvas size is 1200 × 675. The returned items use supported native types. Run `node --test tests/test-deep-learning-diagrams.cjs tests/test-diagram-3d.cjs` after changes.

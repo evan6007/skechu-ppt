@@ -34,6 +34,10 @@ jobs:
             --add-data "app/mobile-controls.js;." `
             --add-data "app/mobile-controls.css;." `
             --add-data "app/automation;automation" `
+            --add-data "app/diagram-3d.js;." `
+            --add-data "app/deep-learning-diagrams.js;." `
+            --add-data "app/deep-learning-ui.js;." `
+            --add-data "app/deep-learning-ui.css;." `
             --add-data "app/starter-brain.png;." `
             --add-data "app/local-smoothing.js;." `
             --add-data "app/theme-controls.js;." `

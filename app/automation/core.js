@@ -113,6 +113,11 @@
       if (!library || !Array.isArray(library.componentMeta) || typeof library.createComponent !== 'function') fail('NOT_READY', 'The diagram component library is unavailable.');
       return library;
     }
+    function block3dLibrary() {
+      const library = host.diagram3d || root.SkechuDiagram3D;
+      if (!library || typeof library.createBlock !== 'function') fail('NOT_READY', 'The 3D diagram library is unavailable.');
+      return library;
+    }
     function finish(next, selected) {
       host.apply(next, selected);
       const context = read().context;
@@ -138,6 +143,8 @@
             objects:doc.items.slice(offset,offset+limit).map(it => {
               const data={id:it.id,type:it.type,name:it.name,locked:!!it.locked,hidden:!!it.hidden,reference:!!it.referenceOnly,
                 bounds:host.bounds(it),style:{fill:it.type==='text'?it.color:it.fill,stroke:it.type==='text'?undefined:it.stroke || it.color,strokeWidth:it.strokeWidth ?? it.width,opacity:it.opacity ?? 1},anchorCount:it.points?.length || 0};
+              if (it.layerGroup?.id) data.group={id:it.layerGroup.id,name:it.layerGroup.name};
+              if (it.diagram3d) data.diagram3d=clone(it.diagram3d);
               if (args.includeGeometry && it.points) { data.points=clone(it.points); data.handles=clone(it.pointHandleAngles || {}); }
               return data;
             })};
@@ -187,6 +194,13 @@
           const created = prepareDiagramItems(result?.items, doc.items);
           if (doc.items.length + created.length > 10000) fail('LIMIT', 'Page object limit reached.');
           return {...finish([...clone(doc.items),...created],created.map(it=>it.id)),componentId:args.componentId};
+        }
+        if (name==='create_diagram_block_3d') {
+          const {context:unused,...options}=args;
+          const result=block3dLibrary().createBlock(options);
+          const created=prepareDiagramItems(result?.items,doc.items);
+          if (doc.items.length+created.length>10000) fail('LIMIT','Page object limit reached.');
+          return {...finish([...clone(doc.items),...created],created.map(it=>it.id)),block3d:result.options};
         }
         const selected=targets(doc,args.ids), idSet=new Set(args.ids);
         if (name==='delete_objects') {

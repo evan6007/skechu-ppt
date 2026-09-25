@@ -17,14 +17,14 @@
 
   const templateMeta = Object.freeze([
     {id:'attention-fusion',name:'注意力模組與多分支融合',description:'SE、通道、空間與座標注意力，加上共享主幹、融合與嵌入輸出。'},
-    {id:'perspective-cnn',name:'立體 CNN 特徵圖',description:'透視堆疊的卷積特徵圖、池化、全連接層與分類輸出。'},
+    {id:'perspective-cnn',name:'平面 CNN 示意圖',description:'平面堆疊的卷積特徵圖、池化、全連接層與分類輸出。'},
     {id:'conditional-diffusion',name:'條件式擴散與 U-Net',description:'前向加噪、迭代去噪、條件訊號與含跳接的 U-Net。'},
     {id:'graph-tensor-diffusion',name:'圖與張量擴散流程',description:'空間節點、鄰接圖、遮罩矩陣、GNN 潛在表示與擴散去噪。'},
     {id:'material-aware-depth',name:'材質感知單目深度',description:'共享編碼器、基準深度、特殊材質遮罩與局部深度修正。'}
   ]);
 
   const componentMeta = Object.freeze([
-    {id:'feature-map-stack',name:'立體特徵圖堆疊',description:'多層透視平面，可標示卷積特徵的尺寸。'},
+    {id:'feature-map-stack',name:'平面特徵圖堆疊',description:'多層平面堆疊，可標示卷積特徵的尺寸。'},
     {id:'attention-block',name:'注意力模組',description:'輸入、池化、權重與逐元素調整的可編輯模組。'},
     {id:'unet-block',name:'U-Net 與跳接',description:'編碼、瓶頸、解碼和跨層連線。'},
     {id:'tensor-grid',name:'彩色張量矩陣',description:'用獨立色格表示特徵、潛在變數或遮罩。'},

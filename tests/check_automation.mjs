@@ -137,6 +137,7 @@ await rejects(f.api.execute('create_diagram_component',{context:await f.ctx(),co
 
 // Browser-global integration: every actual catalog component can be inserted through the same command boundary.
 vm.runInContext(read('app/deep-learning-diagrams.js'),context);
+vm.runInContext(read('app/diagram-3d.js'),context);
 f=fixture();f.api.grant();
 assert.equal((await f.api.execute('list_diagram_components')).components.length,context.SkechuDeepLearning.componentMeta.length);
 for(const component of context.SkechuDeepLearning.componentMeta){
@@ -146,10 +147,23 @@ for(const component of context.SkechuDeepLearning.componentMeta){
   assert.ok(result.count>0);
 }
 assert.equal(f.undo.length,context.SkechuDeepLearning.componentMeta.length);
+const blockArgs={context:await f.ctx(),x:250,y:180,width:110,height:140,depth:24,count:4,gap:9,yaw:-38,elevation:31,color:'#5187D2',title:'Conv 2',detail:'28 × 28 × 128'};
+const beforeBlock=f.doc.items.length,blockResult=await f.api.execute('create_diagram_block_3d',blockArgs);
+assert.equal(blockResult.count,14);assert.equal(f.doc.items.length-beforeBlock,14);
+assert.equal(blockResult.block3d.yaw,-38);
+assert.equal(new Set(f.doc.items.slice(-14).map(it=>it.layerGroup.id)).size,1);
+assert.equal(f.doc.items.slice(-14).filter(it=>it.diagram3d).length,1);
+await rejects(f.api.execute('create_diagram_block_3d',blockArgs),'STALE_DOCUMENT');
+await rejects(f.api.execute('create_diagram_block_3d',{...blockArgs,context:await f.ctx(),yaw:90}),'INVALID_ARGUMENT');
+await f.api.execute('history',{context:await f.ctx(),action:'undo'});
+assert.equal(f.doc.items.length,beforeBlock,'One undo removes the complete 3D block');
 
 for(const path of ['core.js','editor.js','panel.css','commands.json']){
   assert.ok(read('app/service-worker.js').includes('automation/'+path),'Offline assets include automation');
   assert.ok(read('.github/workflows/windows-release.yml').includes('app/automation;automation'));
+}
+for(const path of ['diagram-3d.js','deep-learning-diagrams.js','deep-learning-ui.js','deep-learning-ui.css']){
+  assert.ok(read('.github/workflows/windows-release.yml').includes(`app/${path};.`),`Windows package includes ${path}`);
 }
 const traceUi=read('app/auto-trace-ui.js'),workerCalls=[];
 const workerContext=vm.createContext({URL:{},location:{protocol:'https:'},Worker:function(url){workerCalls.push(url)}});

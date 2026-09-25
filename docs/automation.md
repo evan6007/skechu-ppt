@@ -37,6 +37,15 @@ await window.skechu.execute('create_diagram_component', {
   context: current.context,
   componentId: 'feature-map-stack', x: 160, y: 180
 });
+
+// Build a real editable cuboid stack at a chosen camera angle.
+const page3d = await window.skechu.execute('read_document');
+await window.skechu.execute('create_diagram_block_3d', {
+  context: page3d.context, x: 250, y: 180,
+  width: 120, height: 150, depth: 28, count: 4, gap: 10,
+  yaw: -38, elevation: 31, color: '#5187D2',
+  title: 'Conv 2', detail: '28 × 28 × 128'
+});
 ```
 
 `listCommands()` returns the exact schemas. `status()` reports whether access is enabled. There is no API method that silently grants permission.
@@ -90,6 +99,7 @@ MCP exposes the same names with a **`skechu_`** prefix, plus `skechu_connect`. T
 | `create_shapes` | Create up to 50 rectangles/ellipses as editable objects in one operation |
 | `list_diagram_components` | List the built-in deep-learning component IDs and descriptions without editing the page |
 | `create_diagram_component` | Insert one grouped, editable component on the authorized page in one Undo step |
+| `create_diagram_block_3d` | Insert a cuboid feature-map stack with adjustable camera angle, dimensions, depth, layers and captions in one Undo step |
 | `delete_objects` | Delete explicit unlocked IDs after a visible confirmation in the editor |
 | `history` | One undo or redo |
 | `export_svg` | Return SVG text, excluding tracing references; no file or clipboard write |
