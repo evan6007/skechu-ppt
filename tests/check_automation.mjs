@@ -5,14 +5,14 @@ const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const definitions=JSON.parse(read('app/automation/commands.json'));
 const context=vm.createContext({AbortController});vm.runInContext(read('app/automation/core.js'),context);
 const plain=v=>JSON.parse(JSON.stringify(v));
-function fixture() {
+function fixture(deepLearning) {
   const doc={projectId:'p',pageId:'one',name:'Test',canvas:{width:1000,height:600,color:'#ffffff'},selection:[],items:[
     {id:'a',type:'ellipse',x:10,y:20,w:30,h:40,fill:'#ffffff'},
     {id:'ref',type:'image',referenceOnly:true,x:0,y:0,w:100,h:100,src:'PRIVATE_PIXELS',opacity:.5},
     {id:'locked',type:'ellipse',locked:true,x:30,y:40,w:30,h:40}]};
   let edits=0,serial=0,busy=false,confirmation=()=>true,resolveTrace;
   const undo=[],redo=[];
-  const host={read:()=>doc,bounds:it=>({x:it.x,y:it.y,w:it.w,h:it.h}),uid:()=>`created-${++serial}`,
+  const host={read:()=>doc,bounds:it=>({x:it.x,y:it.y,w:it.w,h:it.h}),uid:()=>`created-${++serial}`,deepLearning,
     busy:()=>busy,select:ids=>{doc.selection=ids},
     apply(items,ids){undo.push(plain(doc.items));redo.length=0;doc.items=items;doc.selection=ids;edits++;},
     history(action){const source=action==='undo'?undo:redo,target=action==='undo'?redo:undo;if(source.length){target.push(doc.items);doc.items=source.pop();}},
@@ -86,6 +86,66 @@ f.finishTrace();await new Promise(r=>setTimeout(r,0));
 await f.api.execute('apply_trace',{context:await f.ctx(),taskId:task.taskId});assert.equal(f.edits,1);assert.equal(f.doc.items.at(-1).id,'traced');
 assert.equal(f.api.status().task,null);
 for(const mode of ['fill-auto','gradient','native2d']){task=await f.api.execute('trace_image',{context:await f.ctx(),imageId:'ref',mode});assert.equal(f.host.lastTraceOptions.mode,mode);await f.api.execute('cancel_task',{taskId:task.taskId})}
+
+// A catalog component is one scoped edit. Its placeholder links and groups never join existing artwork or another insertion.
+f=fixture();f.api.grant();
+await rejects(f.api.execute('list_diagram_components'),'NOT_READY');
+await rejects(f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'tensor',x:30,y:40}),'NOT_READY');
+let generationCount=0;
+const componentSource={items:[
+  {id:'a',type:'polygon',name:'Tensor',points:[{x:30,y:40},{x:90,y:40},{x:90,y:80},{x:30,y:80}],layerGroup:{id:'group',name:'Tensor group'}},
+  {id:'line',type:'arrow',name:'Signal',points:[{x:90,y:60},{x:150,y:60}],attachments:{start:{owner:'a'}},pointJunctions:{0:'junction'},layerGroup:{id:'group',name:'Tensor group'}},
+  {id:'line2',type:'arrow',name:'Signal 2',points:[{x:150,y:60},{x:180,y:60}],pointJunctions:{0:'junction'},regionFill:{sources:['a','line']}},
+  {id:'caption',type:'text',name:'Caption',x:30,y:90,w:150,h:30,text:'Tensor'}
+]};
+f.host.deepLearning={componentMeta:[{id:'tensor',name:'Tensor'}],createComponent(id,at){generationCount++;assert.equal(id,'tensor');assert.deepEqual(plain(at),{x:30,y:40});return componentSource}};
+assert.deepEqual(plain((await f.api.execute('list_diagram_components')).components),[{id:'tensor',name:'Tensor'}]);
+await rejects(f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'unknown',x:30,y:40}),'INVALID_ARGUMENT');
+await rejects(f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'tensor',x:NaN,y:40}),'INVALID_ARGUMENT');
+await rejects(f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'tensor',x:30,y:40,code:'alert(1)'}),'INVALID_ARGUMENT');
+assert.equal(generationCount,0);
+let diagram=await f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'tensor',x:30,y:40});
+assert.equal(diagram.count,4);assert.equal(diagram.componentId,'tensor');assert.equal(f.edits,1);assert.equal(f.undo.length,1);
+let inserted=f.doc.items.slice(-4),insertedIds=new Set(inserted.map(it=>it.id));
+assert.equal(insertedIds.size,4);assert.ok(!insertedIds.has('a'));
+assert.equal(inserted[0].layerGroup.id,inserted[1].layerGroup.id);
+assert.equal(inserted[1].attachments.start.owner,inserted[0].id);
+assert.equal(inserted[1].pointJunctions[0],inserted[2].pointJunctions[0]);
+assert.deepEqual(plain(inserted[2].regionFill.sources),[inserted[0].id,inserted[1].id]);
+assert.equal(componentSource.items[0].id,'a','Component source is never mutated');
+diagram=await f.api.execute('create_diagram_component',{context:diagram.context,componentId:'tensor',x:30,y:40});
+const second=f.doc.items.slice(-4);
+assert.ok(second.every(it=>!insertedIds.has(it.id)));
+assert.notEqual(second[0].layerGroup.id,inserted[0].layerGroup.id);
+assert.notEqual(second[1].pointJunctions[0],inserted[1].pointJunctions[0]);
+assert.equal(f.undo.length,2);
+await f.api.execute('history',{context:diagram.context,action:'undo'});
+assert.equal(f.doc.items.length,7,'One undo removes exactly the latest component');
+await f.api.execute('history',{context:await f.ctx(),action:'undo'});
+assert.equal(f.doc.items.length,3,'The earlier component is a separate undo step');
+
+// Invalid library output, stale pages and the page cap do not consume undo history.
+f=fixture({componentMeta:[{id:'bad'}],createComponent:()=>({items:[{id:'orphan',type:'arrow',points:[{x:0,y:0},{x:1,y:1}],attachments:{end:{owner:'outside'}}}]})});f.api.grant();
+await rejects(f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'bad',x:0,y:0}),'INVALID_COMPONENT');
+assert.equal(f.edits,0);
+const stale=await f.ctx();f.doc.items[0].x++;
+await rejects(f.api.execute('create_diagram_component',{context:stale,componentId:'bad',x:0,y:0}),'STALE_DOCUMENT');
+f.doc.pageId='other';await rejects(f.api.execute('create_diagram_component',{context:stale,componentId:'bad',x:0,y:0}),'PAGE_CHANGED');
+f=fixture({componentMeta:[{id:'tiny'}],createComponent:()=>({items:[{id:'tiny',type:'ellipse',x:1,y:1,w:10,h:10}]})});f.api.grant();
+f.doc.items.push(...Array.from({length:9997},(_,i)=>({id:`bulk-${i}`,type:'ellipse',x:0,y:0,w:1,h:1})));
+await rejects(f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'tiny',x:0,y:0}),'LIMIT');assert.equal(f.edits,0);
+
+// Browser-global integration: every actual catalog component can be inserted through the same command boundary.
+vm.runInContext(read('app/deep-learning-diagrams.js'),context);
+f=fixture();f.api.grant();
+assert.equal((await f.api.execute('list_diagram_components')).components.length,context.SkechuDeepLearning.componentMeta.length);
+for(const component of context.SkechuDeepLearning.componentMeta){
+  const before=f.doc.items.length;
+  const result=await f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:component.id,x:120,y:140});
+  assert.equal(result.count,f.doc.items.length-before,`Inserted ${component.id}`);
+  assert.ok(result.count>0);
+}
+assert.equal(f.undo.length,context.SkechuDeepLearning.componentMeta.length);
 
 for(const path of ['core.js','editor.js','panel.css','commands.json']){
   assert.ok(read('app/service-worker.js').includes('automation/'+path),'Offline assets include automation');

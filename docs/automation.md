@@ -23,10 +23,19 @@ const created = await window.skechu.execute('create_shapes', {
   context: page.context,
   shapes: [{kind: 'ellipse', x: 120, y: 100, width: 180, height: 120}]
 });
+
 await window.skechu.execute('update_objects', {
   context: created.context,
   ids: created.ids,
   style: {fill: '#14b8a6', stroke: '#172033', strokeWidth: 3}
+});
+
+// Discover built-in architecture components, then insert one native group.
+const catalog = await window.skechu.execute('list_diagram_components');
+const current = await window.skechu.execute('read_document');
+await window.skechu.execute('create_diagram_component', {
+  context: current.context,
+  componentId: 'feature-map-stack', x: 160, y: 180
 });
 ```
 
@@ -79,6 +88,8 @@ MCP exposes the same names with a **`skechu_`** prefix, plus `skechu_connect`. T
 | `update_objects` | Batch fill, stroke, stroke width or opacity on unlocked objects; images support opacity only, text supports fill/opacity |
 | `move_objects` | Translate unlocked objects by `dx`/`dy`; incomplete connected sets are rejected |
 | `create_shapes` | Create up to 50 rectangles/ellipses as editable objects in one operation |
+| `list_diagram_components` | List the built-in deep-learning component IDs and descriptions without editing the page |
+| `create_diagram_component` | Insert one grouped, editable component on the authorized page in one Undo step |
 | `delete_objects` | Delete explicit unlocked IDs after a visible confirmation in the editor |
 | `history` | One undo or redo |
 | `export_svg` | Return SVG text, excluding tracing references; no file or clipboard write |

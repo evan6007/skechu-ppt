@@ -58,6 +58,61 @@
       }
       for (const owners of junctions.values()) if (owners.some(id=>chosen.has(id)) && owners.some(id=>!chosen.has(id))) fail('LINKED_OBJECTS', 'Include every line sharing these junctions.');
     }
+    function prepareDiagramItems(source, existing) {
+      if (!Array.isArray(source) || !source.length || source.length > 1000) fail('INVALID_COMPONENT', 'The diagram component has an invalid object count.');
+      const placeholders = new Set();
+      for (const it of source) {
+        if (!it || typeof it !== 'object' || typeof it.id !== 'string' || !it.id || placeholders.has(it.id)
+          || !['box','polygon','ellipse','arrow','text'].includes(it.type) || it.referenceOnly) fail('INVALID_COMPONENT', 'The diagram component contains an unsupported object.');
+        placeholders.add(it.id);
+        if (it.type === 'polygon' || it.type === 'arrow') {
+          if (!Array.isArray(it.points) || it.points.length < (it.type === 'arrow' ? 2 : 3)
+            || it.points.some(p => !p || !Number.isFinite(p.x) || !Number.isFinite(p.y))) fail('INVALID_COMPONENT', 'The diagram component has invalid geometry.');
+        } else if (![it.x,it.y,it.w,it.h].every(Number.isFinite)) fail('INVALID_COMPONENT', 'The diagram component has invalid geometry.');
+      }
+      const created = clone(source), used = new Set(existing.map(it => it.id));
+      function fresh(prefix = '') {
+        for (let attempt = 0; attempt < 100; attempt++) {
+          const candidate = prefix + host.uid();
+          if (candidate.length > 160) fail('INVALID_COMPONENT', 'Generated object ID is too long.');
+          if (!used.has(candidate)) { used.add(candidate); return candidate; }
+        }
+        fail('INVALID_COMPONENT', 'Could not allocate unique diagram IDs.');
+      }
+      const idMap = new Map(created.map(it => [it.id, fresh()]));
+      const groupMap = new Map(), junctionMap = new Map();
+      const remap = owner => {
+        if (!idMap.has(owner)) fail('INVALID_COMPONENT', 'The diagram component has an external object link.');
+        return idMap.get(owner);
+      };
+      for (const it of created) {
+        it.id = remap(it.id);
+        if (it.layerGroup != null) {
+          const group = it.layerGroup;
+          if (!group || typeof group.id !== 'string' || !group.id) fail('INVALID_COMPONENT', 'The diagram component has an invalid group.');
+          if (!groupMap.has(group.id)) groupMap.set(group.id, fresh('diagram-group-'));
+          group.id = groupMap.get(group.id);
+        }
+        if (it.pointJunctions) {
+          for (const [index,key] of Object.entries(it.pointJunctions)) {
+            if (typeof key !== 'string' || !key) fail('INVALID_COMPONENT', 'The diagram component has an invalid junction.');
+            if (!junctionMap.has(key)) junctionMap.set(key, fresh('diagram-junction-'));
+            it.pointJunctions[index] = junctionMap.get(key);
+          }
+        }
+        if (it.attachments) for (const link of Object.values(it.attachments)) if (link) link.owner = remap(link.owner);
+        if (it.regionFill) {
+          if (!Array.isArray(it.regionFill.sources)) fail('INVALID_COMPONENT', 'The diagram component has invalid fill links.');
+          it.regionFill.sources = it.regionFill.sources.map(remap);
+        }
+      }
+      return created;
+    }
+    function diagramLibrary() {
+      const library = host.deepLearning || root.SkechuDeepLearning;
+      if (!library || !Array.isArray(library.componentMeta) || typeof library.createComponent !== 'function') fail('NOT_READY', 'The diagram component library is unavailable.');
+      return library;
+    }
     function finish(next, selected) {
       host.apply(next, selected);
       const context = read().context;
@@ -89,6 +144,7 @@
         }
         if (name === 'select_objects') { targets(doc,args.ids,false); host.select(args.ids); return {context:read().context,ids:args.ids}; }
         if (name === 'export_svg') return {context:doc.context,mimeType:'image/svg+xml',svg:host.exportSvg()};
+        if (name === 'list_diagram_components') return {context:doc.context,components:clone(diagramLibrary().componentMeta)};
         if (name === 'history') { if (task?.status==='running') fail('BUSY','Cancel tracing first.'); host.history(args.action); return {context:read().context}; }
         if (name === 'trace_image') {
           if (task) fail('BUSY','Apply or cancel the previous tracing job first.');
@@ -123,6 +179,14 @@
           });
           if(doc.items.length+created.length>10000) fail('LIMIT','Page object limit reached.');
           return finish([...clone(doc.items),...created],created.map(it=>it.id));
+        }
+        if (name==='create_diagram_component') {
+          const library = diagramLibrary();
+          if (!library.componentMeta.some(meta => meta.id === args.componentId)) fail('INVALID_ARGUMENT', 'Unknown diagram component.');
+          const result = library.createComponent(args.componentId, {x:args.x,y:args.y});
+          const created = prepareDiagramItems(result?.items, doc.items);
+          if (doc.items.length + created.length > 10000) fail('LIMIT', 'Page object limit reached.');
+          return {...finish([...clone(doc.items),...created],created.map(it=>it.id)),componentId:args.componentId};
         }
         const selected=targets(doc,args.ids), idSet=new Set(args.ids);
         if (name==='delete_objects') {

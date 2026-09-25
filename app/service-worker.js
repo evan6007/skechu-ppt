@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v97-hd-compare';
+const CACHE_NAME = 'skechu-ppt-v98-deep-learning-diagrams';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,6 +7,9 @@ const APP_SHELL = [
   './automation/editor.js?v=87-native-fill',
   './automation/panel.css?v=70-automation',
   './automation/commands.json',
+  './deep-learning-diagrams.js?v=1',
+  './deep-learning-ui.js?v=1',
+  './deep-learning-ui.css?v=1',
   './mobile-controls.js?v=69-copy-paste',
   './mobile-controls.css?v=90-mobile-brand',
   './touch-gestures.js?v=68-touch-gestures',
@@ -39,7 +42,7 @@ const APP_SHELL = [
   './clipboard-controls.js?v=95-copy-recovery',
   './clipboard-images.js?v=95-copy-recovery',
   './portable-pptx.js?v=95-copy-recovery',
-  './portable-ppt-controls.js?v=95-copy-recovery',
+  './portable-ppt-controls.js?v=98-deep-learning',
   './portable-ppt-worker.js?v=95-copy-recovery',
   './web-ppt-client.js?v=95-copy-recovery',
   './web-ppt-helper.js?v=95-copy-recovery',

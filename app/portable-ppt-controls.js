@@ -122,7 +122,12 @@ function encodePortablePptx(snapshot){
       worker=new Worker('portable-ppt-worker.js?v=95-copy-recovery');
       timer=setTimeout(()=>finish(Error('PPTX 產生逾時，請分批選取後重試。')),30000);
       worker.onmessage=event=>event.data?.error?finish(Error(event.data.error)):event.data?.bytes instanceof Uint8Array?finish(null,event.data.bytes):finish(Error('PPTX 產生結果不完整'));
-      worker.onerror=()=>finish(Error('PPTX 工作程式未能啟動，請重新整理網頁後再試。'));
+      worker.onerror=()=>{
+        // Some embedded browsers block workers. Keep small editable figures exportable.
+        if(snapshot.shapes.length<=100){
+          try{finish(null,PortablePptx.encode(snapshot))}catch(error){finish(error)}
+        }else finish(Error('PPTX 工作程式未能啟動，請重新整理網頁後再試。'));
+      };
       worker.postMessage(snapshot);
     }catch(error){finish(error)}
   });
