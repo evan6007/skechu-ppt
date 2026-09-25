@@ -31,6 +31,22 @@ test('layer count and validation are bounded',()=>{
   assert.throws(()=>blocks.createBlock({yaw:61}),RangeError);
   assert.throws(()=>blocks.createBlock({count:2.5}),RangeError);
   assert.throws(()=>blocks.createBlock({color:'red'}),TypeError);
+  assert.throws(()=>blocks.createBlock({gridRows:6,gridCols:0}),RangeError);
+  assert.throws(()=>blocks.createBlock({gridRows:13,gridCols:2}),RangeError);
+  assert.throws(()=>blocks.createBlock({gridRows:3,gridCols:3,gridStyle:'noise'}),TypeError);
+});
+
+test('gridded feature face follows camera projection and stays editable',()=>{
+  const spec={x:25,y:35,width:120,height:150,count:2,gridRows:4,gridCols:5,gridStyle:'categorical',title:'',detail:''};
+  const left=blocks.createBlock({...spec,yaw:-34,elevation:23});
+  const right=blocks.createBlock({...spec,yaw:34,elevation:23});
+  const cells=left.items.filter(it=>it.name.startsWith('Tensor cell'));
+  assert.equal(cells.length,20);
+  assert.equal(left.items.length,26);
+  assert.equal(new Set(cells.map(it=>it.fill)).size,5);
+  assert.ok(cells.every(it=>it.type==='polygon'&&it.points.length===4&&it.layerGroup.id));
+  assert.notDeepEqual(cells[0].points,right.items.find(it=>it.name==='Tensor cell 1, 1').points);
+  assert.equal(left.items.find(it=>it.diagram3d).diagram3d.gridRows,4);
 });
 
 test('CNN sample uses six grouped 3D stages within the canvas',()=>{

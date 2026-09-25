@@ -426,6 +426,9 @@
         "gap": {"type": "number", "minimum": 0, "maximum": 36},
         "yaw": {"type": "number", "minimum": -60, "maximum": 60},
         "elevation": {"type": "number", "minimum": 0, "maximum": 55},
+        "gridRows": {"type": "integer", "minimum": 0, "maximum": 12},
+        "gridCols": {"type": "integer", "minimum": 0, "maximum": 12},
+        "gridStyle": {"type": "string", "enum": ["tonal", "categorical"]},
         "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
         "title": {"type": "string", "maxLength": 80},
         "detail": {"type": "string", "maxLength": 80}

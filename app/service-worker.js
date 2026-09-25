@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v101-diagram-markup';
+const CACHE_NAME = 'skechu-ppt-v103-tensor-grid-position';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,10 +7,10 @@ const APP_SHELL = [
   './automation/editor.js?v=87-native-fill',
   './automation/panel.css?v=70-automation',
   './automation/commands.json',
-  './diagram-3d.js?v=1',
+  './diagram-3d.js?v=2-grid',
   './deep-learning-diagrams.js?v=2',
-  './deep-learning-ui.js?v=2',
-  './deep-learning-ui.css?v=3',
+  './deep-learning-ui.js?v=3-grid',
+  './deep-learning-ui.css?v=4-grid',
   './mobile-controls.js?v=69-copy-paste',
   './mobile-controls.css?v=90-mobile-brand',
   './touch-gestures.js?v=68-touch-gestures',

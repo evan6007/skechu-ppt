@@ -99,7 +99,7 @@ MCP exposes the same names with a **`skechu_`** prefix, plus `skechu_connect`. T
 | `create_shapes` | Create up to 50 rectangles/ellipses as editable objects in one operation |
 | `list_diagram_components` | List the built-in deep-learning component IDs and descriptions without editing the page |
 | `create_diagram_component` | Insert one grouped, editable component on the authorized page in one Undo step |
-| `create_diagram_block_3d` | Insert a cuboid feature-map stack with adjustable camera angle, dimensions, depth, layers and captions in one Undo step |
+| `create_diagram_block_3d` | Insert a cuboid feature-map stack with adjustable camera angle, dimensions, layers, captions and optional editable tensor grid in one Undo step |
 | `create_diagram_markup` | Add grouped editable labels, panels and routed arrows in one Undo step |
 | `delete_objects` | Delete explicit unlocked IDs after a visible confirmation in the editor |
 | `history` | One undo or redo |
@@ -112,6 +112,8 @@ MCP exposes the same names with a **`skechu_`** prefix, plus `skechu_connect`. T
 Style/move/delete operations accept at most 200 IDs. A batch is validated before any edit and uses one undo entry. Locked objects stay protected. Computed region fills and explicit Bézier paths are not translated through this API yet; use the editor for those. Curve topology edits, importing arbitrary files/URLs, native PowerPoint, system clipboard and GitHub account actions are not exposed in this version.
 
 Tracing uses the existing worker engine, a maximum 2048-pixel source edge, one retained task, a 45-second compute timeout and a 5000-path result limit. Poll `get_task` about once per second, not every animation frame. Apply or cancel a task before starting another. Switching pages or disabling access aborts it.
+
+For a 3D tensor grid, pass both `gridRows` and `gridCols` (2–12 each, at most 144 cells) and `gridStyle` as `tonal` or `categorical`. Zero rows and zero columns leave a plain feature face. Each colored grid cell is native editable geometry and follows the selected camera angle. The editor also offers five coordinated muted color swatches.
 
 Use `mode: "illustration"` for closed color regions and `autoFill: true` to keep their source colors. The default is outlines only. Both outputs are ordinary editable curves; source-color fills retain holes and have no visible connector strokes. The illustration engine runs a pinned, locally served WebAssembly module in the worker, with a separate 1800-region / 40000-outline-anchor cap. Small edge-preserving denoising reduces compression noise before segmentation. Gradients are approximated by flat colors, and faint or blurred details can still need manual editing. Tracing is staged until `apply_trace`; `autoFill` does not bypass authorization or apply results automatically.
 

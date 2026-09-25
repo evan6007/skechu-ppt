@@ -1,0 +1,4456 @@
+{
+  "version": 2,
+  "project": {
+    "id": "project-muh4zsdy-6nok23",
+    "name": "ToM Monocular Depth | Paper Figure",
+    "pages": [
+      {
+        "id": "page-muh4zsdy-4kf36w",
+        "name": "Figure 1 | Material-adapted depth architecture",
+        "items": [
+          {
+            "id": "item-220",
+            "type": "box",
+            "name": "Backbone rule",
+            "x": 302,
+            "y": 181,
+            "w": 1110,
+            "h": 2,
+            "radius": 0,
+            "fill": "#B9C8D2",
+            "stroke": "#B9C8D2",
+            "strokeWidth": 0,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-221",
+            "type": "box",
+            "name": "Candidate adapter outline",
+            "x": 767,
+            "y": 626,
+            "w": 367,
+            "h": 166,
+            "radius": 4,
+            "fill": "#FFF9F1",
+            "stroke": "#C58A4E",
+            "strokeWidth": 1.8,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-222",
+            "type": "box",
+            "name": "Gate map",
+            "x": 1181,
+            "y": 651,
+            "w": 95,
+            "h": 48,
+            "radius": 2,
+            "fill": "#E7F1F4",
+            "stroke": "#668CA0",
+            "strokeWidth": 1.7,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-223",
+            "type": "box",
+            "name": "Residual map",
+            "x": 1181,
+            "y": 724,
+            "w": 95,
+            "h": 48,
+            "radius": 2,
+            "fill": "#F7E7D8",
+            "stroke": "#C28B54",
+            "strokeWidth": 1.7,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-224",
+            "type": "box",
+            "name": "Pointwise product",
+            "x": 1358,
+            "y": 693,
+            "w": 70,
+            "h": 70,
+            "radius": 35,
+            "fill": "#FFFFFF",
+            "stroke": "#344657",
+            "strokeWidth": 2,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-225",
+            "type": "box",
+            "name": "Depth addition",
+            "x": 1503,
+            "y": 399,
+            "w": 64,
+            "h": 64,
+            "radius": 32,
+            "fill": "#FFFFFF",
+            "stroke": "#344657",
+            "strokeWidth": 2,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-226",
+            "type": "box",
+            "name": "Training divider",
+            "x": 67,
+            "y": 817,
+            "w": 1664,
+            "h": 2,
+            "radius": 0,
+            "fill": "#B7C2CC",
+            "stroke": "#B7C2CC",
+            "strokeWidth": 0,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-227",
+            "type": "arrow",
+            "name": "Feature flow",
+            "points": [
+              {
+                "x": 230,
+                "y": 436
+              },
+              {
+                "x": 305,
+                "y": 436
+              }
+            ],
+            "color": "#455A6E",
+            "width": 2.6,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-228",
+            "type": "arrow",
+            "name": "Feature flow",
+            "points": [
+              {
+                "x": 455,
+                "y": 436
+              },
+              {
+                "x": 572,
+                "y": 436
+              }
+            ],
+            "color": "#455A6E",
+            "width": 2.6,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-229",
+            "type": "arrow",
+            "name": "Feature flow",
+            "points": [
+              {
+                "x": 720,
+                "y": 436
+              },
+              {
+                "x": 830,
+                "y": 436
+              }
+            ],
+            "color": "#455A6E",
+            "width": 2.6,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-230",
+            "type": "arrow",
+            "name": "Feature flow",
+            "points": [
+              {
+                "x": 980,
+                "y": 436
+              },
+              {
+                "x": 1072,
+                "y": 436
+              }
+            ],
+            "color": "#455A6E",
+            "width": 2.6,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-231",
+            "type": "arrow",
+            "name": "Feature flow",
+            "points": [
+              {
+                "x": 1225,
+                "y": 436
+              },
+              {
+                "x": 1280,
+                "y": 436
+              }
+            ],
+            "color": "#455A6E",
+            "width": 2.6,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-232",
+            "type": "arrow",
+            "name": "Feature flow",
+            "points": [
+              {
+                "x": 1430,
+                "y": 436
+              },
+              {
+                "x": 1503,
+                "y": 436
+              }
+            ],
+            "color": "#455A6E",
+            "width": 2.6,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-233",
+            "type": "arrow",
+            "name": "Feature flow",
+            "points": [
+              {
+                "x": 1568,
+                "y": 436
+              },
+              {
+                "x": 1595,
+                "y": 436
+              }
+            ],
+            "color": "#455A6E",
+            "width": 2.6,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-234",
+            "type": "arrow",
+            "name": "Feature branch to adapter",
+            "points": [
+              {
+                "x": 720,
+                "y": 472.68449999999996
+              },
+              {
+                "x": 746,
+                "y": 474
+              },
+              {
+                "x": 746,
+                "y": 707
+              },
+              {
+                "x": 767,
+                "y": 709
+              }
+            ],
+            "color": "#B2763D",
+            "width": 2.5,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-221",
+                "slot": "left"
+              },
+              "start": {
+                "owner": "item-306",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-235",
+            "type": "arrow",
+            "name": "Adapter gate",
+            "points": [
+              {
+                "x": 1134,
+                "y": 674
+              },
+              {
+                "x": 1181,
+                "y": 675
+              }
+            ],
+            "color": "#7B9EAD",
+            "width": 2.4,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-222",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-236",
+            "type": "arrow",
+            "name": "Adapter residual",
+            "points": [
+              {
+                "x": 1134,
+                "y": 748
+              },
+              {
+                "x": 1181,
+                "y": 748
+              }
+            ],
+            "color": "#B48254",
+            "width": 2.4,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-223",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-237",
+            "type": "arrow",
+            "name": "Gate to product",
+            "points": [
+              {
+                "x": 1276,
+                "y": 675
+              },
+              {
+                "x": 1321,
+                "y": 675
+              },
+              {
+                "x": 1321,
+                "y": 711
+              },
+              {
+                "x": 1358,
+                "y": 711
+              }
+            ],
+            "color": "#7293A2",
+            "width": 2.4,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-222",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-238",
+            "type": "arrow",
+            "name": "Residual to product",
+            "points": [
+              {
+                "x": 1276,
+                "y": 748
+              },
+              {
+                "x": 1358,
+                "y": 748
+              }
+            ],
+            "color": "#B48254",
+            "width": 2.4,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-223",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-239",
+            "type": "arrow",
+            "name": "Correction to depth fusion",
+            "points": [
+              {
+                "x": 1428,
+                "y": 728
+              },
+              {
+                "x": 1480,
+                "y": 728
+              },
+              {
+                "x": 1480,
+                "y": 464
+              },
+              {
+                "x": 1535,
+                "y": 463
+              }
+            ],
+            "color": "#B48254",
+            "width": 2.5,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-224",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-225",
+                "slot": "bottom"
+              }
+            }
+          },
+          {
+            "id": "item-240",
+            "type": "text",
+            "box": true,
+            "name": "文字 · (a) Proposed model architecture",
+            "x": 68,
+            "y": 48,
+            "w": 500,
+            "h": 42,
+            "text": "(a) Proposed model architecture",
+            "size": 28,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#192838",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-241",
+            "type": "text",
+            "box": true,
+            "name": "文字 · RGB-only inference",
+            "x": 1370,
+            "y": 51,
+            "w": 350,
+            "h": 32,
+            "text": "RGB-only inference",
+            "size": 20,
+            "fontFamily": "Arial",
+            "align": "right",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#466273",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-242",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Transparent and specular objects",
+            "x": 68,
+            "y": 100,
+            "w": 1100,
+            "h": 30,
+            "text": "Transparent and specular objects  •  pretrained monocular depth backbone",
+            "size": 19,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#556879",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-243",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Pretrained ViT–DPT backbone",
+            "x": 310,
+            "y": 193,
+            "w": 1090,
+            "h": 30,
+            "text": "Pretrained ViT–DPT backbone",
+            "size": 24,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#344B62",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-244",
+            "type": "text",
+            "box": true,
+            "name": "文字 · RGB input",
+            "x": 85,
+            "y": 251,
+            "w": 150,
+            "h": 36,
+            "text": "RGB input",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#1E2E3D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-245",
+            "type": "text",
+            "box": true,
+            "name": "文字 · ViT encoder",
+            "x": 306,
+            "y": 226,
+            "w": 155,
+            "h": 36,
+            "text": "ViT encoder",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#1E2E3D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-246",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Multi-level",
+            "x": 563,
+            "y": 251,
+            "w": 165,
+            "h": 36,
+            "text": "Multi-level",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#1E2E3D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-247",
+            "type": "text",
+            "box": true,
+            "name": "文字 · features",
+            "x": 563,
+            "y": 282,
+            "w": 165,
+            "h": 30,
+            "text": "features",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#1E2E3D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-248",
+            "type": "text",
+            "box": true,
+            "name": "文字 · DPT fusion",
+            "x": 834,
+            "y": 266,
+            "w": 155,
+            "h": 36,
+            "text": "DPT fusion",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#1E2E3D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-249",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Depth head",
+            "x": 1068,
+            "y": 303,
+            "w": 155,
+            "h": 36,
+            "text": "Depth head",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#1E2E3D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-250",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Initial depth",
+            "x": 1281,
+            "y": 297,
+            "w": 155,
+            "h": 36,
+            "text": "Initial depth",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#1E2E3D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-251",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Refined depth",
+            "x": 1596,
+            "y": 297,
+            "w": 160,
+            "h": 36,
+            "text": "Refined depth",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#1E2E3D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-252",
+            "type": "text",
+            "box": true,
+            "name": "文字 · I ∈ R^(H×W×3)",
+            "x": 86,
+            "y": 560,
+            "w": 150,
+            "h": 30,
+            "text": "I ∈ R^(H×W×3)",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#566A7D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-253",
+            "type": "text",
+            "box": true,
+            "name": "文字 · self-supervised init.",
+            "x": 302,
+            "y": 565,
+            "w": 165,
+            "h": 28,
+            "text": "self-supervised init.",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#566A7D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-254",
+            "type": "text",
+            "box": true,
+            "name": "文字 · F₁ … F₄",
+            "x": 558,
+            "y": 545,
+            "w": 175,
+            "h": 28,
+            "text": "F₁ … F₄",
+            "size": 20,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#566A7D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-255",
+            "type": "text",
+            "box": true,
+            "name": "文字 · multi-scale fusion",
+            "x": 824,
+            "y": 542,
+            "w": 175,
+            "h": 28,
+            "text": "multi-scale fusion",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#566A7D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-256",
+            "type": "text",
+            "box": true,
+            "name": "文字 · dense output",
+            "x": 1071,
+            "y": 505,
+            "w": 160,
+            "h": 28,
+            "text": "dense output",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#566A7D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-257",
+            "type": "text",
+            "box": true,
+            "name": "文字 · D₀",
+            "x": 1279,
+            "y": 515,
+            "w": 156,
+            "h": 28,
+            "text": "D₀",
+            "size": 22,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#566A7D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-258",
+            "type": "text",
+            "box": true,
+            "name": "文字 · D̂",
+            "x": 1601,
+            "y": 515,
+            "w": 150,
+            "h": 28,
+            "text": "D̂",
+            "size": 22,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#566A7D",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-259",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Candidate ToM residual adapter",
+            "x": 778,
+            "y": 638,
+            "w": 335,
+            "h": 34,
+            "text": "Candidate ToM residual adapter",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#965E27",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-260",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Input: encoder features F₁…F₄",
+            "x": 786,
+            "y": 680,
+            "w": 320,
+            "h": 28,
+            "text": "Input: encoder features F₁…F₄",
+            "size": 19,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#51483E",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-261",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Output: spatial gate G, residual",
+            "x": 786,
+            "y": 713,
+            "w": 320,
+            "h": 28,
+            "text": "Output: spatial gate G, residual R",
+            "size": 19,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#51483E",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-262",
+            "type": "text",
+            "box": true,
+            "name": "文字 · train on transparent / specular ",
+            "x": 786,
+            "y": 750,
+            "w": 320,
+            "h": 25,
+            "text": "train on transparent / specular RGB–depth pairs",
+            "size": 16,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#866B4F",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-263",
+            "type": "text",
+            "box": true,
+            "name": "文字 · G",
+            "x": 1181,
+            "y": 652,
+            "w": 95,
+            "h": 44,
+            "text": "G",
+            "size": 24,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#2F5970",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-264",
+            "type": "text",
+            "box": true,
+            "name": "文字 · R",
+            "x": 1181,
+            "y": 725,
+            "w": 95,
+            "h": 44,
+            "text": "R",
+            "size": 24,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#9B6135",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-265",
+            "type": "text",
+            "box": true,
+            "name": "文字 · ×",
+            "x": 1362,
+            "y": 695,
+            "w": 64,
+            "h": 61,
+            "text": "×",
+            "size": 33,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#223241",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-266",
+            "type": "text",
+            "box": true,
+            "name": "文字 · +",
+            "x": 1506,
+            "y": 399,
+            "w": 58,
+            "h": 59,
+            "text": "+",
+            "size": 34,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#223241",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-267",
+            "type": "text",
+            "box": true,
+            "name": "文字 · G ⊙ R",
+            "x": 1380,
+            "y": 765,
+            "w": 145,
+            "h": 26,
+            "text": "G ⊙ R",
+            "size": 20,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#655042",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-268",
+            "type": "text",
+            "box": true,
+            "name": "文字 · Training only: paired depth targ",
+            "x": 95,
+            "y": 838,
+            "w": 1500,
+            "h": 32,
+            "text": "Training only: paired depth target D* supervises D̂; the RGB image is the sole inference input.",
+            "size": 20,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#4F6070",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-270",
+              "name": "Paper labels and inference graph",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-271",
+            "type": "box",
+            "name": "Training-only depth target",
+            "x": 1540,
+            "y": 614,
+            "w": 155,
+            "h": 116,
+            "radius": 2,
+            "fill": "#F8FAFC",
+            "stroke": "#B7C2CC",
+            "strokeWidth": 1.5,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-272",
+            "type": "box",
+            "name": "Ground truth depth",
+            "x": 1570,
+            "y": 642,
+            "w": 95,
+            "h": 48,
+            "radius": 1,
+            "fill": "#E7EBEF",
+            "stroke": "#8FA0AE",
+            "strokeWidth": 1.6,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-273",
+            "type": "box",
+            "name": "Depth supervision",
+            "x": 1563,
+            "y": 739,
+            "w": 137,
+            "h": 50,
+            "radius": 2,
+            "fill": "#FFFFFF",
+            "stroke": "#8797A5",
+            "strokeWidth": 1.7,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-274",
+            "type": "arrow",
+            "name": "Depth label to loss",
+            "points": [
+              {
+                "x": 1617.5,
+                "y": 690
+              },
+              {
+                "x": 1618,
+                "y": 739
+              }
+            ],
+            "color": "#8294A2",
+            "width": 2,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "dash",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-272",
+                "slot": "bottom"
+              }
+            }
+          },
+          {
+            "id": "item-275",
+            "type": "arrow",
+            "name": "Predicted depth to loss",
+            "points": [
+              {
+                "x": 1735,
+                "y": 464
+              },
+              {
+                "x": 1735,
+                "y": 764
+              },
+              {
+                "x": 1700,
+                "y": 764
+              }
+            ],
+            "color": "#8294A2",
+            "width": 2,
+            "head": 9,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "dash",
+            "closed": false,
+            "fill": "#ffffff",
+            "fillOpacity": 0,
+            "curved": false,
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-273",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-276",
+            "type": "text",
+            "box": true,
+            "name": "文字 · D̂ = D₀ + G ⊙ R",
+            "x": 1320,
+            "y": 548,
+            "w": 380,
+            "h": 37,
+            "text": "D̂ = D₀ + G ⊙ R",
+            "size": 25,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#263949",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-277",
+            "type": "text",
+            "box": true,
+            "name": "文字 · TRAINING ONLY",
+            "x": 1549,
+            "y": 615,
+            "w": 135,
+            "h": 26,
+            "text": "TRAINING ONLY",
+            "size": 17,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#627586",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-278",
+            "type": "text",
+            "box": true,
+            "name": "文字 · D*",
+            "x": 1574,
+            "y": 643,
+            "w": 87,
+            "h": 46,
+            "text": "D*",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#46596B",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-279",
+            "type": "text",
+            "box": true,
+            "name": "文字 · L_depth",
+            "x": 1565,
+            "y": 741,
+            "w": 133,
+            "h": 46,
+            "text": "L_depth",
+            "size": 22,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#344C60",
+            "r": 0,
+            "opacity": 1,
+            "layerGroup": {
+              "id": "diagram-group-item-280",
+              "name": "Training-only supervision and fusion equation",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-280",
+            "type": "polygon",
+            "name": "第 4 層 · 上面",
+            "points": [
+              {
+                "x": 600.287,
+                "y": 359.95
+              },
+              {
+                "x": 691.481,
+                "y": 335.915
+              },
+              {
+                "x": 686.448,
+                "y": 333
+              },
+              {
+                "x": 595.254,
+                "y": 357.034
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#C2E1D9",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-281",
+            "type": "polygon",
+            "name": "第 4 層 · 側面",
+            "points": [
+              {
+                "x": 595.254,
+                "y": 357.034
+              },
+              {
+                "x": 600.287,
+                "y": 359.95
+              },
+              {
+                "x": 600.287,
+                "y": 525.641
+              },
+              {
+                "x": 595.254,
+                "y": 522.725
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#7FA79D",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-282",
+            "type": "polygon",
+            "name": "第 4 層 · 正面",
+            "points": [
+              {
+                "x": 600.287,
+                "y": 359.95
+              },
+              {
+                "x": 691.481,
+                "y": 335.915
+              },
+              {
+                "x": 691.481,
+                "y": 501.606
+              },
+              {
+                "x": 600.287,
+                "y": 525.641
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#9DCEC2",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-283",
+            "type": "polygon",
+            "name": "第 3 層 · 上面",
+            "points": [
+              {
+                "x": 609.793,
+                "y": 365.457
+              },
+              {
+                "x": 700.987,
+                "y": 341.422
+              },
+              {
+                "x": 695.955,
+                "y": 338.507
+              },
+              {
+                "x": 604.76,
+                "y": 362.541
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#BADCD4",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-284",
+            "type": "polygon",
+            "name": "第 3 層 · 側面",
+            "points": [
+              {
+                "x": 604.76,
+                "y": 362.541
+              },
+              {
+                "x": 609.793,
+                "y": 365.457
+              },
+              {
+                "x": 609.793,
+                "y": 531.147
+              },
+              {
+                "x": 604.76,
+                "y": 528.232
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#75A197",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-285",
+            "type": "polygon",
+            "name": "第 3 層 · 正面",
+            "points": [
+              {
+                "x": 609.793,
+                "y": 365.457
+              },
+              {
+                "x": 700.987,
+                "y": 341.422
+              },
+              {
+                "x": 700.987,
+                "y": 507.11300000000006
+              },
+              {
+                "x": 609.793,
+                "y": 531.147
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#90c7ba",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-286",
+            "type": "polygon",
+            "name": "第 2 層 · 上面",
+            "points": [
+              {
+                "x": 619.299,
+                "y": 370.963
+              },
+              {
+                "x": 710.494,
+                "y": 346.929
+              },
+              {
+                "x": 705.461,
+                "y": 344.014
+              },
+              {
+                "x": 614.267,
+                "y": 368.048
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#C2E1D9",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-287",
+            "type": "polygon",
+            "name": "第 2 層 · 側面",
+            "points": [
+              {
+                "x": 614.267,
+                "y": 368.048
+              },
+              {
+                "x": 619.299,
+                "y": 370.963
+              },
+              {
+                "x": 619.299,
+                "y": 536.654
+              },
+              {
+                "x": 614.267,
+                "y": 533.739
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#7FA79D",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-288",
+            "type": "polygon",
+            "name": "第 2 層 · 正面",
+            "points": [
+              {
+                "x": 619.299,
+                "y": 370.963
+              },
+              {
+                "x": 710.494,
+                "y": 346.929
+              },
+              {
+                "x": 710.494,
+                "y": 512.62
+              },
+              {
+                "x": 619.299,
+                "y": 536.654
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#9DCEC2",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-289",
+            "type": "polygon",
+            "name": "第 1 層 · 上面",
+            "points": [
+              {
+                "x": 628.806,
+                "y": 376.47
+              },
+              {
+                "x": 720,
+                "y": 352.436
+              },
+              {
+                "x": 714.967,
+                "y": 349.52
+              },
+              {
+                "x": 623.773,
+                "y": 373.555
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#BADCD4",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-290",
+            "type": "polygon",
+            "name": "第 1 層 · 側面",
+            "points": [
+              {
+                "x": 623.773,
+                "y": 373.555
+              },
+              {
+                "x": 628.806,
+                "y": 376.47
+              },
+              {
+                "x": 628.806,
+                "y": 542.161
+              },
+              {
+                "x": 623.773,
+                "y": 539.246
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#75A197",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-291",
+            "type": "polygon",
+            "name": "第 1 層 · 正面",
+            "points": [
+              {
+                "x": 628.806,
+                "y": 376.47
+              },
+              {
+                "x": 720,
+                "y": 352.436
+              },
+              {
+                "x": 720,
+                "y": 518.127
+              },
+              {
+                "x": 628.806,
+                "y": 542.161
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#90c7ba",
+            "stroke": "#688F86",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            },
+            "diagram3d": {
+              "width": 110,
+              "height": 180,
+              "depth": 9,
+              "count": 4,
+              "gap": 8,
+              "yaw": -34,
+              "elevation": 23,
+              "gridRows": 5,
+              "gridCols": 5,
+              "gridStyle": "categorical",
+              "color": "#90c7ba",
+              "title": "",
+              "detail": ""
+            }
+          },
+          {
+            "id": "item-292",
+            "type": "polygon",
+            "name": "Tensor cell 1, 1",
+            "points": [
+              {
+                "x": 628.806,
+                "y": 376.47
+              },
+              {
+                "x": 647.045,
+                "y": 371.663
+              },
+              {
+                "x": 647.045,
+                "y": 404.802
+              },
+              {
+                "x": 628.806,
+                "y": 409.608
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#A7CDE0",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-293",
+            "type": "polygon",
+            "name": "Tensor cell 1, 2",
+            "points": [
+              {
+                "x": 647.045,
+                "y": 371.663
+              },
+              {
+                "x": 665.283,
+                "y": 366.856
+              },
+              {
+                "x": 665.283,
+                "y": 399.995
+              },
+              {
+                "x": 647.045,
+                "y": 404.802
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#B7DCCF",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-294",
+            "type": "polygon",
+            "name": "Tensor cell 1, 3",
+            "points": [
+              {
+                "x": 665.283,
+                "y": 366.856
+              },
+              {
+                "x": 683.522,
+                "y": 362.05
+              },
+              {
+                "x": 683.522,
+                "y": 395.188
+              },
+              {
+                "x": 665.283,
+                "y": 399.995
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E8D99D",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-295",
+            "type": "polygon",
+            "name": "Tensor cell 1, 4",
+            "points": [
+              {
+                "x": 683.522,
+                "y": 362.05
+              },
+              {
+                "x": 701.761,
+                "y": 357.243
+              },
+              {
+                "x": 701.761,
+                "y": 390.381
+              },
+              {
+                "x": 683.522,
+                "y": 395.188
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E9C5B6",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-296",
+            "type": "polygon",
+            "name": "Tensor cell 1, 5",
+            "points": [
+              {
+                "x": 701.761,
+                "y": 357.243
+              },
+              {
+                "x": 720,
+                "y": 352.436
+              },
+              {
+                "x": 720,
+                "y": 385.574
+              },
+              {
+                "x": 701.761,
+                "y": 390.381
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#A7CDE0",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-297",
+            "type": "polygon",
+            "name": "Tensor cell 2, 1",
+            "points": [
+              {
+                "x": 628.806,
+                "y": 409.608
+              },
+              {
+                "x": 647.045,
+                "y": 404.802
+              },
+              {
+                "x": 647.045,
+                "y": 437.94
+              },
+              {
+                "x": 628.806,
+                "y": 442.747
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E9C5B6",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-298",
+            "type": "polygon",
+            "name": "Tensor cell 2, 2",
+            "points": [
+              {
+                "x": 647.045,
+                "y": 404.802
+              },
+              {
+                "x": 665.283,
+                "y": 399.995
+              },
+              {
+                "x": 665.283,
+                "y": 433.133
+              },
+              {
+                "x": 647.045,
+                "y": 437.94
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#CEC5E5",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-299",
+            "type": "polygon",
+            "name": "Tensor cell 2, 3",
+            "points": [
+              {
+                "x": 665.283,
+                "y": 399.995
+              },
+              {
+                "x": 683.522,
+                "y": 395.188
+              },
+              {
+                "x": 683.522,
+                "y": 428.326
+              },
+              {
+                "x": 665.283,
+                "y": 433.133
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E8D99D",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-300",
+            "type": "polygon",
+            "name": "Tensor cell 2, 4",
+            "points": [
+              {
+                "x": 683.522,
+                "y": 395.188
+              },
+              {
+                "x": 701.761,
+                "y": 390.381
+              },
+              {
+                "x": 701.761,
+                "y": 423.519
+              },
+              {
+                "x": 683.522,
+                "y": 428.326
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#A7CDE0",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-301",
+            "type": "polygon",
+            "name": "Tensor cell 2, 5",
+            "points": [
+              {
+                "x": 701.761,
+                "y": 390.381
+              },
+              {
+                "x": 720,
+                "y": 385.574
+              },
+              {
+                "x": 720,
+                "y": 418.712
+              },
+              {
+                "x": 701.761,
+                "y": 423.519
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#B7DCCF",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-302",
+            "type": "polygon",
+            "name": "Tensor cell 3, 1",
+            "points": [
+              {
+                "x": 628.806,
+                "y": 442.747
+              },
+              {
+                "x": 647.045,
+                "y": 437.94
+              },
+              {
+                "x": 647.045,
+                "y": 471.078
+              },
+              {
+                "x": 628.806,
+                "y": 475.885
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#B7DCCF",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-303",
+            "type": "polygon",
+            "name": "Tensor cell 3, 2",
+            "points": [
+              {
+                "x": 647.045,
+                "y": 437.94
+              },
+              {
+                "x": 665.283,
+                "y": 433.133
+              },
+              {
+                "x": 665.283,
+                "y": 466.271
+              },
+              {
+                "x": 647.045,
+                "y": 471.078
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#A7CDE0",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-304",
+            "type": "polygon",
+            "name": "Tensor cell 3, 3",
+            "points": [
+              {
+                "x": 665.283,
+                "y": 433.133
+              },
+              {
+                "x": 683.522,
+                "y": 428.326
+              },
+              {
+                "x": 683.522,
+                "y": 461.464
+              },
+              {
+                "x": 665.283,
+                "y": 466.271
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E8D99D",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-305",
+            "type": "polygon",
+            "name": "Tensor cell 3, 4",
+            "points": [
+              {
+                "x": 683.522,
+                "y": 428.326
+              },
+              {
+                "x": 701.761,
+                "y": 423.519
+              },
+              {
+                "x": 701.761,
+                "y": 456.657
+              },
+              {
+                "x": 683.522,
+                "y": 461.464
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#A7CDE0",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-306",
+            "type": "polygon",
+            "name": "Tensor cell 3, 5",
+            "points": [
+              {
+                "x": 701.761,
+                "y": 423.519
+              },
+              {
+                "x": 720,
+                "y": 418.712
+              },
+              {
+                "x": 720,
+                "y": 451.85
+              },
+              {
+                "x": 701.761,
+                "y": 456.657
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E8D99D",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-307",
+            "type": "polygon",
+            "name": "Tensor cell 4, 1",
+            "points": [
+              {
+                "x": 628.806,
+                "y": 475.885
+              },
+              {
+                "x": 647.045,
+                "y": 471.078
+              },
+              {
+                "x": 647.045,
+                "y": 504.216
+              },
+              {
+                "x": 628.806,
+                "y": 509.023
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#CEC5E5",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-308",
+            "type": "polygon",
+            "name": "Tensor cell 4, 2",
+            "points": [
+              {
+                "x": 647.045,
+                "y": 471.078
+              },
+              {
+                "x": 665.283,
+                "y": 466.271
+              },
+              {
+                "x": 665.283,
+                "y": 499.409
+              },
+              {
+                "x": 647.045,
+                "y": 504.216
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E9C5B6",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-309",
+            "type": "polygon",
+            "name": "Tensor cell 4, 3",
+            "points": [
+              {
+                "x": 665.283,
+                "y": 466.271
+              },
+              {
+                "x": 683.522,
+                "y": 461.464
+              },
+              {
+                "x": 683.522,
+                "y": 494.602
+              },
+              {
+                "x": 665.283,
+                "y": 499.409
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E8D99D",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-310",
+            "type": "polygon",
+            "name": "Tensor cell 4, 4",
+            "points": [
+              {
+                "x": 683.522,
+                "y": 461.464
+              },
+              {
+                "x": 701.761,
+                "y": 456.657
+              },
+              {
+                "x": 701.761,
+                "y": 489.79499999999996
+              },
+              {
+                "x": 683.522,
+                "y": 494.602
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#CEC5E5",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-311",
+            "type": "polygon",
+            "name": "Tensor cell 4, 5",
+            "points": [
+              {
+                "x": 701.761,
+                "y": 456.657
+              },
+              {
+                "x": 720,
+                "y": 451.85
+              },
+              {
+                "x": 720,
+                "y": 484.98900000000003
+              },
+              {
+                "x": 701.761,
+                "y": 489.79499999999996
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#A7CDE0",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-312",
+            "type": "polygon",
+            "name": "Tensor cell 5, 1",
+            "points": [
+              {
+                "x": 628.806,
+                "y": 509.023
+              },
+              {
+                "x": 647.045,
+                "y": 504.216
+              },
+              {
+                "x": 647.045,
+                "y": 537.354
+              },
+              {
+                "x": 628.806,
+                "y": 542.161
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E9C5B6",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-313",
+            "type": "polygon",
+            "name": "Tensor cell 5, 2",
+            "points": [
+              {
+                "x": 647.045,
+                "y": 504.216
+              },
+              {
+                "x": 665.283,
+                "y": 499.409
+              },
+              {
+                "x": 665.283,
+                "y": 532.547
+              },
+              {
+                "x": 647.045,
+                "y": 537.354
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E9C5B6",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-314",
+            "type": "polygon",
+            "name": "Tensor cell 5, 3",
+            "points": [
+              {
+                "x": 665.283,
+                "y": 499.409
+              },
+              {
+                "x": 683.522,
+                "y": 494.602
+              },
+              {
+                "x": 683.522,
+                "y": 527.74
+              },
+              {
+                "x": 665.283,
+                "y": 532.547
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#E8D99D",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-315",
+            "type": "polygon",
+            "name": "Tensor cell 5, 4",
+            "points": [
+              {
+                "x": 683.522,
+                "y": 494.602
+              },
+              {
+                "x": 701.761,
+                "y": 489.79499999999996
+              },
+              {
+                "x": 701.761,
+                "y": 522.934
+              },
+              {
+                "x": 683.522,
+                "y": 527.74
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#B7DCCF",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-316",
+            "type": "polygon",
+            "name": "Tensor cell 5, 5",
+            "points": [
+              {
+                "x": 701.761,
+                "y": 489.79499999999996
+              },
+              {
+                "x": 720,
+                "y": 484.98900000000003
+              },
+              {
+                "x": 720,
+                "y": 518.127
+              },
+              {
+                "x": 701.761,
+                "y": 522.934
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#CEC5E5",
+            "stroke": "#FFFFFF",
+            "strokeWidth": 0.8,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-194",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-317",
+            "type": "polygon",
+            "name": "第 1 層 · 上面",
+            "points": [
+              {
+                "x": 108.202,
+                "y": 364.227
+              },
+              {
+                "x": 211.831,
+                "y": 336.915
+              },
+              {
+                "x": 206.798,
+                "y": 334
+              },
+              {
+                "x": 103.169,
+                "y": 361.312
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#C8E5F0",
+            "stroke": "#7899A6",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-168",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-318",
+            "type": "polygon",
+            "name": "第 1 層 · 側面",
+            "points": [
+              {
+                "x": 103.169,
+                "y": 361.312
+              },
+              {
+                "x": 108.202,
+                "y": 364.227
+              },
+              {
+                "x": 108.202,
+                "y": 552.931
+              },
+              {
+                "x": 103.169,
+                "y": 550.015
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#87ADBB",
+            "stroke": "#7899A6",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-168",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-319",
+            "type": "polygon",
+            "name": "第 1 層 · 正面",
+            "points": [
+              {
+                "x": 108.202,
+                "y": 364.227
+              },
+              {
+                "x": 211.831,
+                "y": 336.915
+              },
+              {
+                "x": 211.831,
+                "y": 525.619
+              },
+              {
+                "x": 108.202,
+                "y": 552.931
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#a7d5e7",
+            "stroke": "#7899A6",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-168",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            },
+            "diagram3d": {
+              "width": 125,
+              "height": 205,
+              "depth": 9,
+              "count": 1,
+              "gap": 0,
+              "yaw": -34,
+              "elevation": 23,
+              "gridRows": 0,
+              "gridCols": 0,
+              "gridStyle": "tonal",
+              "color": "#a7d5e7",
+              "title": "",
+              "detail": ""
+            }
+          },
+          {
+            "id": "item-320",
+            "type": "polygon",
+            "name": "第 4 層 · 上面",
+            "points": [
+              {
+                "x": 316.151,
+                "y": 342.06
+              },
+              {
+                "x": 428.071,
+                "y": 312.563
+              },
+              {
+                "x": 421.92,
+                "y": 309
+              },
+              {
+                "x": 310,
+                "y": 338.497
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#C3D8E6",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-321",
+            "type": "polygon",
+            "name": "第 4 層 · 側面",
+            "points": [
+              {
+                "x": 310,
+                "y": 338.497
+              },
+              {
+                "x": 316.151,
+                "y": 342.06
+              },
+              {
+                "x": 316.151,
+                "y": 539.968
+              },
+              {
+                "x": 310,
+                "y": 536.405
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#809CAE",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-322",
+            "type": "polygon",
+            "name": "第 4 層 · 正面",
+            "points": [
+              {
+                "x": 316.151,
+                "y": 342.06
+              },
+              {
+                "x": 428.071,
+                "y": 312.563
+              },
+              {
+                "x": 428.071,
+                "y": 510.472
+              },
+              {
+                "x": 316.151,
+                "y": 539.968
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#9EC0D7",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-323",
+            "type": "polygon",
+            "name": "第 3 層 · 上面",
+            "points": [
+              {
+                "x": 326.217,
+                "y": 347.891
+              },
+              {
+                "x": 438.137,
+                "y": 318.394
+              },
+              {
+                "x": 431.986,
+                "y": 314.831
+              },
+              {
+                "x": 320.065,
+                "y": 344.327
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#BBD2E3",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-324",
+            "type": "polygon",
+            "name": "第 3 層 · 側面",
+            "points": [
+              {
+                "x": 320.065,
+                "y": 344.327
+              },
+              {
+                "x": 326.217,
+                "y": 347.891
+              },
+              {
+                "x": 326.217,
+                "y": 545.799
+              },
+              {
+                "x": 320.065,
+                "y": 542.236
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#7594AA",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-325",
+            "type": "polygon",
+            "name": "第 3 層 · 正面",
+            "points": [
+              {
+                "x": 326.217,
+                "y": 347.891
+              },
+              {
+                "x": 438.137,
+                "y": 318.394
+              },
+              {
+                "x": 438.137,
+                "y": 516.303
+              },
+              {
+                "x": 326.217,
+                "y": 545.799
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#91b7d2",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-326",
+            "type": "polygon",
+            "name": "第 2 層 · 上面",
+            "points": [
+              {
+                "x": 336.282,
+                "y": 353.721
+              },
+              {
+                "x": 448.202,
+                "y": 324.225
+              },
+              {
+                "x": 442.051,
+                "y": 320.662
+              },
+              {
+                "x": 330.131,
+                "y": 350.158
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#C3D8E6",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-327",
+            "type": "polygon",
+            "name": "第 2 層 · 側面",
+            "points": [
+              {
+                "x": 330.131,
+                "y": 350.158
+              },
+              {
+                "x": 336.282,
+                "y": 353.721
+              },
+              {
+                "x": 336.282,
+                "y": 551.63
+              },
+              {
+                "x": 330.131,
+                "y": 548.067
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#809CAE",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-328",
+            "type": "polygon",
+            "name": "第 2 層 · 正面",
+            "points": [
+              {
+                "x": 336.282,
+                "y": 353.721
+              },
+              {
+                "x": 448.202,
+                "y": 324.225
+              },
+              {
+                "x": 448.202,
+                "y": 522.133
+              },
+              {
+                "x": 336.282,
+                "y": 551.63
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#9EC0D7",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-329",
+            "type": "polygon",
+            "name": "第 1 層 · 上面",
+            "points": [
+              {
+                "x": 346.348,
+                "y": 359.552
+              },
+              {
+                "x": 458.268,
+                "y": 330.056
+              },
+              {
+                "x": 452.116,
+                "y": 326.492
+              },
+              {
+                "x": 340.196,
+                "y": 355.989
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#BBD2E3",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-330",
+            "type": "polygon",
+            "name": "第 1 層 · 側面",
+            "points": [
+              {
+                "x": 340.196,
+                "y": 355.989
+              },
+              {
+                "x": 346.348,
+                "y": 359.552
+              },
+              {
+                "x": 346.348,
+                "y": 557.461
+              },
+              {
+                "x": 340.196,
+                "y": 553.898
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#7594AA",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-331",
+            "type": "polygon",
+            "name": "第 1 層 · 正面",
+            "points": [
+              {
+                "x": 346.348,
+                "y": 359.552
+              },
+              {
+                "x": 458.268,
+                "y": 330.056
+              },
+              {
+                "x": 458.268,
+                "y": 527.964
+              },
+              {
+                "x": 346.348,
+                "y": 557.461
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#91b7d2",
+            "stroke": "#688497",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-181",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            },
+            "diagram3d": {
+              "width": 135,
+              "height": 215,
+              "depth": 11,
+              "count": 4,
+              "gap": 7,
+              "yaw": -34,
+              "elevation": 23,
+              "gridRows": 0,
+              "gridCols": 0,
+              "gridStyle": "tonal",
+              "color": "#91b7d2",
+              "title": "",
+              "detail": ""
+            }
+          },
+          {
+            "id": "item-332",
+            "type": "polygon",
+            "name": "第 3 層 · 上面",
+            "points": [
+              {
+                "x": 854.364,
+                "y": 376.711
+              },
+              {
+                "x": 947.216,
+                "y": 352.239
+              },
+              {
+                "x": 941.624,
+                "y": 349
+              },
+              {
+                "x": 848.772,
+                "y": 373.471
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#D4CCE7",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-333",
+            "type": "polygon",
+            "name": "第 3 層 · 側面",
+            "points": [
+              {
+                "x": 848.772,
+                "y": 373.471
+              },
+              {
+                "x": 854.364,
+                "y": 376.711
+              },
+              {
+                "x": 854.364,
+                "y": 523.991
+              },
+              {
+                "x": 848.772,
+                "y": 520.752
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#968BAF",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-334",
+            "type": "polygon",
+            "name": "第 3 層 · 正面",
+            "points": [
+              {
+                "x": 854.364,
+                "y": 376.711
+              },
+              {
+                "x": 947.216,
+                "y": 352.239
+              },
+              {
+                "x": 947.216,
+                "y": 499.52
+              },
+              {
+                "x": 854.364,
+                "y": 523.991
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#b9acd8",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-335",
+            "type": "polygon",
+            "name": "第 2 層 · 上面",
+            "points": [
+              {
+                "x": 863.87,
+                "y": 382.217
+              },
+              {
+                "x": 956.722,
+                "y": 357.746
+              },
+              {
+                "x": 951.13,
+                "y": 354.507
+              },
+              {
+                "x": 858.278,
+                "y": 378.978
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#D9D2EA",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-336",
+            "type": "polygon",
+            "name": "第 2 層 · 側面",
+            "points": [
+              {
+                "x": 858.278,
+                "y": 378.978
+              },
+              {
+                "x": 863.87,
+                "y": 382.217
+              },
+              {
+                "x": 863.87,
+                "y": 529.498
+              },
+              {
+                "x": 858.278,
+                "y": 526.259
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#9C93B3",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-337",
+            "type": "polygon",
+            "name": "第 2 層 · 正面",
+            "points": [
+              {
+                "x": 863.87,
+                "y": 382.217
+              },
+              {
+                "x": 956.722,
+                "y": 357.746
+              },
+              {
+                "x": 956.722,
+                "y": 505.027
+              },
+              {
+                "x": 863.87,
+                "y": 529.498
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#C1B6DD",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-338",
+            "type": "polygon",
+            "name": "第 1 層 · 上面",
+            "points": [
+              {
+                "x": 873.376,
+                "y": 387.724
+              },
+              {
+                "x": 966.228,
+                "y": 363.253
+              },
+              {
+                "x": 960.636,
+                "y": 360.014
+              },
+              {
+                "x": 867.784,
+                "y": 384.485
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#D4CCE7",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-339",
+            "type": "polygon",
+            "name": "第 1 層 · 側面",
+            "points": [
+              {
+                "x": 867.784,
+                "y": 384.485
+              },
+              {
+                "x": 873.376,
+                "y": 387.724
+              },
+              {
+                "x": 873.376,
+                "y": 535.005
+              },
+              {
+                "x": 867.784,
+                "y": 531.766
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#968BAF",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-340",
+            "type": "polygon",
+            "name": "第 1 層 · 正面",
+            "points": [
+              {
+                "x": 873.376,
+                "y": 387.724
+              },
+              {
+                "x": 966.228,
+                "y": 363.253
+              },
+              {
+                "x": 966.228,
+                "y": 510.534
+              },
+              {
+                "x": 873.376,
+                "y": 535.005
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#b9acd8",
+            "stroke": "#857C9C",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-204",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            },
+            "diagram3d": {
+              "width": 112,
+              "height": 160,
+              "depth": 10,
+              "count": 3,
+              "gap": 7,
+              "yaw": -34,
+              "elevation": 23,
+              "gridRows": 0,
+              "gridCols": 0,
+              "gridStyle": "tonal",
+              "color": "#b9acd8",
+              "title": "",
+              "detail": ""
+            }
+          },
+          {
+            "id": "item-341",
+            "type": "polygon",
+            "name": "第 2 層 · 上面",
+            "points": [
+              {
+                "x": 1119.454,
+                "y": 398.626
+              },
+              {
+                "x": 1181.632,
+                "y": 382.239
+              },
+              {
+                "x": 1176.04,
+                "y": 379
+              },
+              {
+                "x": 1113.862,
+                "y": 395.387
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#F3D7C9",
+            "stroke": "#A78270",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-211",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-342",
+            "type": "polygon",
+            "name": "第 2 層 · 側面",
+            "points": [
+              {
+                "x": 1113.862,
+                "y": 395.387
+              },
+              {
+                "x": 1119.454,
+                "y": 398.626
+              },
+              {
+                "x": 1119.454,
+                "y": 495.279
+              },
+              {
+                "x": 1113.862,
+                "y": 492.04
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#BE9A88",
+            "stroke": "#A78270",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-211",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-343",
+            "type": "polygon",
+            "name": "第 2 層 · 正面",
+            "points": [
+              {
+                "x": 1119.454,
+                "y": 398.626
+              },
+              {
+                "x": 1181.632,
+                "y": 382.239
+              },
+              {
+                "x": 1181.632,
+                "y": 478.892
+              },
+              {
+                "x": 1119.454,
+                "y": 495.279
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#EBBEA8",
+            "stroke": "#A78270",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-211",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-344",
+            "type": "polygon",
+            "name": "第 1 層 · 上面",
+            "points": [
+              {
+                "x": 1128.96,
+                "y": 404.133
+              },
+              {
+                "x": 1191.138,
+                "y": 387.746
+              },
+              {
+                "x": 1185.546,
+                "y": 384.507
+              },
+              {
+                "x": 1123.368,
+                "y": 400.894
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#F1D1C2",
+            "stroke": "#A78270",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-211",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-345",
+            "type": "polygon",
+            "name": "第 1 層 · 側面",
+            "points": [
+              {
+                "x": 1123.368,
+                "y": 400.894
+              },
+              {
+                "x": 1128.96,
+                "y": 404.133
+              },
+              {
+                "x": 1128.96,
+                "y": 500.786
+              },
+              {
+                "x": 1123.368,
+                "y": 497.547
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#BC937E",
+            "stroke": "#A78270",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-211",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-346",
+            "type": "polygon",
+            "name": "第 1 層 · 正面",
+            "points": [
+              {
+                "x": 1128.96,
+                "y": 404.133
+              },
+              {
+                "x": 1191.138,
+                "y": 387.746
+              },
+              {
+                "x": 1191.138,
+                "y": 484.399
+              },
+              {
+                "x": 1128.96,
+                "y": 500.786
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#e8b59c",
+            "stroke": "#A78270",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-211",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            },
+            "diagram3d": {
+              "width": 75,
+              "height": 105,
+              "depth": 10,
+              "count": 2,
+              "gap": 7,
+              "yaw": -34,
+              "elevation": 23,
+              "gridRows": 0,
+              "gridCols": 0,
+              "gridStyle": "tonal",
+              "color": "#e8b59c",
+              "title": "",
+              "detail": ""
+            }
+          },
+          {
+            "id": "item-347",
+            "type": "polygon",
+            "name": "第 1 層 · 上面",
+            "points": [
+              {
+                "x": 1646.549,
+                "y": 391.449
+              },
+              {
+                "x": 1702.924,
+                "y": 376.591
+              },
+              {
+                "x": 1698.451,
+                "y": 374
+              },
+              {
+                "x": 1642.076,
+                "y": 388.858
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#F0D4C0",
+            "stroke": "#A6866F",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-219",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-348",
+            "type": "polygon",
+            "name": "第 1 層 · 側面",
+            "points": [
+              {
+                "x": 1642.076,
+                "y": 388.858
+              },
+              {
+                "x": 1646.549,
+                "y": 391.449
+              },
+              {
+                "x": 1646.549,
+                "y": 501.91
+              },
+              {
+                "x": 1642.076,
+                "y": 499.318
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#BA977D",
+            "stroke": "#A6866F",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-219",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-349",
+            "type": "polygon",
+            "name": "第 1 層 · 正面",
+            "points": [
+              {
+                "x": 1646.549,
+                "y": 391.449
+              },
+              {
+                "x": 1702.924,
+                "y": 376.591
+              },
+              {
+                "x": 1702.924,
+                "y": 487.052
+              },
+              {
+                "x": 1646.549,
+                "y": 501.91
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#e6ba9a",
+            "stroke": "#A6866F",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-219",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            },
+            "diagram3d": {
+              "width": 68,
+              "height": 120,
+              "depth": 8,
+              "count": 1,
+              "gap": 0,
+              "yaw": -34,
+              "elevation": 23,
+              "gridRows": 0,
+              "gridCols": 0,
+              "gridStyle": "tonal",
+              "color": "#e6ba9a",
+              "title": "",
+              "detail": ""
+            }
+          },
+          {
+            "id": "item-350",
+            "type": "polygon",
+            "name": "第 1 層 · 上面",
+            "points": [
+              {
+                "x": 1332.793,
+                "y": 390.794
+              },
+              {
+                "x": 1386.68,
+                "y": 376.591
+              },
+              {
+                "x": 1382.207,
+                "y": 374
+              },
+              {
+                "x": 1328.32,
+                "y": 388.202
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#D0D9DD",
+            "stroke": "#818B90",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-215",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-351",
+            "type": "polygon",
+            "name": "第 1 層 · 側面",
+            "points": [
+              {
+                "x": 1328.32,
+                "y": 388.202
+              },
+              {
+                "x": 1332.793,
+                "y": 390.794
+              },
+              {
+                "x": 1332.793,
+                "y": 501.254
+              },
+              {
+                "x": 1328.32,
+                "y": 498.663
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#919CA2",
+            "stroke": "#818B90",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-215",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            }
+          },
+          {
+            "id": "item-352",
+            "type": "polygon",
+            "name": "第 1 層 · 正面",
+            "points": [
+              {
+                "x": 1332.793,
+                "y": 390.794
+              },
+              {
+                "x": 1386.68,
+                "y": 376.591
+              },
+              {
+                "x": 1386.68,
+                "y": 487.052
+              },
+              {
+                "x": 1332.793,
+                "y": 501.254
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#b3c1c8",
+            "stroke": "#818B90",
+            "strokeWidth": 1.35,
+            "opacity": 1,
+            "label": "",
+            "r": 0,
+            "layerGroup": {
+              "id": "diagram-group-item-215",
+              "name": "立體神經網路方塊",
+              "collapsed": true
+            },
+            "diagram3d": {
+              "width": 65,
+              "height": 120,
+              "depth": 8,
+              "count": 1,
+              "gap": 0,
+              "yaw": -34,
+              "elevation": 23,
+              "gridRows": 0,
+              "gridCols": 0,
+              "gridStyle": "tonal",
+              "color": "#b3c1c8",
+              "title": "",
+              "detail": ""
+            }
+          }
+        ],
+        "canvasWidth": 1800,
+        "canvasHeight": 920,
+        "canvasColor": "#ffffff",
+        "canvasOpacity": 1
+      }
+    ],
+    "activePageId": "page-muh4zsdy-4kf36w"
+  }
+}

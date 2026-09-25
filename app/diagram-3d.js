@@ -5,15 +5,17 @@
   root.SkechuDiagram3D=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
-  const limits={width:[35,260],height:[30,270],depth:[8,90],count:[1,10],gap:[0,36],yaw:[-60,60],elevation:[0,55]};
-  const defaults=Object.freeze({width:142,height:168,depth:32,count:3,gap:12,yaw:34,elevation:27,color:'#5187D2',title:'Conv feature maps',detail:'56 × 56 × 128'});
+  const limits={width:[35,260],height:[30,270],depth:[8,90],count:[1,10],gap:[0,36],yaw:[-60,60],elevation:[0,55],gridRows:[0,12],gridCols:[0,12]};
+  const defaults=Object.freeze({width:142,height:168,depth:20,count:3,gap:10,yaw:-34,elevation:23,gridRows:0,gridCols:0,gridStyle:'tonal',color:'#91B7D2',title:'Feature maps',detail:'H × W × C'});
   function normalize(input={}){
     const out={...defaults};
     for(const [key,[min,max]] of Object.entries(limits)){
       const value=input[key]===undefined?out[key]:Number(input[key]);
-      if(!Number.isFinite(value)||value<min||value>max||key==='count'&&!Number.isInteger(value))throw new RangeError(`${key} must be between ${min} and ${max}`);
+      if(!Number.isFinite(value)||value<min||value>max||['count','gridRows','gridCols'].includes(key)&&!Number.isInteger(value))throw new RangeError(`${key} must be between ${min} and ${max}`);
       out[key]=value;
     }
+    if((out.gridRows===0)!==(out.gridCols===0)||out.gridRows===1||out.gridCols===1||out.gridRows*out.gridCols>144)throw new RangeError('Grid needs 2–12 rows and columns, at most 144 cells');
+    if(input.gridStyle!==undefined){if(!['tonal','categorical'].includes(input.gridStyle))throw new TypeError('gridStyle must be tonal or categorical');out.gridStyle=input.gridStyle}
     for(const key of ['title','detail']){
       if(input[key]!==undefined){if(typeof input[key]!=='string'||input[key].length>80)throw new TypeError(`${key} must be short text`);out[key]=input[key]}
     }
@@ -27,8 +29,13 @@
   function project(x,y,z,camera){
     return {x:x*camera.cy+y*camera.sy,y:x*camera.sy*camera.se-y*camera.cy*camera.se+z*camera.ce};
   }
-  function polygon(points,fill,stroke,name,group,serial){
-    return {id:`cube-${serial}`,type:'polygon',name,points,cornerRadius:0,fill,stroke,strokeWidth:1.6,opacity:1,label:'',r:0,layerGroup:{...group}};
+  function polygon(points,fill,stroke,name,group,serial,strokeWidth=1.35){
+    return {id:`cube-${serial}`,type:'polygon',name,points,cornerRadius:0,fill,stroke,strokeWidth,opacity:1,label:'',r:0,layerGroup:{...group}};
+  }
+  function gridFill(options,row,col){
+    const index=(row*7+col*11+row*col*3)%13;
+    if(options.gridStyle==='categorical')return ['#A7CDE0','#B7DCCF','#E9C5B6','#CEC5E5','#E8D99D'][index%5];
+    return [mix(options.color,255,.12),mix(options.color,255,.3),mix(options.color,0,.05),mix(options.color,255,.48)][index%4];
   }
   function caption(value,x,y,w,h,size,color,group,serial,bold=false){
     return {id:`cube-${serial}`,type:'text',box:true,name:`文字 · ${value}`,x,y,w,h,text:value,size,fontFamily:'Arial',align:'center',valign:'middle',marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1.08,bold,italic:false,color,r:0,opacity:1,layerGroup:{...group}};
@@ -49,6 +56,13 @@
       if(options.yaw>=0)raw.push({points:[B,F,G,C],fill:mix(tint,0,.19),name:`第 ${layer+1} 層 · 側面`});
       else raw.push({points:[E,A,D,H],fill:mix(tint,0,.19),name:`第 ${layer+1} 層 · 側面`});
       raw.push({points:[A,B,C,D],fill:tint,name:`第 ${layer+1} 層 · 正面`,leader:layer===0});
+      if(layer===0&&options.gridRows){
+        for(let row=0;row<options.gridRows;row++)for(let col=0;col<options.gridCols;col++){
+          const x0=options.width*col/options.gridCols,x1=options.width*(col+1)/options.gridCols;
+          const z0=options.height*row/options.gridRows,z1=options.height*(row+1)/options.gridRows;
+          raw.push({points:[P(x0,front,z0),P(x1,front,z0),P(x1,front,z1),P(x0,front,z1)],fill:gridFill(options,row,col),name:`Tensor cell ${row+1}, ${col+1}`,grid:true});
+        }
+      }
     }
     const minX=Math.min(...all.map(p=>p.x)),maxX=Math.max(...all.map(p=>p.x));
     const minY=Math.min(...all.map(p=>p.y)),maxY=Math.max(...all.map(p=>p.y));
@@ -58,7 +72,7 @@
     let serial=0;
     const items=raw.map(face=>{
       const points=face.points.map(p=>({x:+(left+p.x-minX).toFixed(3),y:+(y+34+p.y-minY).toFixed(3)}));
-      const item=polygon(points,face.fill,mix(options.color,0,.28),face.name,group,++serial);
+      const item=polygon(points,face.fill,face.grid?'#FFFFFF':mix(options.color,0,.28),face.name,group,++serial,face.grid?0.8:1.35);
       if(face.leader)item.diagram3d={...options};
       return item;
     });
@@ -70,12 +84,12 @@
     const view=normalize({yaw:input.yaw,elevation:input.elevation});
     const common={yaw:view.yaw,elevation:view.elevation};
     const stages=[
-      {title:'Input',detail:'224 × 224 × 3',width:160,height:230,depth:17,count:1,gap:0,color:'#6E9FCB'},
-      {title:'Conv 1',detail:'112 × 112 × 64',width:122,height:174,depth:16,count:3,gap:8,color:'#E4A95D'},
-      {title:'Pool',detail:'56 × 56 × 64',width:96,height:135,depth:14,count:2,gap:7,color:'#D67D96'},
-      {title:'Conv 2',detail:'28 × 28 × 128',width:83,height:110,depth:17,count:4,gap:7,color:'#6F8DD7'},
-      {title:'GAP',detail:'1 × 1 × 128',width:49,height:64,depth:22,count:1,gap:0,color:'#69B69F'},
-      {title:'Classifier',detail:'1 × 1 × K',width:44,height:54,depth:15,count:3,gap:5,color:'#9A82CB'}
+      {title:'Input',detail:'224 × 224 × 3',width:160,height:230,depth:17,count:1,gap:0,color:'#A8CFDF'},
+      {title:'Conv 1',detail:'112 × 112 × 64',width:122,height:174,depth:16,count:3,gap:8,color:'#91B7D2'},
+      {title:'Pool',detail:'56 × 56 × 64',width:96,height:135,depth:14,count:2,gap:7,color:'#B9ACD8'},
+      {title:'Conv 2',detail:'28 × 28 × 128',width:83,height:110,depth:17,count:4,gap:7,gridRows:4,gridCols:4,gridStyle:'tonal',color:'#90C7BA'},
+      {title:'GAP',detail:'1 × 1 × 128',width:49,height:64,depth:22,count:1,gap:0,color:'#E8B59C'},
+      {title:'Classifier',detail:'1 × 1 × K',width:44,height:54,depth:15,count:3,gap:5,color:'#B3C1C8'}
     ];
     const blocks=[],positions=[];let cursor=52,serial=0;
     for(let i=0;i<stages.length;i++){

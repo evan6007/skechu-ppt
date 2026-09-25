@@ -18,7 +18,7 @@
       try{
         const options=blockOptions();preview.innerHTML=bridge.previewBlock3D(options);
         for(const key of ['yaw','elevation'])controls.querySelector(`[data-for="${key}"]`).textContent=`${options[key]}°`;
-        viewLabel.textContent=`水平 ${options.yaw}° · 俯視 ${options.elevation}° · ${options.count} 層 · ${options.width} × ${options.height} × ${options.depth}`;
+        viewLabel.textContent=`水平 ${options.yaw}° · 俯視 ${options.elevation}° · ${options.count} 層 · ${options.width} × ${options.height} × ${options.depth}${options.gridRows?` · ${options.gridRows} × ${options.gridCols} 格狀張量`:''}`;
         error.textContent='';insert3d.disabled=false;update3d.disabled=false;network3d.disabled=false;
       }catch(cause){error.textContent=cause.message;insert3d.disabled=true;update3d.disabled=true;network3d.disabled=true}
     }
@@ -55,6 +55,7 @@
     dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()});
     search.addEventListener('input',filter);
     controls.addEventListener('input',refreshBlockPreview);
+    controls.querySelectorAll('[data-color]').forEach(button=>button.addEventListener('click',()=>{controls.elements.namedItem('color').value=button.dataset.color;refreshBlockPreview()}));
     controls.addEventListener('submit',event=>event.preventDefault());
     function runBlockAction(action){try{action(blockOptions());dialog.close()}catch(cause){error.textContent=cause.message;bridge.notify(cause.message||'無法建立立體方塊')}}
     insert3d.addEventListener('click',()=>runBlockAction(options=>bridge.insertBlock3D(options)));

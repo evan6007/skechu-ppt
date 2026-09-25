@@ -157,6 +157,11 @@ await rejects(f.api.execute('create_diagram_block_3d',blockArgs),'STALE_DOCUMENT
 await rejects(f.api.execute('create_diagram_block_3d',{...blockArgs,context:await f.ctx(),yaw:90}),'INVALID_ARGUMENT');
 await f.api.execute('history',{context:await f.ctx(),action:'undo'});
 assert.equal(f.doc.items.length,beforeBlock,'One undo removes the complete 3D block');
+const gridResult=await f.api.execute('create_diagram_block_3d',{...blockArgs,context:await f.ctx(),gridRows:4,gridCols:5,gridStyle:'categorical'});
+assert.equal(gridResult.count,34);
+assert.equal(f.doc.items.slice(-34).filter(it=>it.name.startsWith('Tensor cell')).length,20);
+await f.api.execute('history',{context:await f.ctx(),action:'undo'});
+assert.equal(f.doc.items.length,beforeBlock);
 const markup=await f.api.execute('create_diagram_markup',{context:await f.ctx(),groupName:'Model annotations',
   rectangles:[{x:20,y:25,width:180,height:70,fill:'#EEF4FF',radius:12}],
   arrows:[{points:[{x:200,y:60},{x:250,y:60}],color:'#345268'}],
