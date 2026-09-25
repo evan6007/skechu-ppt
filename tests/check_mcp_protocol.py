@@ -19,8 +19,12 @@ async def main():
             initialized = await session.initialize()
             assert initialized.serverInfo.name == 'skechu-ppt'
             tools = await session.list_tools()
-            assert len(tools.tools) == 13
-            assert len({tool.name for tool in tools.tools}) == 13
+            definitions = json.loads((ROOT / 'app/automation/commands.json').read_text(encoding='utf-8'))
+            expected_names = {'skechu_connect', *(f"skechu_{item['name']}" for item in definitions)}
+            actual_names = [tool.name for tool in tools.tools]
+            assert len(actual_names) == len(expected_names)
+            assert set(actual_names) == expected_names
+            assert {'skechu_list_diagram_components', 'skechu_create_diagram_component'} <= expected_names
             assert (await session.call_tool('skechu_read_document', {})).isError
             connected = await session.call_tool('skechu_connect', {})
             url = urlsplit(connected.structuredContent['url'])
