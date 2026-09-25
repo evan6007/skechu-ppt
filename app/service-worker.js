@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v99-diagram3d';
+const CACHE_NAME = 'skechu-ppt-v100-diagram3d-contrast';
 const APP_SHELL = [
   './',
   './index.html',
@@ -10,7 +10,7 @@ const APP_SHELL = [
   './diagram-3d.js?v=1',
   './deep-learning-diagrams.js?v=2',
   './deep-learning-ui.js?v=2',
-  './deep-learning-ui.css?v=2',
+  './deep-learning-ui.css?v=3',
   './mobile-controls.js?v=69-copy-paste',
   './mobile-controls.css?v=90-mobile-brand',
   './touch-gestures.js?v=68-touch-gestures',
