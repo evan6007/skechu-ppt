@@ -441,6 +441,73 @@
     }
   },
   {
+    "name": "create_diagram_markup",
+    "description": "Add editable labeled panels, text and routed arrows to a neural-network architecture diagram. Up to 200 native objects in one undo step; no external links or code execution.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "object",
+          "properties": {
+            "projectId": {"type": "string", "minLength": 1, "maxLength": 160},
+            "pageId": {"type": "string", "minLength": 1, "maxLength": 160},
+            "revision": {"type": "integer", "minimum": 0}
+          },
+          "required": ["projectId", "pageId", "revision"],
+          "additionalProperties": false
+        },
+        "groupName": {"type": "string", "minLength": 1, "maxLength": 80},
+        "rectangles": {
+          "type": "array", "maxItems": 100,
+          "items": {"type": "object", "properties": {
+            "x": {"type": "number", "minimum": -10000, "maximum": 10000},
+            "y": {"type": "number", "minimum": -10000, "maximum": 10000},
+            "width": {"type": "number", "minimum": 1, "maximum": 10000},
+            "height": {"type": "number", "minimum": 1, "maximum": 10000},
+            "fill": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+            "stroke": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+            "strokeWidth": {"type": "number", "minimum": 0, "maximum": 20},
+            "radius": {"type": "number", "minimum": 0, "maximum": 100},
+            "name": {"type": "string", "minLength": 1, "maxLength": 80}
+          }, "required": ["x", "y", "width", "height", "fill"], "additionalProperties": false}
+        },
+        "arrows": {
+          "type": "array", "maxItems": 100,
+          "items": {"type": "object", "properties": {
+            "points": {"type": "array", "minItems": 2, "maxItems": 8, "items": {"type": "object", "properties": {
+              "x": {"type": "number", "minimum": -10000, "maximum": 10000},
+              "y": {"type": "number", "minimum": -10000, "maximum": 10000}
+            }, "required": ["x", "y"], "additionalProperties": false}},
+            "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+            "width": {"type": "number", "minimum": 0.5, "maximum": 20},
+            "head": {"type": "number", "minimum": 2, "maximum": 30},
+            "endHead": {"type": "boolean"},
+            "dash": {"type": "boolean"},
+            "name": {"type": "string", "minLength": 1, "maxLength": 80}
+          }, "required": ["points"], "additionalProperties": false}
+        },
+        "texts": {
+          "type": "array", "maxItems": 100,
+          "items": {"type": "object", "properties": {
+            "x": {"type": "number", "minimum": -10000, "maximum": 10000},
+            "y": {"type": "number", "minimum": -10000, "maximum": 10000},
+            "width": {"type": "number", "minimum": 1, "maximum": 10000},
+            "height": {"type": "number", "minimum": 1, "maximum": 10000},
+            "text": {"type": "string", "minLength": 1, "maxLength": 160},
+            "fontSize": {"type": "number", "minimum": 8, "maximum": 100},
+            "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+            "bold": {"type": "boolean"},
+            "align": {"type": "string", "enum": ["left", "center", "right"]},
+            "name": {"type": "string", "minLength": 1, "maxLength": 80}
+          }, "required": ["x", "y", "width", "height", "text"], "additionalProperties": false}
+        }
+      },
+      "required": ["context"],
+      "additionalProperties": false
+    },
+    "annotations": {"readOnlyHint": false, "destructiveHint": true, "idempotentHint": false, "openWorldHint": false}
+  },
+  {
     "name": "delete_objects",
     "description": "Delete explicit unlocked objects only after the user confirms in the editor. Cancel is safe. One undo step.",
     "inputSchema": {

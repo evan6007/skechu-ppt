@@ -1,9 +1,9 @@
-const CACHE_NAME = 'skechu-ppt-v100-diagram3d-contrast';
+const CACHE_NAME = 'skechu-ppt-v101-diagram-markup';
 const APP_SHELL = [
   './',
   './index.html',
   './about.html',
-  './automation/core.js?v=99-diagram3d',
+  './automation/core.js?v=101-diagram-markup',
   './automation/editor.js?v=87-native-fill',
   './automation/panel.css?v=70-automation',
   './automation/commands.json',

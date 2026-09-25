@@ -202,6 +202,17 @@
           if (doc.items.length+created.length>10000) fail('LIMIT','Page object limit reached.');
           return {...finish([...clone(doc.items),...created],created.map(it=>it.id)),block3d:result.options};
         }
+        if (name==='create_diagram_markup') {
+          const source=[];let serial=0;
+          const group={id:'markup-group',name:args.groupName||'架構圖標註',collapsed:true};
+          for (const item of args.rectangles||[]) source.push({id:`markup-${++serial}`,type:'box',name:item.name||'背景區塊',x:item.x,y:item.y,w:item.width,h:item.height,radius:item.radius??12,fill:item.fill,stroke:item.stroke||item.fill,strokeWidth:item.strokeWidth??1.5,r:0,opacity:1,layerGroup:{...group}});
+          for (const item of args.arrows||[]) source.push({id:`markup-${++serial}`,type:'arrow',name:item.name||'架構連線',points:item.points,color:item.color||'#44566D',width:item.width??2.5,head:item.head??9,headShape:'triangle',startHead:false,endHead:item.endHead!==false,style:item.dash?'dash':'solid',closed:false,fill:'#ffffff',fillOpacity:0,curved:false,r:0,opacity:1,layerGroup:{...group}});
+          for (const item of args.texts||[]) source.push({id:`markup-${++serial}`,type:'text',box:true,name:item.name||`文字 · ${item.text.slice(0,32)}`,x:item.x,y:item.y,w:item.width,h:item.height,text:item.text,size:item.fontSize??18,fontFamily:'Arial',align:item.align||'left',valign:'middle',marginLeft:0,marginRight:0,marginTop:0,marginBottom:0,lineHeight:1.08,bold:!!item.bold,italic:false,color:item.color||'#17243A',r:0,opacity:1,layerGroup:{...group}});
+          if (!source.length || source.length>200) fail('INVALID_ARGUMENT','Provide 1 to 200 markup elements.');
+          const created=prepareDiagramItems(source,doc.items);
+          if (doc.items.length+created.length>10000) fail('LIMIT','Page object limit reached.');
+          return finish([...clone(doc.items),...created],created.map(it=>it.id));
+        }
         const selected=targets(doc,args.ids), idSet=new Set(args.ids);
         if (name==='delete_objects') {
           ensureCompleteConnections(doc,args.ids);

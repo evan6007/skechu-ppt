@@ -157,6 +157,17 @@ await rejects(f.api.execute('create_diagram_block_3d',blockArgs),'STALE_DOCUMENT
 await rejects(f.api.execute('create_diagram_block_3d',{...blockArgs,context:await f.ctx(),yaw:90}),'INVALID_ARGUMENT');
 await f.api.execute('history',{context:await f.ctx(),action:'undo'});
 assert.equal(f.doc.items.length,beforeBlock,'One undo removes the complete 3D block');
+const markup=await f.api.execute('create_diagram_markup',{context:await f.ctx(),groupName:'Model annotations',
+  rectangles:[{x:20,y:25,width:180,height:70,fill:'#EEF4FF',radius:12}],
+  arrows:[{points:[{x:200,y:60},{x:250,y:60}],color:'#345268'}],
+  texts:[{x:35,y:36,width:150,height:30,text:'Depth head',fontSize:18,bold:true}]});
+assert.equal(markup.count,3);
+assert.deepEqual(plain(f.doc.items.slice(-3).map(it=>it.type)),['box','arrow','text']);
+assert.equal(new Set(f.doc.items.slice(-3).map(it=>it.layerGroup.id)).size,1);
+await rejects(f.api.execute('create_diagram_markup',{context:await f.ctx(),texts:[{x:0,y:0,width:20,height:20,text:'bad',color:'url(x)'}]}),'INVALID_ARGUMENT');
+await rejects(f.api.execute('create_diagram_markup',{context:await f.ctx()}),'INVALID_ARGUMENT');
+await f.api.execute('history',{context:await f.ctx(),action:'undo'});
+assert.equal(f.doc.items.length,beforeBlock);
 
 for(const path of ['core.js','editor.js','panel.css','commands.json']){
   assert.ok(read('app/service-worker.js').includes('automation/'+path),'Offline assets include automation');

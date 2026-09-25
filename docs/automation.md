@@ -100,6 +100,7 @@ MCP exposes the same names with a **`skechu_`** prefix, plus `skechu_connect`. T
 | `list_diagram_components` | List the built-in deep-learning component IDs and descriptions without editing the page |
 | `create_diagram_component` | Insert one grouped, editable component on the authorized page in one Undo step |
 | `create_diagram_block_3d` | Insert a cuboid feature-map stack with adjustable camera angle, dimensions, depth, layers and captions in one Undo step |
+| `create_diagram_markup` | Add grouped editable labels, panels and routed arrows in one Undo step |
 | `delete_objects` | Delete explicit unlocked IDs after a visible confirmation in the editor |
 | `history` | One undo or redo |
 | `export_svg` | Return SVG text, excluding tracing references; no file or clipboard write |
