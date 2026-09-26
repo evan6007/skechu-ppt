@@ -2,7 +2,7 @@
 
 Use **架構圖** in the top toolbar to build editable research figures. The top **立體神經網路方塊** designer creates actual three-face cuboids. Drag **水平視角** (−60° to 60°) and **俯視角** (0° to 55°); set width, height, depth, number of layers, spacing, color and labels. The preview updates immediately. **加入目前圖頁** inserts the stack as native polygon and text layers. Select a face, reopen **架構圖**, and use **更新選取方塊** to change the whole stack later. **以這個視角建立 CNN 範例** creates a new six-stage CNN page.
 
-The gallery contains five starters: attention and multi-branch fusion, planar CNN feature maps, conditional diffusion with U-Net, graph and tensor diffusion, and material-adapted monocular depth. The depth starter uses a 1800 × 950 canvas with patch embeddings, a pre-norm Transformer, DPT reassembly/fusion, a graphical candidate residual adapter and training-only depth supervision. Each template creates a **new page**.
+The gallery contains five starters: attention and multi-branch fusion, planar CNN feature maps, conditional diffusion with U-Net, graph and tensor diffusion, and material-adapted monocular depth. The depth starter uses a 1800 × 950 canvas with matching reflective-object and schematic depth scenes, an abstract ViT backbone, detailed DPT reassembly/fusion, a candidate gated residual adapter and training-only depth supervision. Each template creates a **new page**.
 
 The gallery offers fourteen reusable pieces with native vector thumbnails: patch embedding, token sequence, Transformer encoder, Q/K/V attention, DPT multi-scale decoder, convolution/norm/activation, upsampling, gated residual adapter, feature-map stack, channel attention, U-Net, tensor grid, merge operator and diffusion step. Search by topic, click a piece, then edit its native layers. Inserting a piece is one Undo step. All fourteen IDs are discoverable through `list_diagram_components` and available to `create_diagram_component` in MCP.
 
@@ -21,3 +21,8 @@ The Transformer diagram follows the pre-norm structure in [ViT](https://research
 All template shapes, arrows, and text use the existing Skechu item types; no reference bitmap is pasted into the page. The sample figures are original layouts inspired by common scientific diagram conventions. Check mathematical notation, dataset labels, and architecture claims against your own work before submitting a figure.
 
 The cuboid generator lives in [`app/diagram-3d.js`](../app/diagram-3d.js). It also backs the opt-in `create_diagram_block_3d` browser API and MCP command. The older layouts live in [`app/deep-learning-diagrams.js`](../app/deep-learning-diagrams.js). The built-in canvas size is 1200 × 675. The returned items use supported native types. Run `node --test tests/test-deep-learning-diagrams.cjs tests/test-diagram-3d.cjs` after changes.
+
+## Paper projection and restrained palette
+
+The default paper projection preserves rectangular front faces and tensor cells. The presets 論文薄片, 正面矩陣 and 立體體積 select paper, frontal and axonometric views. CNN stacks align their visible front centers to a shared baseline using measured ports. Powder blue modules, lavender tensors and sage panels use opaque fills with thin neutral outlines, inspired by ColPali's figure hierarchy. The depth scene is an editable schematic, not a measured prediction or evidence of improvement.
+

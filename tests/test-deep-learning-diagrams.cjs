@@ -77,9 +77,9 @@ test('templates carry their characteristic scientific diagram elements', () => {
   for (const term of ['kNN graph','Gene × spot matrix','GNN','Re-mask'])
     assert.ok(graph.includes(term));
 
-  const depth=labels('material-aware-depth');
-  for (const term of ['Patch embedding','Transformer encoder','DPT decoder',
-    'Proposed residual adapter','Depth loss']) assert.ok(depth.includes(term));
+  const depth=labels('material-aware-depth').replace(/\s+/g,' ');
+  for (const term of ['Patch embedding','ViT encoder','DPT decoder',
+    'Proposed depth refinement','Depth loss']) assert.ok(depth.includes(term));
 });
 
 test('all components are movable units with measured footprints', () => {

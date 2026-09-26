@@ -67,3 +67,24 @@ test('browser script exposes the same generator',()=>{
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../app/diagram-3d.js'),'utf8'),browser);
   assert.equal(browser.SkechuDiagram3D.createBlock({count:2}).items.length,8);
 });
+
+test('paper projection keeps front faces and cells axis aligned at every camera setting',()=>{
+  for(const yaw of [-60,-30,0,30,60])for(const elevation of [0,18,55]){
+    const b=blocks.createBlock({projection:'paper',yaw,elevation,gridRows:3,gridCols:4});
+    for(const item of b.items.filter(it=>it.diagram3d||it.name.startsWith('Tensor cell'))){
+      const [a,c,d,e]=item.points;
+      assert.equal(a.y,c.y);assert.equal(c.x,d.x);assert.equal(d.y,e.y);assert.equal(e.x,a.x);
+    }
+  }
+  assert.throws(()=>blocks.createBlock({projection:'unknown'}),TypeError);
+  const paper=blocks.createBlock({projection:'paper'}),axon=blocks.createBlock({projection:'axonometric'});
+  assert.notDeepEqual(paper.items.find(it=>it.diagram3d).points,axon.items.find(it=>it.diagram3d).points);
+});
+
+test('CNN visible front centers and connector endpoints share one measured baseline',()=>{
+  for(const projection of ['paper','axonometric'])for(const yaw of [-60,0,60]){
+    const fig=blocks.createNetwork({projection,yaw,elevation:35});
+    for(const it of fig.items.filter(it=>it.diagram3d))assert.ok(Math.abs(it.points.reduce((sum,p)=>sum+p.y,0)/4-365)<.001);
+    for(const arrow of fig.items.filter(it=>it.type==='arrow'))assert.ok(arrow.points.every(p=>Math.abs(p.y-365)<.001));
+  }
+});

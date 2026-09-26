@@ -403,7 +403,7 @@
   },
   {
     "name": "create_diagram_block_3d",
-    "description": "Insert an editable axonometric neural-network feature volume. Control camera yaw and elevation, volume dimensions, layer count, spacing, color and captions. Three native polygon faces per layer; one undo step.",
+    "description": "Insert an editable neural-network feature volume with paper (rectangular front) or axonometric projection. Control camera yaw and elevation, volume dimensions, layer count, spacing, color and captions. Three native polygon faces per layer; one undo step.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -425,6 +425,7 @@
         "count": {"type": "integer", "minimum": 1, "maximum": 10},
         "gap": {"type": "number", "minimum": 0, "maximum": 36},
         "yaw": {"type": "number", "minimum": -60, "maximum": 60},
+        "projection": {"type": "string", "enum": ["paper", "axonometric"]},
         "elevation": {"type": "number", "minimum": 0, "maximum": 55},
         "gridRows": {"type": "integer", "minimum": 0, "maximum": 12},
         "gridCols": {"type": "integer", "minimum": 0, "maximum": 12},
@@ -848,3 +849,4 @@
     }
   }
 ]
+

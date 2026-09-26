@@ -17,7 +17,7 @@
       try{
         const options=blockOptions();preview.innerHTML=bridge.previewBlock3D(options);
         for(const key of ['yaw','elevation'])controls.querySelector(`[data-for="${key}"]`).textContent=`${options[key]}°`;
-        viewLabel.textContent=`水平 ${options.yaw}° · 俯視 ${options.elevation}° · ${options.count} 層 · ${options.width} × ${options.height} × ${options.depth}${options.gridRows?` · ${options.gridRows} × ${options.gridCols} 格狀張量`:''}`;
+        viewLabel.textContent=`${options.projection==='paper'?'論文正面投影':'立體斜投影'} · 水平 ${options.yaw}° · 俯視 ${options.elevation}° · ${options.count} 層${options.gridRows?` · ${options.gridRows} × ${options.gridCols} 格狀張量`:''}`;
         error.textContent='';insert3d.disabled=false;update3d.disabled=false;network3d.disabled=false;
       }catch(cause){error.textContent=cause.message;insert3d.disabled=true;update3d.disabled=true;network3d.disabled=true}
     }
@@ -54,12 +54,13 @@
     dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()});
     search.addEventListener('input',filter);
     controls.addEventListener('input',refreshBlockPreview);
+    controls.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{const presets={paper:{projection:'paper',yaw:30,elevation:18,depth:8,gap:6},front:{projection:'paper',yaw:0,elevation:0,depth:8,gap:0},volume:{projection:'axonometric',yaw:30,elevation:20,depth:16,gap:8}};fillBlockControls({...blockOptions(),...presets[button.dataset.view]})}));
     controls.querySelectorAll('[data-color]').forEach(button=>button.addEventListener('click',()=>{controls.elements.namedItem('color').value=button.dataset.color;refreshBlockPreview()}));
     controls.addEventListener('submit',event=>event.preventDefault());
     function runBlockAction(action){try{action(blockOptions());dialog.close()}catch(cause){error.textContent=cause.message;bridge.notify(cause.message||'無法建立立體方塊')}}
     insert3d.addEventListener('click',()=>runBlockAction(options=>bridge.insertBlock3D(options)));
     update3d.addEventListener('click',()=>runBlockAction(options=>bridge.updateBlock3D(options)));
-    network3d.addEventListener('click',()=>runBlockAction(options=>bridge.insertNetwork3D({yaw:options.yaw,elevation:options.elevation})));
+    network3d.addEventListener('click',()=>runBlockAction(options=>bridge.insertNetwork3D({yaw:options.yaw,elevation:options.elevation,projection:options.projection})));
     dialog.addEventListener('click',event=>{
       const template=event.target.closest('[data-template]'),component=event.target.closest('[data-component]');
       if(!template&&!component)return;

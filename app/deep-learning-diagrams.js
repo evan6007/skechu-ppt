@@ -7,12 +7,12 @@
   'use strict';
 
   const C = Object.freeze({
-    ink: '#17243A', muted: '#586B80', line: '#B9C9D7', teal: '#4B8F88',
-    tealLite: '#DEEFEB', blue: '#688BA7', blueLite: '#E3EDF5',
-    peach: '#B98560', peachLite: '#F7E6D7', violet: '#8A77AB',
-    violetLite: '#EEE8F5', pink: '#B98098', pinkLite: '#F7E6ED',
-    green: '#4A9A72', greenLite: '#E1F3E7', paper: '#FFFFFF',
-    pale: '#F6F9FC', gray: '#E8EEF4'
+    ink: '#302D35', muted: '#77717E', line: '#B9B1BE', teal: '#82936C',
+    tealLite: '#E7EDDE', blue: '#9CAAC3', blueLite: '#DFE8FA',
+    peach: '#C49A65', peachLite: '#F4EADB', violet: '#A497B4',
+    violetLite: '#E8E0EF', pink: '#C2A4A4', pinkLite: '#F2E5E3',
+    green: '#82936C', greenLite: '#E4EAD9', paper: '#FFFFFF',
+    pale: '#FAF8EF', gray: '#EDEAE5'
   });
 
   const templateMeta = Object.freeze([
@@ -20,7 +20,7 @@
     {id:'perspective-cnn',name:'平面 CNN 示意圖',description:'平面堆疊的卷積特徵圖、池化、全連接層與分類輸出。'},
     {id:'conditional-diffusion',name:'條件式擴散與 U-Net',description:'前向加噪、迭代去噪、條件訊號與含跳接的 U-Net。'},
     {id:'graph-tensor-diffusion',name:'圖與張量擴散流程',description:'空間節點、鄰接圖、遮罩矩陣、GNN 潛在表示與擴散去噪。'},
-    {id:'material-aware-depth',name:'材質感知單目深度',description:'ViT token、注意力、DPT 多尺度解碼與候選殘差修正子網路。',width:1800,height:950}
+    {id:'material-aware-depth',name:'材質感知單目深度',description:'反光物體與深度示意、多尺度重組、門控殘差修正。',width:1800,height:950}
   ]);
 
   const componentMeta = Object.freeze([
@@ -52,7 +52,7 @@
     }
   }
 
-  function box(b,x,y,w,h,fill=C.paper,stroke=C.line,g,name='區塊',radius=12,sw=1.5) {
+  function box(b,x,y,w,h,fill=C.paper,stroke=C.line,g,name='區塊',radius=8,sw=1) {
     return b.add({type:'box',name,x,y,w,h,radius,fill,stroke,strokeWidth:sw},g);
   }
   function ellipse(b,x,y,w,h,fill=C.paper,stroke=C.line,g,name='節點',sw=1.5) {
@@ -69,7 +69,7 @@
   }
   function arrow(b,points,g,opts={}) {
     return b.add({type:'arrow',name:opts.name||'連線',points,color:opts.color||C.ink,
-      width:opts.width||2,head:opts.head||8,headShape:'triangle',startHead:false,
+      width:opts.width||1.3,head:opts.head||6,headShape:'triangle',startHead:false,
       endHead:opts.endHead!==false,style:opts.dash?'dash':'solid',closed:false,
       fill:C.paper,fillOpacity:0,curved:false},g);
   }
@@ -77,7 +77,7 @@
     return arrow(b,[{x:x1,y:y1},{x:x2,y:y2}],g,{...opts,endHead:false});
   }
   function labelBox(b,label,x,y,w,h,fill,stroke,g,opts={}) {
-    box(b,x,y,w,h,fill,stroke,g,`${label} · 背景`,opts.radius??10,opts.sw??1.5);
+    box(b,x,y,w,h,fill,stroke,g,`${label} · 背景`,opts.radius??7,opts.sw??1);
     text(b,label,x+7,y+2,w-14,h-4,opts.size??16,opts.color||C.ink,g,
       {align:'center',bold:opts.bold!==false});
   }
@@ -98,14 +98,14 @@
 
   // A stack is made of four editable quadrilateral planes, not an image.
   function drawFeatureMapStack(b,x,y,o={}) {
-    const w=o.w||105,h=o.h||120,count=o.count||4,skew=o.skew||14,
-      step=o.step||10,color=o.color||C.blue,back=o.back||C.blueLite,
+    const w=o.w||105,h=o.h||120,count=o.count||4,skew=0,
+      step=o.step||6,color=o.color||C.violet,back=o.back||C.violetLite,
       g=o.group||b.group(o.title||'特徵圖堆疊');
     for(let i=count-1;i>=0;i--){
-      const dx=i*step,dy=(count-1-i)*5;
-      polygon(b,[{x:x+dx,y:y+dy+skew},{x:x+w+dx,y:y+dy},
-        {x:x+w+dx,y:y+h+dy},{x:x+dx,y:y+h+dy+skew}],
-        i===0?back:C.paper,color,g,`特徵圖平面 ${count-i}`,1.6);
+      const dx=i*step,dy=(count-1-i)*step*.5;
+      polygon(b,[{x:x+dx,y:y+dy},{x:x+w+dx,y:y+dy},
+        {x:x+w+dx,y:y+h+dy},{x:x+dx,y:y+h+dy}],
+        i===0?back:C.paper,color,g,`特徵圖平面 ${count-i}`,1);
     }
     if(o.title) text(b,o.title,x-4,y-31,w+count*step+30,25,17,C.ink,g,{bold:true});
     if(o.detail) text(b,o.detail,x-8,y+h+skew+20,w+count*step+40,22,13,C.muted,g);
@@ -199,7 +199,7 @@
   }
   function patchEmbedding(b,x,y,g){
     text(b,'Patch embedding',x,y,280,28,19,C.ink,g,{bold:true});
-    drawTensorGrid(b,x,y+48,{rows:4,cols:4,cell:19,group:g,colors:['#C1DCE7','#91B7D2','#DAEAF0','#B5D4D1']});
+    drawTensorGrid(b,x,y+48,{rows:4,cols:4,cell:19,group:g,colors:['#DCE6CE','#DFE8FA','#F4EBF7','#E8E0EF']});
     arrow(b,[{x:x+81,y:y+90},{x:x+104,y:y+90}],g);
     labelBox(b,'Linear',x+107,y+67,63,46,C.blueLite,C.blue,g,{size:13,radius:4});
     arrow(b,[{x:x+174,y:y+90},{x:x+195,y:y+90}],g);
@@ -208,7 +208,7 @@
     text(b,'+ position',x+181,y+129,105,20,12,C.muted,g);
   }
   function transformer(b,x,y,g){
-    box(b,x,y,360,190,'#F6F9FC',C.line,g,'Transformer boundary',8,1);
+    box(b,x,y,360,190,'#F4EBF7',C.line,g,'Transformer boundary',8,1);
     text(b,'Transformer encoder × L',x+12,y+8,335,25,18,C.ink,g,{bold:true});
     const cy=y+95;
     arrow(b,[{x,y:cy},{x:x+20,y:cy}],g);
@@ -237,7 +237,7 @@
     text(b,'per head',x+94,y+162,140,22,12,C.muted,g);
   }
   function dptFusion(b,x,y,g){
-    box(b,x,y,360,280,'#FAF9FC',C.line,g,'DPT decoder boundary',8,1);
+    box(b,x,y,360,280,'#E9EDDF',C.line,g,'DPT decoder boundary',8,1);
     text(b,'DPT decoder',x+12,y+8,320,25,18,C.ink,g,{bold:true});
     text(b,'Reassemble → multi-scale fusion',x+12,y+35,336,20,12,C.muted,g);
     line(b,x,y+125,x+8,y+125,g);line(b,x+8,y+125,x+8,y+63,g);line(b,x+8,y+63,x+305,y+63,g);
@@ -246,8 +246,9 @@
       arrow(b,[{x:x+dx+28,y:y+63},{x:x+dx+28,y:y+78}],g,{width:1.3,head:5});
       labelBox(b,'R'+(i+1),x+dx,y+78,55,29,C.violetLite,C.line,g,{size:12,radius:3});
       arrow(b,[{x:x+dx+28,y:y+108},{x:x+dx+28,y:y+120}],g,{width:1.3,head:5});
-      drawFeatureMapStack(b,x+dx+8,y+122,{w:18+i*6,h:18+i*6,count:2,step:3,skew:4,group:g,color:C.violet,back:C.violetLite});
-      arrow(b,[{x:x+dx+28,y:y+163},{x:x+dx+28,y:y+201}],g,{width:1.3,head:5});
+      const faceSize=18+i*6,stackWidth=faceSize+3;
+      drawFeatureMapStack(b,x+dx+28-stackWidth/2,y+122,{w:faceSize,h:faceSize,count:2,step:3,group:g,color:C.violet,back:C.violetLite});
+      arrow(b,[{x:x+dx+28,y:y+122+faceSize+1.5},{x:x+dx+28,y:y+201}],g,{width:1.1,head:5});
       labelBox(b,i===0?'Refine':'Fuse ↑2',x+dx,y+202, 60, 30,C.violetLite,C.line,g,{size:10,radius:3});
       if(i<3)arrow(b,[{x:x+dx+60,y:y+217},{x:x+dx+81,y:y+217}],g,{width:1.3,head:5});
     }
@@ -265,7 +266,7 @@
     drawTensorGrid(b,x+105,y+37,{rows:4,cols:4,cell:15,group:g});text(b,'H × W → 2H × 2W',x,y+111,210,20,12,C.muted,g);
   }
   function residualAdapter(b,x,y,g){
-    box(b,x,y,420,220,'#FFF9F3',C.line,g,'Candidate adapter boundary',8,1);
+    box(b,x,y,420,220,'#E9EDDF',C.line,g,'Candidate adapter boundary',8,1);
     text(b,'Proposed residual adapter',x+14,y+9,390,25,18,C.ink,g,{bold:true});
     arrow(b,[{x,y:y+112},{x:x+18,y:y+112}],g);
     labelBox(b,'1×1 Conv\nResize',x+18,y+81,85,62,C.peachLite,C.line,g,{size:12,radius:4});
@@ -283,37 +284,98 @@
   }
 
   function insertPart(b,id,x,y){const group=b.group(id);components[id].draw(b,x,y,group);return group;}
+  // Identical geometry in RGB and depth: editable reflective cylinder on a plane.
+  function drawReflectiveScene(b,x,y,w,h,g,depth=false){
+    const rect=(a,c,d,e,fill,name)=>box(b,x+a*w,y+c*h,d*w,e*h,fill,fill,g,name,0,0);
+    rect(0,0,1,1,depth?'#34375D':'#E6E9ED','Scene background');
+    for(let i=0;i<8;i++)rect(0,.60+i*.05,1,.051,depth?['#535584','#646596','#7576A6','#8987B2','#9D97BE','#B3ABC9','#C9BED5','#E1D3E1'][i]:'#D3D6DB','Ground plane');
+    if(!depth)ellipse(b,x+.20*w,y+.79*h,.67*w,.13*h,'#B1B6BF','#B1B6BF',g,'Contact shadow',0);
+    const colors=depth?['#C5BDDC','#D5CAE1','#E3D4E4','#EBDD E8'.replace(' ',''),'#E3D4E4','#D5CAE1','#C5BDDC']:['#626E80','#A5B0BE','#F5F7FA','#FFFFFF','#B2BDCC','#6E7D91','#D5DDE6'];
+    ellipse(b,x+.30*w,y+.70*h,.42*w,.16*h,colors[2],colors[2],g,'Cylinder base',0);
+    colors.forEach((c,i)=>rect(.30+i*.06,.28,.061,.50,c,'Cylinder surface'));
+    ellipse(b,x+.30*w,y+.20*h,.42*w,.16*h,depth?'#DDD0E3':'#ECF0F5',depth?'#DDD0E3':'#7D8999',g,'Cylinder top',depth?0:.7);
+    if(!depth)ellipse(b,x+.35*w,y+.235*h,.32*w,.085*h,'#7C899B','#D9E0E8',g,'Reflective rim',.7);
+  }
   function modernDepth(b){
-    const labels=b.group('Figure labels');
-    text(b,'Material-adapted monocular depth',50,30,1250, 40,30,C.ink,labels,{bold:true});
-    text(b,'RGB-only inference  ·  candidate architecture',50,78,1300,26,17,C.muted,labels);
-    const links=b.group('Inference connections');
-    [[346,270,400,270],[760,270,850,270],[1210,270,1250,270],[1385,270,1430,270],[1500,270,1550,270],[1590,270,1650,270]].forEach(([a,c,d,e])=>arrow(b,[{x:a,y:c},{x:d,y:e}],links));
-    arrow(b,[{x:1230,y:270},{x:1230,y:475},{x:810,y:475},{x:810,y:632},{x:880,y:632}],links,{color:C.peach});
-    text(b,'F',1238,440,40,24,16,C.peach,links);
-    arrow(b,[{x:1300,y:632},{x:1570,y:632},{x:1570,y:290}],links,{color:C.peach});
-    insertPart(b,'patch-embedding',60,180);
-    insertPart(b,'transformer-encoder',400,175);
-    text(b,'4 layer taps',768,230, 80,30,12,C.muted,labels,{align:'center'});
-    insertPart(b,'multiscale-decoder',850,145);
-    const head=b.group('Depth head');labelBox(b,'Depth head',1250,240,135,60,C.peachLite,C.line,head,{size:17,radius:5});
-    text(b,'Conv → Resize',1245,312,150,24,13,C.muted,head,{align:'center'});
-    const depth=b.group('Depth predictions');
-    drawTensorGrid(b,1430,241,{rows:4,cols:4,cell:16,group:depth,colors:['#A9BCC8','#BBCBD4','#DAE4E9','#879FAC']});
-    text(b,'D₀',1430,317,64,26,18,C.ink,depth,{align:'center'});
-    ellipse(b,1550,250, 40,40,C.paper,C.ink,depth,'Residual sum');text(b,'+',1550,250,40,40,23,C.ink,depth,{align:'center'});
-    drawTensorGrid(b,1650,241,{rows:4,cols:4,cell:16,group:depth,colors:['#90BCAF','#BCD6C6','#D8E9D8','#6B9C8D']});text(b,'D̂',1650,317,64,26,18,C.ink,depth,{align:'center'});
-    insertPart(b,'residual-adapter',880,520);
-    text(b,'D̂ = D₀ + G ⊙ R',1340,655,375,35,25,C.ink,labels,{align:'center'});
-    insertPart(b,'qkv-attention',60,520);
-    text(b,'MHSA detail',60,475,500,28,19,C.ink,labels,{bold:true});
-    const train=b.group('Training-only supervision');
-    line(b,50,795,1750,795,train,{color:C.line});
-    text(b,'TRAINING ONLY',50,838,220,30,16,C.muted,train,{bold:true});
-    labelBox(b,'Target depth D*',335,830,200, 50,C.gray,C.line,train,{size:17,radius:4});
-    arrow(b,[{x:536,y:855},{x:650,y:855}],train,{dash:true});
-    labelBox(b,'Depth loss',650,830,175,50,C.paper,C.line,train,{size:17,radius:4});
-    arrow(b,[{x:1714,y:274},{x:1740,y:274},{x:1740,y:855},{x:825,y:855}],train,{dash:true,color:C.muted});
+    const panels=b.group('Figure panels');
+    box(b,30,25,1740,305,C.pale,'#C4BEAF',panels,'Inference panel',26,1);
+    box(b,48,72,752,240,'#F4EBF7','#D1C3D8',panels,'Representation panel',22,1);
+    box(b,817,72,935,240,'#E9EDDF','#C1CBAC',panels,'Prediction panel',22,1);
+    text(b,'(a)  Depth estimation',55,36,800,28,21,C.ink,panels,{bold:true});
+    box(b,30,390,930,420,'#F4EBF7','#D1C3D8',panels,'Decoder detail',24,1);
+    box(b,980,390,790,420,C.pinkLite,'#CFB5B2',panels,'Refinement detail',24,1);
+    text(b,'(b)  Multi-scale reassembly',55,402,800,28,21,C.ink,panels,{bold:true});
+    text(b,'(c)  Proposed depth refinement',1005,402,720,28,21,C.ink,panels,{bold:true});
+    const flow=b.group('Inference flow');
+    [[150,195,190,195],[290,195,320,195],[448,195,495,195],[1010,195,1070,195],[1142,195,1190,195],[1320,195,1380,195],[1452,195,1550,195],[1590,195,1650,195]].forEach(([x,y,ex,ey])=>arrow(b,[{x,y},{x:ex,y:ey}],flow));
+    arrow(b,[{x:1165,y:195},{x:1165,y:351},{x:1000,y:351},{x:1000,y:548},{x:1020,y:548}],flow,{color:C.peach});
+    arrow(b,[{x:1700,y:533},{x:1700,y:350},{x:1570,y:350},{x:1570,y:215}],flow,{color:C.peach});
+    arrow(b,[{x:900,y:266},{x:900,y:357},{x:490,y:357},{x:490,y:390}],flow,{color:C.muted,dash:true,endHead:false,width:1});
+    const overview=b.group('Backbone overview');
+    drawReflectiveScene(b,70,155,80,80,overview,false);
+    text(b,'Reflective object',60,249,115,23,14,C.ink,overview,{align:'center'});
+    labelBox(b,'Patch\nembedding',190,165,100,60,C.blueLite,C.blue,overview,{size:15});
+    tokens(b,320,178,overview,6);
+    labelBox(b,'ViT\nencoder',495,130,115,130,C.blueLite,C.blue,overview,{size:19});
+    for(let i=0;i<4;i++){
+      const cy=141+i*36;
+      arrow(b,[{x:610,y:cy},{x:665,y:cy}],overview);
+      labelBox(b,'t'+(i+1),665,cy-13,80,26,C.violetLite,C.line,overview,{size:13,radius:3});
+      arrow(b,[{x:745,y:cy},{x:850,y:cy}],overview);
+    }
+    labelBox(b,'DPT\ndecoder',850,126,160,140,C.blueLite,C.blue,overview,{size:19});
+    drawTensorGrid(b,1070,159,{rows:6,cols:6,cell:12,group:overview,colors:[C.violetLite,'#DAD0E5','#F1EBF5']});
+    text(b,'F',1070,249,72,23,16,C.ink,overview,{align:'center'});
+    labelBox(b,'Depth\nhead',1190,165,130,60,C.blueLite,C.blue,overview,{size: 17});
+    drawReflectiveScene(b,1380,159,72,72,overview,true);
+    text(b,'D₀',1380,249,72,23,16,C.ink,overview,{align:'center'});
+    ellipse(b,1550,175,40,40,C.paper,C.ink,overview,'Residual sum',1.1);text(b,'+',1550,175,40,40,22,C.ink,overview,{align:'center'});
+    drawReflectiveScene(b,1650,159,72,72,overview,true);
+    text(b,'Depth (schematic)',1618,277,136,20,12,C.muted,overview,{align:'center'});
+    text(b,'D̂',1650,249,72,23,16,C.ink,overview,{align:'center'});
+    const scales=b.group('Token reassembly and spatial fusion');
+    for(let i=0;i<4;i++){
+      const x=90+i*210,cx=x+70,side=25+i*10;
+      text(b,'t'+(i+1),x,447,30,22,14,C.ink,scales);tokens(b,x+35,440,scales,4);
+      arrow(b,[{x:cx,y:477},{x:cx,y:501}],scales);
+      labelBox(b,'Reshape\n1×1 Conv',x,502,140, 50,C.blueLite,C.blue,scales,{size:15});
+      arrow(b,[{x:cx,y:553},{x:cx,y:580}],scales);
+      labelBox(b,'Resize',x,581,140,36,C.blueLite,C.blue,scales,{size:15});
+      text(b,['H/32 × W/32','H/16 × W/16','H/8 × W/8','H/4 × W/4'][i],x,624,140,22,12,C.muted,scales,{align:'center'});
+      drawFeatureMapStack(b,cx-(side+4)/2,663,{w:side,h:side,count:2,step:4,group:scales,color:C.violet,back:C.violetLite});
+      arrow(b,[{x:cx,y:646},{x:cx,y:662}],scales);
+      arrow(b,[{x:cx,y:663+side+2},{x:cx,y:738}],scales);
+      labelBox(b,i===0?'Refine':'Fuse + ↑2',x,739,140, 40,C.violetLite,C.line,scales,{size:15});
+      if(i<3)arrow(b,[{x:x+141,y:759},{x:x+210,y:759}],scales);
+    }
+    arrow(b,[{x:861,y:759},{x:916,y:759}],scales);text(b,'F',916,746,30,26,16,C.ink,scales);
+    const refine=b.group('Spatially aligned gated residual');
+    drawTensorGrid(b,1020,516,{rows:4,cols:4,cell:16,group:refine,colors:[C.violetLite,'#DAD0E5','#F1EBF5']});
+    text(b,'F',1020,588,64,23,16,C.ink,refine,{align:'center'});
+    arrow(b,[{x:1084,y:548},{x:1120,y:548}],refine);
+    labelBox(b,'1×1 Conv\nResize',1120,518,110,60,C.blueLite,C.blue,refine,{size:15});
+    text(b,'H × W',1120,588,110,23,13,C.muted,refine,{align:'center'});
+    arrow(b,[{x:1230,y:548},{x:1250,y:548},{x:1250,y:487},{x:1290,y:487}],refine);
+    arrow(b,[{x:1250,y:548},{x:1250,y:647},{x:1290,y:647}],refine);
+    labelBox(b,'3×3 Conv\nSigmoid',1290,460,140,54,C.blueLite,C.blue,refine,{size:15});
+    labelBox(b,'3×3 Conv',1290,620,140,54,C.blueLite,C.blue,refine,{size:15});
+    arrow(b,[{x:1430,y:487},{x:1460,y:487}],refine);arrow(b,[{x:1430,y:647},{x:1460,y:647}],refine);
+    drawTensorGrid(b,1460,455,{rows:4,cols:4,cell:16,group:refine,colors:['#DCE6CE','#C8D6B8','#EBF0E2']});
+    drawTensorGrid(b,1460,615,{rows:4,cols:4,cell:16,group:refine,colors:[C.violetLite,'#DAD0E5','#F1EBF5']});
+    text(b,'G',1460,526,64,23,16,C.ink,refine,{align:'center'});text(b,'R',1460,686,64,23,16,C.ink,refine,{align:'center'});
+    arrow(b,[{x:1524,y:487},{x:1588,y:487},{x:1588,y:545}],refine);
+    arrow(b,[{x:1524,y:647},{x:1588,y:647},{x:1588,y:581}],refine);
+    ellipse(b,1570,545,36,36,C.paper,C.ink,refine,'Gate times residual',1.1);text(b,'×',1570,545,36,36,21,C.ink,refine,{align:'center'});
+    arrow(b,[{x:1606,y:563},{x:1670,y:563}],refine);
+    drawTensorGrid(b,1670,533,{rows:4,cols:4,cell:15,group:refine,colors:['#DCE6CE','#C8D6B8','#EBF0E2']});
+    text(b,'ΔD',1670,599,60,23,16,C.ink,refine,{align:'center'});
+    text(b,'D̂ = D₀ + G ⊙ R',1190,749,440, 30,20,C.ink,refine,{align:'center'});
+    const training=b.group('Training loss');
+    text(b,'Training only',55,868,205,26,15,C.muted,training);
+    labelBox(b,'D*',365,857,95,50,C.gray,C.line,training,{size:16});
+    arrow(b,[{x:460,y:882},{x:660,y:882}],training,{dash:true});
+    labelBox(b,'Depth loss',660,857,165,50,C.paper,C.line,training,{size:16});
+    arrow(b,[{x:1722,y:195},{x:1788,y:195},{x:1788,y:882},{x:825,y:882}],training,{dash:true,color:C.muted});
   }
 
   function attentionFusion(b) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v104-model-components';
+const CACHE_NAME = 'skechu-ppt-v105-paper-projection';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,10 +7,10 @@ const APP_SHELL = [
   './automation/editor.js?v=87-native-fill',
   './automation/panel.css?v=70-automation',
   './automation/commands.json',
-  './diagram-3d.js?v=104-model-components',
-  './deep-learning-diagrams.js?v=104-model-components',
-  './deep-learning-ui.js?v=104-model-components',
-  './deep-learning-ui.css?v=104-model-components',
+  './diagram-3d.js?v=105-paper-projection',
+  './deep-learning-diagrams.js?v=105-paper-projection',
+  './deep-learning-ui.js?v=105-paper-projection',
+  './deep-learning-ui.css?v=105-paper-projection',
   './mobile-controls.js?v=69-copy-paste',
   './mobile-controls.css?v=90-mobile-brand',
   './touch-gestures.js?v=68-touch-gestures',
