@@ -138,3 +138,5 @@ python -m unittest discover -s tests -p test_editor_mcp.py -v
 The first two run without the MCP dependency. The last starts the real stdio connector and verifies discovery, schema validation, authorization, a loopback request/response and revocation using the official SDK client.
 
 The `create_diagram_block_3d` command accepts `projection: "paper"` (default, rectangular front face) or `"axonometric"`. Both support yaw/elevation; paper projection keeps tensor grid cells rectangular.
+
+`create_diagram_component` now includes optional `labels: "short" | "none"`. The catalog includes encoder/decoder trapezoids, hourglass and pyramid U-Nets, Transformer stacks, diffusion chains/loops, cross-attention and latent bottlenecks. Discover IDs with `list_diagram_components`; start a fresh MCP server session after upgrading to load the new optional argument schema.

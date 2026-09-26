@@ -65,8 +65,9 @@
       const template=event.target.closest('[data-template]'),component=event.target.closest('[data-component]');
       if(!template&&!component)return;
       try{
-        if(template)bridge.insertTemplate(template.dataset.template);
-        else bridge.insertComponent(component.dataset.component);
+        const options={labels:document.getElementById('dl-label-mode').value};
+        if(template)bridge.insertTemplate(template.dataset.template,options);
+        else bridge.insertComponent(component.dataset.component,options);
         dialog.close();
       }catch(error){console.error(error);bridge.notify(error.message||'無法加入架構圖');}
     });

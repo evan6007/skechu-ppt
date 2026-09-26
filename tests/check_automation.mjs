@@ -147,6 +147,10 @@ for(const component of context.SkechuDeepLearning.componentMeta){
   assert.ok(result.count>0);
 }
 assert.equal(f.undo.length,context.SkechuDeepLearning.componentMeta.length);
+const bareResult=await f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'encoder-funnel',x:30,y:40,labels:'none'});
+assert.ok(bareResult.count>0);
+assert.ok(f.doc.items.slice(-bareResult.count).every(it=>it.type!=='text'));
+await rejects(f.api.execute('create_diagram_component',{context:await f.ctx(),componentId:'encoder-funnel',x:30,y:40,labels:'invalid'}),'INVALID_ARGUMENT');
 const blockArgs={context:await f.ctx(),x:250,y:180,width:110,height:140,depth:24,count:4,gap:9,yaw:-38,elevation:31,color:'#5187D2',title:'Conv 2',detail:'28 × 28 × 128'};
 const beforeBlock=f.doc.items.length,blockResult=await f.api.execute('create_diagram_block_3d',blockArgs);
 assert.equal(blockResult.count,14);assert.equal(f.doc.items.length-beforeBlock,14);

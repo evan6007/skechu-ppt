@@ -41,9 +41,9 @@ function validateItems(items, bounds) {
   }
 }
 
-test('five figure templates contain only editable, grouped native geometry', () => {
-  assert.equal(diagrams.templateMeta.length,5);
-  assert.equal(new Set(diagrams.templateMeta.map(meta=>meta.id)).size,5);
+test('seven figure templates contain only editable, grouped native geometry', () => {
+  assert.equal(diagrams.templateMeta.length,7);
+  assert.equal(new Set(diagrams.templateMeta.map(meta=>meta.id)).size,7);
   for (const meta of diagrams.templateMeta) {
     assert.ok(meta.name && meta.description);
     const figure=diagrams.createTemplate(meta.id);
@@ -78,13 +78,12 @@ test('templates carry their characteristic scientific diagram elements', () => {
     assert.ok(graph.includes(term));
 
   const depth=labels('material-aware-depth').replace(/\s+/g,' ');
-  for (const term of ['Patch embedding','ViT encoder','DPT decoder',
-    'Proposed depth refinement','Depth loss']) assert.ok(depth.includes(term));
+  for (const term of ['ViT','DPT','Proposed refinement','Multi-scale fusion']) assert.ok(depth.includes(term));
 });
 
 test('all components are movable units with measured footprints', () => {
-  assert.equal(diagrams.componentMeta.length,14);
-  assert.equal(new Set(diagrams.componentMeta.map(meta=>meta.id)).size,14);
+  assert.equal(diagrams.componentMeta.length,24);
+  assert.equal(new Set(diagrams.componentMeta.map(meta=>meta.id)).size,24);
   for (const meta of diagrams.componentMeta) {
     const origin=diagrams.createComponent(meta.id,{x:0,y:0});
     const moved=diagrams.createComponent(meta.id,{x:210,y:180});
@@ -96,8 +95,8 @@ test('all components are movable units with measured footprints', () => {
       const before=pointsOf(origin.items[i]),after=pointsOf(moved.items[i]);
       assert.equal(before.length,after.length);
       for(let p=0;p<before.length;p++) {
-        assert.equal(after[p].x-before[p].x,210);
-        assert.equal(after[p].y-before[p].y,180);
+        assert.ok(Math.abs(after[p].x-before[p].x-210)<1e-8);
+        assert.ok(Math.abs(after[p].y-before[p].y-180)<1e-8);
       }
     }
     assert.ok(origin.items.every(item=>item.layerGroup.name===meta.name));
@@ -116,4 +115,15 @@ test('browser script exposes the same global generator without CommonJS', () => 
   vm.runInNewContext(source,browser,{filename:'deep-learning-diagrams.js'});
   assert.equal(typeof browser.SkechuDeepLearning.createTemplate,'function');
   assert.equal(browser.SkechuDeepLearning.createTemplate('attention-fusion').width,1200);
+});
+
+test('label-free mode preserves every non-text shape and rejects invalid modes',()=>{
+  for(const meta of diagrams.componentMeta){
+    const full=diagrams.createComponent(meta.id),bare=diagrams.createComponent(meta.id,{labels:'none'});
+    assert.deepEqual(bare.items,full.items.filter(it=>it.type!=='text'));
+  }
+  for(const meta of diagrams.templateMeta){
+    assert.ok(diagrams.createTemplate(meta.id,{labels:'none'}).items.every(it=>it.type!=='text'));
+  }
+  assert.throws(()=>diagrams.createComponent('encoder-funnel',{labels:'bad'}),TypeError);
 });

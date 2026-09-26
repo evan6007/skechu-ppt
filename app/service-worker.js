@@ -1,16 +1,16 @@
-const CACHE_NAME = 'skechu-ppt-v105-paper-projection';
+const CACHE_NAME = 'skechu-ppt-v106-model-silhouettes';
 const APP_SHELL = [
   './',
   './index.html',
   './about.html',
-  './automation/core.js?v=101-diagram-markup',
+  './automation/core.js?v=106-model-silhouettes',
   './automation/editor.js?v=87-native-fill',
   './automation/panel.css?v=70-automation',
   './automation/commands.json',
-  './diagram-3d.js?v=105-paper-projection',
-  './deep-learning-diagrams.js?v=105-paper-projection',
-  './deep-learning-ui.js?v=105-paper-projection',
-  './deep-learning-ui.css?v=105-paper-projection',
+  './diagram-3d.js?v=106-model-silhouettes',
+  './deep-learning-diagrams.js?v=106-model-silhouettes',
+  './deep-learning-ui.js?v=106-model-silhouettes',
+  './deep-learning-ui.css?v=106-model-silhouettes',
   './mobile-controls.js?v=69-copy-paste',
   './mobile-controls.css?v=90-mobile-brand',
   './touch-gestures.js?v=68-touch-gestures',

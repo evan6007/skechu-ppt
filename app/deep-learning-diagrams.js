@@ -16,14 +16,27 @@
   });
 
   const templateMeta = Object.freeze([
+    {id:'latent-diffusion-paper',name:'Latent Diffusion 論文圖',description:'梯形 U-Net、去噪迴圈、條件輸入與潛在解碼。',width:1400,height:700},
+    {id:'vision-transformer-paper',name:'Vision Transformer 論文圖',description:'影像切塊、token、層疊 Transformer 與輸出。',width:1400,height:600},
     {id:'attention-fusion',name:'注意力模組與多分支融合',description:'SE、通道、空間與座標注意力，加上共享主幹、融合與嵌入輸出。'},
     {id:'perspective-cnn',name:'平面 CNN 示意圖',description:'平面堆疊的卷積特徵圖、池化、全連接層與分類輸出。'},
     {id:'conditional-diffusion',name:'條件式擴散與 U-Net',description:'前向加噪、迭代去噪、條件訊號與含跳接的 U-Net。'},
     {id:'graph-tensor-diffusion',name:'圖與張量擴散流程',description:'空間節點、鄰接圖、遮罩矩陣、GNN 潛在表示與擴散去噪。'},
-    {id:'material-aware-depth',name:'材質感知單目深度',description:'反光物體與深度示意、多尺度重組、門控殘差修正。',width:1800,height:950}
+    {id:'material-aware-depth',name:'材質感知單目深度',description:'反光物體與深度示意、多尺度重組、門控殘差修正。',width:1560,height:900}
   ]);
 
   const componentMeta = Object.freeze([
+    {id:'encoder-funnel',name:'Encoder 收斂梯形',description:'高到低解析度的收斂輪廓。'},
+    {id:'decoder-funnel',name:'Decoder 展開梯形',description:'低到高解析度的展開輪廓。'},
+    {id:'unet-hourglass',name:'U-Net 沙漏與跳接',description:'收斂、瓶頸、展開及跨層跳接。'},
+    {id:'unet-pyramid',name:'U-Net 多尺度金字塔',description:'不同解析度的 U 形特徵堆疊。'},
+    {id:'transformer-tower',name:'Transformer 層疊',description:'Token、重複層與 residual 路徑。'},
+    {id:'diffusion-chain',name:'Diffusion 加噪序列',description:'乾淨訊號逐步轉為噪聲。'},
+    {id:'denoising-loop',name:'Diffusion 去噪迴圈',description:'時間條件、U-Net 與反覆去噪。'},
+    {id:'cross-attention-bridge',name:'Cross-attention 跨流融合',description:'Query 和條件 Key/Value 的雙路輸入。'},
+    {id:'latent-bottleneck',name:'Latent 潛在空間',description:'Encoder、潛在張量、Decoder。'},
+    {id:'reflective-scene',name:'反光物體與深度配對',description:'相同場景的 RGB 與深度示意。'},
+
     {id:'patch-embedding',name:'影像切塊與嵌入',description:'Patch → linear projection → token sequence。'},
     {id:'token-sequence',name:'Token 序列',description:'可編輯的向量序列與位置編碼標示。'},
     {id:'transformer-encoder',name:'Transformer 編碼器',description:'Pre-norm、MHSA、MLP 和兩條 residual skip。'},
@@ -290,12 +303,173 @@
     rect(0,0,1,1,depth?'#34375D':'#E6E9ED','Scene background');
     for(let i=0;i<8;i++)rect(0,.60+i*.05,1,.051,depth?['#535584','#646596','#7576A6','#8987B2','#9D97BE','#B3ABC9','#C9BED5','#E1D3E1'][i]:'#D3D6DB','Ground plane');
     if(!depth)ellipse(b,x+.20*w,y+.79*h,.67*w,.13*h,'#B1B6BF','#B1B6BF',g,'Contact shadow',0);
-    const colors=depth?['#C5BDDC','#D5CAE1','#E3D4E4','#EBDD E8'.replace(' ',''),'#E3D4E4','#D5CAE1','#C5BDDC']:['#626E80','#A5B0BE','#F5F7FA','#FFFFFF','#B2BDCC','#6E7D91','#D5DDE6'];
+    const colors=depth?['#C5BDDC','#D5CAE1','#E3D4E4','#EBDDE8','#E3D4E4','#D5CAE1','#C5BDDC']:['#626E80','#A5B0BE','#F5F7FA','#FFFFFF','#B2BDCC','#6E7D91','#D5DDE6'];
     ellipse(b,x+.30*w,y+.70*h,.42*w,.16*h,colors[2],colors[2],g,'Cylinder base',0);
     colors.forEach((c,i)=>rect(.30+i*.06,.28,.061,.50,c,'Cylinder surface'));
     ellipse(b,x+.30*w,y+.20*h,.42*w,.16*h,depth?'#DDD0E3':'#ECF0F5',depth?'#DDD0E3':'#7D8999',g,'Cylinder top',depth?0:.7);
     if(!depth)ellipse(b,x+.35*w,y+.235*h,.32*w,.085*h,'#7C899B','#D9E0E8',g,'Reflective rim',.7);
   }
+  // Model-specific silhouettes. Geometry stays native and opaque in every export.
+  function funnel(b,x,y,w,h,g,expand=false,label=''){
+    const inset=h*.28,fill=expand?C.tealLite:C.blueLite,edge=expand?'#879B76':'#8C9CB8';
+    const points=expand?[{x,y:y+inset},{x:x+w,y},{x:x+w,y:y+h},{x,y:y+h-inset}]:[{x,y},{x:x+w,y:y+inset},{x:x+w,y:y+h-inset},{x,y:y+h}];
+    polygon(b,points,fill,edge,g,expand?'Decoder expanding trapezoid':'Encoder contracting trapezoid',1.7);
+    if(label)text(b,label,x+8,y+h/2-22,w-16,44,26,C.ink,g,{align:'center',bold:true});
+  }
+  function hourglass(b,x,y,g){
+    funnel(b,x+10,y+48,140,160,g,false,'E');
+    funnel(b,x+200,y+48,140,160,g,true,'D');
+    arrow(b,[{x:x+150,y:y+128},{x:x+200,y:y+128}],g,{width:2});
+    [0,1,2].forEach(i=>arrow(b,[{x:x+35+i*32,y:y+54+i*13},{x:x+35+i*32,y:y+12+i*12},{x:x+315-i*32,y:y+12+i*12},{x:x+315-i*32,y:y+54+i*13}],g,{color:C.muted,dash:true,width:1.2}));
+    text(b,'U-Net',x+70,y+218,210,32,26,C.ink,g,{align:'center',bold:true});
+  }
+  function pyramid(b,x,y,g){
+    const xs=[10,95,180,265,350],ys=[28,91,139,91,28],sizes=[62,48,36,48,62];
+    for(let i=0;i<5;i++){
+      const cx=x+xs[i]+sizes[i]/2,cy=y+ys[i]+sizes[i]/2;
+      drawFeatureMapStack(b,x+xs[i],y+ys[i],{w:sizes[i],h:sizes[i],count:3,step:4,group:g,back:i<3?C.blueLite:C.tealLite});
+      if(i<4)arrow(b,[{x:x+xs[i]+sizes[i]+8,y:cy},{x:x+xs[i]+sizes[i]+22,y:cy},{x:x+xs[i]+sizes[i]+22,y:y+ys[i+1]+sizes[i+1]/2},{x:x+xs[i+1],y:y+ys[i+1]+sizes[i+1]/2}],g,{width:1.8});
+      if(i<2)arrow(b,[{x:cx,y:y+ys[i]},{x:cx,y:y+8+i*42},{x:x+xs[4-i]+sizes[4-i]/2,y:y+8+i*42},{x:x+xs[4-i]+sizes[4-i]/2,y:y+ys[4-i]}],g,{dash:true,color:C.muted});
+    }
+    text(b,'U-Net',x+130,y+201,170,32,26,C.ink,g,{align:'center',bold:true});
+  }
+  function transformerTower(b,x,y,g){
+    for(let i=2;i>=0;i--)box(b,x+28+i*8,y+39-i*8,152,183,i?C.paper:'#F1EBF6',C.violet,g,'Repeated Transformer layer',8,1.4);
+    labelBox(b,'MLP',x+48,y+68,112,40,C.violetLite,C.violet,g,{size:24});
+    labelBox(b,'MHSA',x+48,y+137,112,40,C.blueLite,C.blue,g,{size:24});
+    arrow(b,[{x:x+104,y:y+68},{x:x+104,y:y+60}],g,{width:1.7,head:4});
+    arrow(b,[{x:x+104,y:y+137},{x:x+104,y:y+108}],g,{width:1.7});
+    arrow(b,[{x:x+104,y:y+214},{x:x+104,y:y+177}],g,{width:1.7});
+    arrow(b,[{x:x+104,y:y+195},{x:x+172,y:y+195},{x:x+172,y:y+121},{x:x+104,y:y+121}],g,{width:1.2});
+    arrow(b,[{x:x+104,y:y+122},{x:x+36,y:y+122},{x:x+36,y:y+54},{x:x+104,y:y+54}],g,{width:1.2});
+    ellipse(b,x+98,y+115,12,12,C.paper,C.muted,g,'Attention residual sum',1);
+    ellipse(b,x+98,y+48,12,12,C.paper,C.muted,g,'MLP residual sum',1);
+    tokens(b,x+31,y+246,g,7);arrow(b,[{x:x+104,y:y+246},{x:x+104,y:y+222}],g);
+    text(b,'× L',x+182,y+95,55,40,24,C.ink,g);
+    text(b,'Transformer',x+12,y+292,220,34,26,C.ink,g,{align:'center',bold:true});
+  }
+  function noiseTile(b,x,y,size,level,g){
+    const n=8,cell=size/n,tones=['#D9D4E6','#8E839F','#F7F3F8','#A9A1B9','#655E79'];
+    for(let r=0;r<n;r++)for(let c=0;c<n;c++){
+      const shape=(c>=2&&c<=5&&r>=1&&r<=6),noisy=((r*13+c*7)%17)/17<level;
+      box(b,x+c*cell,y+r*cell,cell+.1,cell+.1,noisy?tones[(r*5+c*3+r*c)%tones.length]:(shape?'#D7DFCA':'#454760'),'none',g,'Diffusion sample cell',0,0);
+    }
+  }
+  function diffusionChain(b,x,y,g){
+    [0,.35,.7,1].forEach((level,i)=>{noiseTile(b,x+i*128,y+30,86,level,g);text(b,['x₀','xₜ','…','xT'][i],x+i*128,y+130,86,32,25,C.ink,g,{align:'center'});if(i<3)arrow(b,[{x:x+i*128+90,y:y+73},{x:x+(i+1)*128-6,y:y+73}],g,{width:2});});
+  }
+  function denoiseLoop(b,x,y,g){
+    noiseTile(b,x,y+78,72,1,g);hourglass(b,x+110,y+5,g);noiseTile(b,x+510,y+78,72,.25,g);
+    arrow(b,[{x:x+77,y:y+114},{x:x+120,y:y+114}],g,{width:2});
+    arrow(b,[{x:x+450,y:y+114},{x:x+505,y:y+114}],g,{width:2});
+    arrow(b,[{x:x+545,y:y+155},{x:x+545,y:y+292},{x:x+35,y:y+292},{x:x+35,y:y+155}],g,{width:1.6,color:C.violet});
+    text(b,'× T',x+260,y+298,85,34,26,C.ink,g,{align:'center'});
+    text(b,'t',x+100,y+245,40,28,24,C.ink,g,{align:'center'});
+    arrow(b,[{x:x+120,y:y+245},{x:x+120,y:y+180}],g,{color:C.peach});
+  }
+  function crossBridge(b,x,y,g){
+    tokens(b,x+15,y+10,g,5);tokens(b,x+15,y+168,g,5);
+    arrow(b,[{x:x+123,y:y+27},{x:x+165,y:y+27},{x:x+165,y:y+78}],g);
+    arrow(b,[{x:x+123,y:y+185},{x:x+165,y:y+185},{x:x+165,y:y+125}],g);
+    labelBox(b,'Q',x+140,y+52,50,36,C.blueLite,C.blue,g,{size:24});
+    labelBox(b,'K,V',x+130,y+132,70,36,C.tealLite,C.teal,g,{size:24});
+    ellipse(b,x+223,y+83,46,46,C.paper,C.violet,g,'Cross attention',1.6);text(b,'⊗',x+223,y+83,46,46,28,C.ink,g,{align:'center'});
+    arrow(b,[{x:x+190,y:y+70},{x:x+210,y:y+70},{x:x+210,y:y+95},{x:x+223,y:y+95}],g);
+    arrow(b,[{x:x+200,y:y+150},{x:x+210,y:y+150},{x:x+210,y:y+116},{x:x+223,y:y+116}],g);
+    arrow(b,[{x:x+269,y:y+106},{x:x+305,y:y+106}],g);tokens(b,x+310,y+89,g,4);
+  }
+  function latentBridge(b,x,y,g){
+    funnel(b,x,y+15,110,150,g,false,'E');drawTensorGrid(b,x+150,y+60,{rows:4,cols:4,cell:15,group:g});funnel(b,x+250,y+15,110,150,g,true,'D');
+    arrow(b,[{x:x+110,y:y+90},{x:x+145,y:y+90}],g);arrow(b,[{x:x+211,y:y+90},{x:x+250,y:y+90}],g);
+    text(b,'z',x+150,y+133,60,32,26,C.ink,g,{align:'center'});
+  }
+  function diffusionPaper(b){
+    let g=b.group('Latent diffusion inference');
+    text(b,'Latent diffusion',60,32,650,42,32,C.ink,g,{bold:true});
+    noiseTile(b,65,160,136,1,g);text(b,'zT',65,312,136,34,28,C.ink,g,{align:'center'});
+    arrow(b,[{x:211,y:228},{x:290,y:228}],g,{width:2});
+    hourglass(b,280,100,g);
+    arrow(b,[{x:625,y:228},{x:650,y:228}],g,{width:2});
+    labelBox(b,'Step',650,207,80,42,C.violetLite,C.violet,g,{size:24});
+    arrow(b,[{x:730,y:228},{x:740,y:228}],g,{width:2,head:4});
+    noiseTile(b,750,160,136,0,g);text(b,'z₀',750,312,136,34,28,C.ink,g,{align:'center'});
+    arrow(b,[{x:900,y:228},{x:955,y:228}],g,{width:2});funnel(b,955,123,160,210,g,true,'D');
+    arrow(b,[{x:1116,y:228},{x:1180,y:228}],g,{width:2});drawReflectiveScene(b,1190,160,136,136,g,false);
+    text(b,'Image',1170,312,176,34,28,C.ink,g,{align:'center'});
+    arrow(b,[{x:735,y:228},{x:735,y:400},{x:244,y:400},{x:244,y:228}],g,{color:C.violet,width:2});
+    text(b,'Denoising × T',336,412,290,36,28,C.ink,g,{align:'center'});
+    g=b.group('Diffusion conditioning');
+    labelBox(b,'Condition',350,530,250,66,C.tealLite,C.teal,g,{size:28});
+    arrow(b,[{x:475,y:530},{x:475,y:460},{x:578,y:460},{x:578,y:286}],g,{color:C.teal,width:2});
+    text(b,'t',290,516,42,34,28,C.ink,g,{align:'center'});arrow(b,[{x:312,y:516},{x:312,y:310}],g,{color:C.peach,width:2});
+    g=b.group('Forward diffusion');
+    text(b,'Forward noising',790,440,450,36,28,C.ink,g,{bold:true});diffusionChain(b,790,475,g);
+  }
+  function transformerPaper(b){
+    let g=b.group('Vision Transformer pipeline');
+    text(b,'Vision Transformer',60,32,740,42,32,C.ink,g,{bold:true});
+    drawReflectiveScene(b,55,200,144,144,g,false);
+    arrow(b,[{x:207,y:272},{x:255,y:272}],g,{width:2});drawTensorGrid(b,265,200,{rows:4,cols:4,cell:36,group:g,colors:[C.blueLite,C.violetLite,C.tealLite]});
+    text(b,'Patches',265,365,144,36,28,C.ink,g,{align:'center'});
+    arrow(b,[{x:420,y:272},{x:465,y:272}],g,{width:2});labelBox(b,'Embed',465,240,130,64,C.blueLite,C.blue,g,{size:28});
+    tokens(b,480,355,g,5);arrow(b,[{x:530,y:305},{x:530,y:348}],g,{width:2});
+    arrow(b,[{x:590,y:372},{x:640,y:372},{x:640,y:454},{x:794,y:454},{x:794,y:416}],g,{width:2});
+    g=b.group('Transformer repeated encoder');
+    transformerTower(b,690,170,g);
+    arrow(b,[{x:794,y:209},{x:794,y:120},{x:1050,y:120},{x:1050,y:210}],g,{width:2});
+    g=b.group('Prediction head');
+    labelBox(b,'Head',980,210,140,64,C.tealLite,C.teal,g,{size:28});
+    arrow(b,[{x:1120,y:242},{x:1200,y:242}],g,{width:2});
+    [76,116,46,92].forEach((w,i)=>box(b,1200,190+i*32,w,19,[C.blueLite,C.tealLite,C.violetLite,C.pinkLite][i],C.line,g,'Class score',2,1));
+    text(b,'Prediction',1170,350,180,36,28,C.ink,g,{align:'center'});
+  }
+  function sculptedDepth(b){
+    const g=b.group('Reflective depth overview');
+    text(b,'(a)',40,30,70,36,28,C.ink,g,{bold:true});
+    drawReflectiveScene(b,65,125,160,160,g,false);text(b,'RGB',65,310,160,36,28,C.ink,g,{align:'center'});
+    arrow(b,[{x:236,y:205},{x:305,y:205}],g,{width:2});
+    // ViT keeps a constant token width; the decoder expands spatial resolution.
+    for(let i=2;i>=0;i--)box(b,315+i*10,112-i*9,168,186,i?C.paper:C.blueLite,C.blue,g,'ViT layer stack',6,1.5);
+    text(b,'ViT',340,171,118,48,32,C.ink,g,{bold:true,align:'center'});tokens(b,325,256,g,7);
+    for(let i=0;i<4;i++)arrow(b,[{x:503,y:141+i*42},{x:555,y:141+i*42},{x:605,y:175+i*20},{x:630,y:175+i*20}],g,{width:1.5});
+    funnel(b,630,107,204,196,g,true,'DPT');
+    arrow(b,[{x:836,y:205},{x:895,y:205}],g,{width:2});
+    drawFeatureMapStack(b,900,165,{w:78,h:78,count:3,step:6,group:g,back:C.violetLite});text(b,'F',900,310,90,36,28,C.ink,g,{align:'center'});
+    arrow(b,[{x:991,y:205},{x:1040,y:205}],g,{width:2});funnel(b,1040,155,108,100,g,true,'D₀');
+    arrow(b,[{x:1150,y:205},{x:1222,y:205}],g,{width:2});
+    ellipse(b,1222,183,44,44,C.paper,C.ink,g,'Depth sum',1.7);text(b,'+',1222,183,44,44,30,C.ink,g,{align:'center'});
+    arrow(b,[{x:1267,y:205},{x:1325,y:205}],g,{width:2});drawReflectiveScene(b,1335,125,160,160,g,true);
+    text(b,'Depth¹',1325,310,180,36,28,C.ink,g,{align:'center'});
+    const detail=b.group('Multi-scale fusion');
+    line(b,40,390,1500,390,detail,{color:C.line,width:1});text(b,'(b)  Multi-scale fusion',40,415,670,38,28,C.ink,detail,{bold:true});
+    const xs=[80,250,420,590],sides=[35,52,70,88];
+    xs.forEach((x,i)=>{
+      tokens(b,x-10,492,detail,4);arrow(b,[{x:x+32,y:528},{x:x+32,y:569}],detail,{width:1.6});
+      drawFeatureMapStack(b,x+32-sides[i]/2,575,{w:sides[i],h:sides[i],count:3,step:5,group:detail,back:C.violetLite});
+      arrow(b,[{x:x+32,y:580+sides[i]},{x:x+32,y:704}],detail,{width:1.6});
+      ellipse(b,x+12,704,40,40,C.paper,C.violet,detail,'Scale fusion',1.5);text(b,'+',x+12,704,40,40,28,C.ink,detail,{align:'center'});
+      if(i<3)arrow(b,[{x:x+53,y:724},{x:x+182,y:724}],detail,{width:1.6});
+    });
+    text(b,'Reassemble',245,542,260,32,24,C.muted,detail,{align:'center'});
+    text(b,'↑2',182,758,50,32,24,C.muted,detail);text(b,'↑2',352,758,50,32,24,C.muted,detail);text(b,'↑2',522,758,50,32,24,C.muted,detail);
+    arrow(b,[{x:642,y:724},{x:710,y:724}],detail,{width:1.6});text(b,'F',714,705,36,38,28,C.ink,detail);
+    const r=b.group('Proposed gated residual');text(b,'(c)  Proposed refinement',815,415,680,38,28,C.ink,r,{bold:true});
+    arrow(b,[{x:1015,y:205},{x:1015,y:365},{x:785,y:365},{x:785,y:612},{x:830,y:612}],r,{color:C.peach,width:1.7});
+    drawFeatureMapStack(b,830,578,{w:58,h:58,count:2,step:5,group:r,back:C.violetLite});
+    arrow(b,[{x:895,y:612},{x:925,y:612},{x:925,y:534},{x:962,y:534}],r,{width:1.7});
+    arrow(b,[{x:925,y:612},{x:925,y:710},{x:962,y:710}],r,{width:1.7});
+    funnel(b,962,494,110,80,r,true,'σ');funnel(b,962,670,110,80,r,true,'R');
+    arrow(b,[{x:1073,y:534},{x:1110,y:534}],r,{width:1.7});arrow(b,[{x:1073,y:710},{x:1110,y:710}],r,{width:1.7});
+    drawTensorGrid(b,1110,504,{rows:4,cols:4,cell:15,group:r,colors:[C.tealLite,'#C6D4B6',C.paper]});drawTensorGrid(b,1110,680,{rows:4,cols:4,cell:15,group:r,colors:[C.violetLite,C.paper,'#C7BBD9']});
+    text(b,'G',1120,575,40,32,25,C.ink,r);text(b,'R',1120,750,40,32,25,C.ink,r);
+    arrow(b,[{x:1171,y:534},{x:1244,y:534},{x:1244,y:600}],r,{width:1.7});arrow(b,[{x:1171,y:710},{x:1244,y:710},{x:1244,y:644}],r,{width:1.7});
+    ellipse(b,1222,600,44,44,C.paper,C.ink,r,'Gate product',1.7);text(b,'×',1222,600,44,44,28,C.ink,r,{align:'center'});
+    arrow(b,[{x:1267,y:622},{x:1360,y:622}],r,{width:1.7});drawTensorGrid(b,1360,584,{rows:4,cols:4,cell:19,group:r,colors:[C.tealLite,C.violetLite,C.paper]});
+    text(b,'ΔD',1360,685,76,36,28,C.ink,r,{align:'center'});
+    arrow(b,[{x:1398,y:584},{x:1398,y:365},{x:1244,y:365},{x:1244,y:227}],r,{color:C.peach,width:1.7});
+    text(b,'¹ Schematic depth',1250,830,260,32,22,C.muted,r,{align:'right'});
+  }
+
   function modernDepth(b){
     const panels=b.group('Figure panels');
     box(b,30,25,1740,305,C.pale,'#C4BEAF',panels,'Inference panel',26,1);
@@ -613,10 +787,22 @@
     'attention-fusion':attentionFusion,'perspective-cnn':perspectiveCnn,
     'conditional-diffusion':conditionalDiffusion,
     'graph-tensor-diffusion':graphTensorDiffusion,
-    'material-aware-depth':modernDepth
+    'material-aware-depth':sculptedDepth,
+    'latent-diffusion-paper':diffusionPaper,'vision-transformer-paper':transformerPaper
   };
 
   const components={
+    'encoder-funnel':{width:240,height:200,draw:(b,x,y,g)=>{funnel(b,x+10,y+10,220,180,g,false,'Encoder')}},
+    'decoder-funnel':{width:240,height:200,draw:(b,x,y,g)=>{funnel(b,x+10,y+10,220,180,g,true,'Decoder')}},
+    'unet-hourglass':{width:360,height:260,draw:(b,x,y,g)=>{hourglass(b,x,y,g)}},
+    'unet-pyramid':{width:430,height:240,draw:(b,x,y,g)=>{pyramid(b,x,y,g)}},
+    'transformer-tower':{width:240,height:330,draw:(b,x,y,g)=>{transformerTower(b,x,y,g)}},
+    'diffusion-chain':{width:480,height:170,draw:(b,x,y,g)=>{diffusionChain(b,x,y,g)}},
+    'denoising-loop':{width:590,height:340,draw:(b,x,y,g)=>{denoiseLoop(b,x,y,g)}},
+    'cross-attention-bridge':{width:410,height:220,draw:(b,x,y,g)=>{crossBridge(b,x,y,g)}},
+    'latent-bottleneck':{width:370,height:190,draw:(b,x,y,g)=>{latentBridge(b,x,y,g)}},
+    'reflective-scene':{width:400,height:210,draw:(b,x,y,g)=>{drawReflectiveScene(b,x,y,160,160,g,false);arrow(b,[{x:x+170,y:y+80},{x:x+228,y:y+80}],g);drawReflectiveScene(b,x+240,y,160,160,g,true);text(b,'RGB',x,y+175,160,32,26,C.ink,g,{align:'center'});text(b,'Depth',x+240,y+175,160,32,26,C.ink,g,{align:'center'})}},
+
     'patch-embedding':{width:286,height:150,draw:patchEmbedding},
     'transformer-encoder':{width:360,height:190,draw:transformer},
     'qkv-attention':{width:330,height:186,draw:qkvAttention},
@@ -642,12 +828,16 @@
       drawDiffusionStep(b,x+5,y,{group:g})}
   };
 
-  function createTemplate(id) {
+  function applyLabels(items,options){
+    if(options.labels!==undefined&&!['short','none'].includes(options.labels))throw new TypeError('labels must be short or none');
+    return options.labels==='none'?items.filter(it=>it.type!=='text'):items;
+  }
+  function createTemplate(id,options={}) {
     const meta=templateMeta.find(t=>t.id===id);
     if(!meta)throw new RangeError(`Unknown deep-learning template: ${id}`);
     const b=new Builder();
     templates[id](b);
-    return {name:meta.name,width:meta.width||1200,height:meta.height||675,items:b.items};
+    return {name:meta.name,width:meta.width||1200,height:meta.height||675,items:applyLabels(b.items,options)};
   }
   function createComponent(id,options={}) {
     const entry=components[id],meta=componentMeta.find(c=>c.id===id);
@@ -658,7 +848,7 @@
       throw new TypeError('Component x and y must be finite numbers.');
     const b=new Builder(),g=b.group(meta.name);
     entry.draw(b,x,y,g);
-    return {items:b.items,width:entry.width,height:entry.height};
+    return {items:applyLabels(b.items,options),width:entry.width,height:entry.height};
   }
   return Object.freeze({templateMeta,componentMeta,createTemplate,createComponent});
 });

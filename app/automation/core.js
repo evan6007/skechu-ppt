@@ -190,7 +190,7 @@
         if (name==='create_diagram_component') {
           const library = diagramLibrary();
           if (!library.componentMeta.some(meta => meta.id === args.componentId)) fail('INVALID_ARGUMENT', 'Unknown diagram component.');
-          const result = library.createComponent(args.componentId, {x:args.x,y:args.y});
+          const result = library.createComponent(args.componentId, {x:args.x,y:args.y,labels:args.labels});
           const created = prepareDiagramItems(result?.items, doc.items);
           if (doc.items.length + created.length > 10000) fail('LIMIT', 'Page object limit reached.');
           return {...finish([...clone(doc.items),...created],created.map(it=>it.id)),componentId:args.componentId};

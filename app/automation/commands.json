@@ -387,6 +387,7 @@
           "required": ["projectId", "pageId", "revision"],
           "additionalProperties": false
         },
+        "labels": {"type": "string", "enum": ["short", "none"]},
         "componentId": {"type": "string", "minLength": 1, "maxLength": 64},
         "x": {"type": "number", "minimum": -10000, "maximum": 10000},
         "y": {"type": "number", "minimum": -10000, "maximum": 10000}
