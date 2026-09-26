@@ -1,7 +1,6 @@
 /* Gallery controls for native, editable deep-learning diagram objects. */
 (function(root){
   'use strict';
-  const icons={'feature-map-stack':'▱','attention-block':'✧','unet-block':'⋈','tensor-grid':'▦','merge-operator':'⊕','diffusion-step':'↝'};
   function initialize(bridge){
     const catalog=root.SkechuDeepLearning,dialog=document.getElementById('deep-learning-dialog');
     if(!catalog||!dialog||!bridge)return;
@@ -33,7 +32,7 @@
         const action=document.createElement('span');action.className='dl-action';action.textContent='建立新圖頁';
         button.append(thumb,title,detail,action);
       }else{
-        const icon=document.createElement('span');icon.className='dl-component-icon';icon.textContent=icons[meta.id]||'◇';icon.setAttribute('aria-hidden','true');
+        const icon=document.createElement('span');icon.className='dl-component-preview';icon.innerHTML=bridge.previewComponent(meta.id);icon.setAttribute('aria-hidden','true');
         const info=document.createElement('span'),title=document.createElement('strong'),detail=document.createElement('small');
         title.textContent=meta.name;detail.textContent=meta.description;info.append(title,detail);button.append(icon,info);
       }

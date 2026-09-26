@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skechu-ppt-v103-tensor-grid-position';
+const CACHE_NAME = 'skechu-ppt-v104-model-components';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,10 +7,10 @@ const APP_SHELL = [
   './automation/editor.js?v=87-native-fill',
   './automation/panel.css?v=70-automation',
   './automation/commands.json',
-  './diagram-3d.js?v=2-grid',
-  './deep-learning-diagrams.js?v=2',
-  './deep-learning-ui.js?v=3-grid',
-  './deep-learning-ui.css?v=4-grid',
+  './diagram-3d.js?v=104-model-components',
+  './deep-learning-diagrams.js?v=104-model-components',
+  './deep-learning-ui.js?v=104-model-components',
+  './deep-learning-ui.css?v=104-model-components',
   './mobile-controls.js?v=69-copy-paste',
   './mobile-controls.css?v=90-mobile-brand',
   './touch-gestures.js?v=68-touch-gestures',
@@ -28,7 +28,7 @@ const APP_SHELL = [
   './gradient-fill.js?v=96-live-color',
   './gradient-fill.css?v=81-gradient-fill',
   './compound-fill.js?v=78-contour-outlines',
-  './paint-layers.js?v=79-layer-actions',
+  './paint-layers.js?v=104-model-components',
   './editor-render.js?v=96-live-color',
   './paint-tools.js?v=41-liquid-paper',
   './pan-tool.js',

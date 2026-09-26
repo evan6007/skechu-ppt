@@ -7,10 +7,10 @@
   'use strict';
 
   const C = Object.freeze({
-    ink: '#17243A', muted: '#586B80', line: '#B9C9D7', teal: '#137E82',
-    tealLite: '#D9F2EF', blue: '#326BBC', blueLite: '#E3EEFF',
-    peach: '#F5A663', peachLite: '#FFF0DE', violet: '#8162B3',
-    violetLite: '#EEE7F8', pink: '#DB6F91', pinkLite: '#FFE7EE',
+    ink: '#17243A', muted: '#586B80', line: '#B9C9D7', teal: '#4B8F88',
+    tealLite: '#DEEFEB', blue: '#688BA7', blueLite: '#E3EDF5',
+    peach: '#B98560', peachLite: '#F7E6D7', violet: '#8A77AB',
+    violetLite: '#EEE8F5', pink: '#B98098', pinkLite: '#F7E6ED',
     green: '#4A9A72', greenLite: '#E1F3E7', paper: '#FFFFFF',
     pale: '#F6F9FC', gray: '#E8EEF4'
   });
@@ -20,10 +20,19 @@
     {id:'perspective-cnn',name:'平面 CNN 示意圖',description:'平面堆疊的卷積特徵圖、池化、全連接層與分類輸出。'},
     {id:'conditional-diffusion',name:'條件式擴散與 U-Net',description:'前向加噪、迭代去噪、條件訊號與含跳接的 U-Net。'},
     {id:'graph-tensor-diffusion',name:'圖與張量擴散流程',description:'空間節點、鄰接圖、遮罩矩陣、GNN 潛在表示與擴散去噪。'},
-    {id:'material-aware-depth',name:'材質感知單目深度',description:'共享編碼器、基準深度、特殊材質遮罩與局部深度修正。'}
+    {id:'material-aware-depth',name:'材質感知單目深度',description:'ViT token、注意力、DPT 多尺度解碼與候選殘差修正子網路。',width:1800,height:950}
   ]);
 
   const componentMeta = Object.freeze([
+    {id:'patch-embedding',name:'影像切塊與嵌入',description:'Patch → linear projection → token sequence。'},
+    {id:'token-sequence',name:'Token 序列',description:'可編輯的向量序列與位置編碼標示。'},
+    {id:'transformer-encoder',name:'Transformer 編碼器',description:'Pre-norm、MHSA、MLP 和兩條 residual skip。'},
+    {id:'qkv-attention',name:'Q / K / V 注意力',description:'縮放點積、Softmax、Value 加權與多頭合併。'},
+    {id:'multiscale-decoder',name:'DPT 多尺度解碼器',description:'Reassemble、四種解析度與逐級融合。'},
+    {id:'conv-norm-activation',name:'卷積、正規化與激活',description:'Conv 3×3 → Norm → GELU。'},
+    {id:'upsample-block',name:'上採樣',description:'小特徵矩陣放大為兩倍空間解析度。'},
+    {id:'residual-adapter',name:'門控殘差子網路',description:'投影、Gate、Residual 與逐元素乘法。'},
+
     {id:'feature-map-stack',name:'平面特徵圖堆疊',description:'多層平面堆疊，可標示卷積特徵的尺寸。'},
     {id:'attention-block',name:'注意力模組',description:'輸入、池化、權重與逐元素調整的可編輯模組。'},
     {id:'unet-block',name:'U-Net 與跳接',description:'編碼、瓶頸、解碼和跨層連線。'},
@@ -34,7 +43,7 @@
 
   class Builder {
     constructor() { this.items=[]; this.serial=0; this.groupSerial=0; }
-    group(name) { return {id:`dl-group-${++this.groupSerial}`,name,collapsed:true}; }
+    group(name) { return {id:`dl-group-${++this.groupSerial}`,name,collapsed:true,paintMode:'solid'}; }
     add(item,group) {
       const value={id:`dl-item-${++this.serial}`,r:0,opacity:1,...item};
       if(group) value.layerGroup={...group};
@@ -183,6 +192,128 @@
       i%3===0?C.pinkLite:C.violetLite,C.violet,g,`節點 ${i+1}`,1.2));
     if(o.title)text(b,o.title,x,y-26,150,21,14,C.ink,g,{bold:true});
     return {width:132,height:100};
+  }
+
+  function tokens(b,x,y,g,count=6){
+    for(let i=0;i<count;i++)box(b,x+i*22,y,16,34,[C.blueLite,C.tealLite,C.violetLite][i%3],C.line,g,'Token '+(i+1),2,1);
+  }
+  function patchEmbedding(b,x,y,g){
+    text(b,'Patch embedding',x,y,280,28,19,C.ink,g,{bold:true});
+    drawTensorGrid(b,x,y+48,{rows:4,cols:4,cell:19,group:g,colors:['#C1DCE7','#91B7D2','#DAEAF0','#B5D4D1']});
+    arrow(b,[{x:x+81,y:y+90},{x:x+104,y:y+90}],g);
+    labelBox(b,'Linear',x+107,y+67,63,46,C.blueLite,C.blue,g,{size:13,radius:4});
+    arrow(b,[{x:x+174,y:y+90},{x:x+195,y:y+90}],g);
+    tokens(b,x+199,y+73,g,4);
+    text(b,'P × P patches',x,y+129,115,20,12,C.muted,g);
+    text(b,'+ position',x+181,y+129,105,20,12,C.muted,g);
+  }
+  function transformer(b,x,y,g){
+    box(b,x,y,360,190,'#F6F9FC',C.line,g,'Transformer boundary',8,1);
+    text(b,'Transformer encoder × L',x+12,y+8,335,25,18,C.ink,g,{bold:true});
+    const cy=y+95;
+    arrow(b,[{x,y:cy},{x:x+20,y:cy}],g);
+    [['LN',20,33],['MHSA',62,58],['+',133,26],['LN',169,33],['MLP',211,54],['+',294,26]].forEach(([label,dx,w])=>{
+      if(label==='+'){ellipse(b,x+dx,cy-13,w,26,C.paper,C.muted,g,'Residual add');text(b,'+',x+dx,cy-13,w,26,17,C.ink,g,{align:'center'});}
+      else labelBox(b,label,x+dx,cy-22,w,44,label==='LN'?C.paper:C.blueLite,C.line,g,{size:12,radius:3});
+    });
+    [[53,62],[120,133],[159,169],[202,211],[265,294],[320,360]].forEach(([a,z])=>arrow(b,[{x:x+a,y:cy},{x:x+z,y:cy}],g,{width:1.4,head:5}));
+    arrow(b,[{x:x+10,y:cy},{x:x+10,y:y+50},{x:x+146,y:y+50},{x:x+146,y:cy-13}],g,{width:1.3});
+    arrow(b,[{x:x+164,y:cy},{x:x+164,y:y+145},{x:x+307,y:y+145},{x:x+307,y:cy+13}],g,{width:1.3});
+    text(b,'pre-norm · residual connections',x+20,y+158,322,22,12,C.muted,g,{align:'center'});
+  }
+  function qkvAttention(b,x,y,g){
+    text(b,'Multi-head self-attention',x,y,330,26,18,C.ink,g,{bold:true});
+    ['Q','K','V'].forEach((label,i)=>{labelBox(b,label,x+12,y+42+i*42,40,28,[C.blueLite,C.violetLite,C.tealLite][i],C.line,g,{size:14,radius:3});});
+    arrow(b,[{x:x+53,y:y+56},{x:x+104,y:y+56},{x:x+104,y:y+73}],g);
+    arrow(b,[{x:x+53,y:y+98},{x:x+79,y:y+98},{x:x+79,y:y+85},{x:x+104,y:y+85}],g);
+    labelBox(b,'QKᵀ / √d',x+104,y+ 60,87,40,C.blueLite,C.line,g,{size:12,radius:4});
+    arrow(b,[{x:x+192,y:y+80},{x:x+205,y:y+80}],g,{head:5});
+    labelBox(b,'Softmax',x+205,y+60, 80,40,C.tealLite,C.line,g,{size:12,radius:4});
+    arrow(b,[{x:x+245,y:y+101},{x:x+245,y:y+126}],g);
+    arrow(b,[{x:x+53,y:y+140},{x:x+230,y:y+140}],g);
+    ellipse(b,x+231,y+126,28,28,C.paper,C.muted,g,'Attention value product');text(b,'×',x+231,y+126,28,28,16,C.ink,g,{align:'center'});
+    arrow(b,[{x:x+260,y:y+140},{x:x+277,y:y+140}],g,{width:1.3,head:5});
+    labelBox(b,'Concat\nProj',x+278,y+119,50,43,C.violetLite,C.line,g,{size:10,radius:3});
+    text(b,'per head',x+94,y+162,140,22,12,C.muted,g);
+  }
+  function dptFusion(b,x,y,g){
+    box(b,x,y,360,280,'#FAF9FC',C.line,g,'DPT decoder boundary',8,1);
+    text(b,'DPT decoder',x+12,y+8,320,25,18,C.ink,g,{bold:true});
+    text(b,'Reassemble → multi-scale fusion',x+12,y+35,336,20,12,C.muted,g);
+    line(b,x,y+125,x+8,y+125,g);line(b,x+8,y+125,x+8,y+63,g);line(b,x+8,y+63,x+305,y+63,g);
+    for(let i=0;i<4;i++){
+      const dx=20+i*81;
+      arrow(b,[{x:x+dx+28,y:y+63},{x:x+dx+28,y:y+78}],g,{width:1.3,head:5});
+      labelBox(b,'R'+(i+1),x+dx,y+78,55,29,C.violetLite,C.line,g,{size:12,radius:3});
+      arrow(b,[{x:x+dx+28,y:y+108},{x:x+dx+28,y:y+120}],g,{width:1.3,head:5});
+      drawFeatureMapStack(b,x+dx+8,y+122,{w:18+i*6,h:18+i*6,count:2,step:3,skew:4,group:g,color:C.violet,back:C.violetLite});
+      arrow(b,[{x:x+dx+28,y:y+163},{x:x+dx+28,y:y+201}],g,{width:1.3,head:5});
+      labelBox(b,i===0?'Refine':'Fuse ↑2',x+dx,y+202, 60, 30,C.violetLite,C.line,g,{size:10,radius:3});
+      if(i<3)arrow(b,[{x:x+dx+60,y:y+217},{x:x+dx+81,y:y+217}],g,{width:1.3,head:5});
+    }
+    arrow(b,[{x:x+323,y:y+217},{x:x+348,y:y+217},{x:x+348,y:y+125},{x:x+360,y:y+125}],g,{width:1.4,head:5});
+    text(b,'coarse',x+20,y+242,75,20,11,C.muted,g);text(b,'fine',x+273,y+242, 60,20,11,C.muted,g);
+  }
+
+  function convBlock(b,x,y,g){
+    text(b,'Convolution block',x,y,250,26,18,C.ink,g,{bold:true});
+    ['Conv 3×3','Norm','GELU'].forEach((v,i)=>{labelBox(b,v,x+i*85,y+48,75,42,[C.blueLite,C.paper,C.tealLite][i],C.line,g,{size:12,radius:4});if(i<2)arrow(b,[{x:x+i*85+75,y:y+69},{x:x+(i+1)*85,y:y+69}],g,{head:4,width:1.2});});
+  }
+  function upsample(b,x,y,g){
+    text(b,'Upsample ×2',x,y,220,26,18,C.ink,g,{bold:true});
+    drawTensorGrid(b,x+5,y+50,{rows:2,cols:2,cell:15,group:g});arrow(b,[{x:x+43,y:y+66},{x:x+96,y:y+66}],g);
+    drawTensorGrid(b,x+105,y+37,{rows:4,cols:4,cell:15,group:g});text(b,'H × W → 2H × 2W',x,y+111,210,20,12,C.muted,g);
+  }
+  function residualAdapter(b,x,y,g){
+    box(b,x,y,420,220,'#FFF9F3',C.line,g,'Candidate adapter boundary',8,1);
+    text(b,'Proposed residual adapter',x+14,y+9,390,25,18,C.ink,g,{bold:true});
+    arrow(b,[{x,y:y+112},{x:x+18,y:y+112}],g);
+    labelBox(b,'1×1 Conv\nResize',x+18,y+81,85,62,C.peachLite,C.line,g,{size:12,radius:4});
+    text(b,'H × W',x+20,y+180,80,22,12,C.muted,g,{align:'center'});
+    arrow(b,[{x:x+104,y:y+112},{x:x+119,y:y+112},{x:x+119,y:y+ 70},{x:x+135,y:y+70}],g,{head:5});
+    arrow(b,[{x:x+119,y:y+112},{x:x+119,y:y+158},{x:x+135,y:y+158}],g,{head:5});
+    labelBox(b,'Conv → σ',x+135,y+50,100,40,C.tealLite,C.line,g,{size:13,radius:4});
+    labelBox(b,'Conv',x+135,y+138,100,40,C.peachLite,C.line,g,{size:13,radius:4});
+    arrow(b,[{x:x+236,y:y+70},{x:x+294,y:y+70},{x:x+294,y:y+96}],g,{head:5});
+    arrow(b,[{x:x+236,y:y+158},{x:x+294,y:y+158},{x:x+294,y:y+128}],g,{head:5});
+    text(b,'G',x+250,y+44,35,22,13,C.teal,g);text(b,'R',x+250,y+164,35,22,13,C.peach,g);
+    ellipse(b,x+278,y+96,32,32,C.paper,C.muted,g,'Gated residual');text(b,'×',x+278,y+96,32,32,18,C.ink,g,{align:'center'});
+    arrow(b,[{x:x+311,y:y+112},{x:x+420,y:y+112}],g);
+    text(b,'ΔD = G ⊙ R',x+310,y+137,105,24,13,C.ink,g);
+  }
+
+  function insertPart(b,id,x,y){const group=b.group(id);components[id].draw(b,x,y,group);return group;}
+  function modernDepth(b){
+    const labels=b.group('Figure labels');
+    text(b,'Material-adapted monocular depth',50,30,1250, 40,30,C.ink,labels,{bold:true});
+    text(b,'RGB-only inference  ·  candidate architecture',50,78,1300,26,17,C.muted,labels);
+    const links=b.group('Inference connections');
+    [[346,270,400,270],[760,270,850,270],[1210,270,1250,270],[1385,270,1430,270],[1500,270,1550,270],[1590,270,1650,270]].forEach(([a,c,d,e])=>arrow(b,[{x:a,y:c},{x:d,y:e}],links));
+    arrow(b,[{x:1230,y:270},{x:1230,y:475},{x:810,y:475},{x:810,y:632},{x:880,y:632}],links,{color:C.peach});
+    text(b,'F',1238,440,40,24,16,C.peach,links);
+    arrow(b,[{x:1300,y:632},{x:1570,y:632},{x:1570,y:290}],links,{color:C.peach});
+    insertPart(b,'patch-embedding',60,180);
+    insertPart(b,'transformer-encoder',400,175);
+    text(b,'4 layer taps',768,230, 80,30,12,C.muted,labels,{align:'center'});
+    insertPart(b,'multiscale-decoder',850,145);
+    const head=b.group('Depth head');labelBox(b,'Depth head',1250,240,135,60,C.peachLite,C.line,head,{size:17,radius:5});
+    text(b,'Conv → Resize',1245,312,150,24,13,C.muted,head,{align:'center'});
+    const depth=b.group('Depth predictions');
+    drawTensorGrid(b,1430,241,{rows:4,cols:4,cell:16,group:depth,colors:['#A9BCC8','#BBCBD4','#DAE4E9','#879FAC']});
+    text(b,'D₀',1430,317,64,26,18,C.ink,depth,{align:'center'});
+    ellipse(b,1550,250, 40,40,C.paper,C.ink,depth,'Residual sum');text(b,'+',1550,250,40,40,23,C.ink,depth,{align:'center'});
+    drawTensorGrid(b,1650,241,{rows:4,cols:4,cell:16,group:depth,colors:['#90BCAF','#BCD6C6','#D8E9D8','#6B9C8D']});text(b,'D̂',1650,317,64,26,18,C.ink,depth,{align:'center'});
+    insertPart(b,'residual-adapter',880,520);
+    text(b,'D̂ = D₀ + G ⊙ R',1340,655,375,35,25,C.ink,labels,{align:'center'});
+    insertPart(b,'qkv-attention',60,520);
+    text(b,'MHSA detail',60,475,500,28,19,C.ink,labels,{bold:true});
+    const train=b.group('Training-only supervision');
+    line(b,50,795,1750,795,train,{color:C.line});
+    text(b,'TRAINING ONLY',50,838,220,30,16,C.muted,train,{bold:true});
+    labelBox(b,'Target depth D*',335,830,200, 50,C.gray,C.line,train,{size:17,radius:4});
+    arrow(b,[{x:536,y:855},{x:650,y:855}],train,{dash:true});
+    labelBox(b,'Depth loss',650,830,175,50,C.paper,C.line,train,{size:17,radius:4});
+    arrow(b,[{x:1714,y:274},{x:1740,y:274},{x:1740,y:855},{x:825,y:855}],train,{dash:true,color:C.muted});
   }
 
   function attentionFusion(b) {
@@ -420,10 +551,19 @@
     'attention-fusion':attentionFusion,'perspective-cnn':perspectiveCnn,
     'conditional-diffusion':conditionalDiffusion,
     'graph-tensor-diffusion':graphTensorDiffusion,
-    'material-aware-depth':materialAwareDepth
+    'material-aware-depth':modernDepth
   };
 
   const components={
+    'patch-embedding':{width:286,height:150,draw:patchEmbedding},
+    'transformer-encoder':{width:360,height:190,draw:transformer},
+    'qkv-attention':{width:330,height:186,draw:qkvAttention},
+    'multiscale-decoder':{width:360,height:280,draw:dptFusion},
+    'conv-norm-activation':{width:250,height:100,draw:convBlock},
+    'upsample-block':{width:220,height:132,draw:upsample},
+    'residual-adapter':{width:420,height:220,draw:residualAdapter},
+    'token-sequence':{width:220,height:100,draw:(b,x,y,g)=>{text(b,'Token sequence',x,y,220,26,18,C.ink,g,{bold:true});tokens(b,x+10,y+40,g,9);text(b,'N × D',x,y+78,220,22,12,C.muted,g,{align:'center'});}},
+
     'feature-map-stack':{width:200,height:208,draw:(b,x,y,g)=>
       drawFeatureMapStack(b,x+21,y+40,{w:104,h:107,count:4,title:'FEATURE MAPS',
         detail:'H × W × C',color:C.blue,back:C.blueLite,group:g})},
@@ -445,7 +585,7 @@
     if(!meta)throw new RangeError(`Unknown deep-learning template: ${id}`);
     const b=new Builder();
     templates[id](b);
-    return {name:meta.name,width:1200,height:675,items:b.items};
+    return {name:meta.name,width:meta.width||1200,height:meta.height||675,items:b.items};
   }
   function createComponent(id,options={}) {
     const entry=components[id],meta=componentMeta.find(c=>c.id===id);

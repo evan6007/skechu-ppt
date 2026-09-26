@@ -20,9 +20,12 @@ function layerStackItems(sourceItems) {
 }
 function paintSceneItems(sourceItems) {
   const output=[],band=[];
+  // Scientific components use ordinary painter order: each opaque face hides
+  // earlier faces AND their outlines. Recognize saved 3D blocks as well.
+  const solidGroups=new Set(sourceItems.filter(it=>it.diagram3d||it.layerGroup?.paintMode==='solid').map(it=>it.layerGroup?.id).filter(Boolean));
   for(const it of layerStackItems(sourceItems)){
     if(it.hidden)continue;
-    if(it.referenceOnly){output.push(...paintVectorBand(band),it);band.length=0;}
+    if(it.referenceOnly||solidGroups.has(it.layerGroup?.id)){output.push(...paintVectorBand(band),it);band.length=0;}
     else band.push(it);
   }
   return output.concat(paintVectorBand(band));

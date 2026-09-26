@@ -79,7 +79,7 @@
 <link rel="stylesheet" href="cut-tools.css">
 <link rel="stylesheet" href="gradient-fill.css?v=81-gradient-fill">
 <link rel="stylesheet" href="automation/panel.css?v=70-automation">
-<link rel="stylesheet" href="deep-learning-ui.css?v=4-grid">
+<link rel="stylesheet" href="deep-learning-ui.css?v=104-model-components">
 <script>try{const savedTheme=localStorage.getItem('skechu-ui-theme');if(['graphite','mist','linen'].includes(savedTheme))document.documentElement.dataset.theme=savedTheme}catch{}</script>
 </head>
 <body>
@@ -193,7 +193,7 @@
 <script src="path-cut.js"></script>
 <script src="cut-tools.js"></script>
 <script src="compound-fill.js?v=78-contour-outlines"></script>
-<script src="paint-layers.js?v=79-layer-actions"></script>
+<script src="paint-layers.js?v=104-model-components"></script>
 <script src="editor-render.js?v=96-live-color"></script>
 <script src="paint-tools.js?v=41-liquid-paper"></script>
 <script src="pan-tool.js"></script>
@@ -224,9 +224,9 @@
 <script src="touch-gestures.js?v=68-touch-gestures"></script>
 <script src="automation/core.js?v=101-diagram-markup"></script>
 <script src="automation/editor.js?v=87-native-fill"></script>
-<script src="diagram-3d.js?v=2-grid"></script>
-<script src="deep-learning-diagrams.js?v=2"></script>
-<script src="deep-learning-ui.js?v=3-grid"></script>
+<script src="diagram-3d.js?v=104-model-components"></script>
+<script src="deep-learning-diagrams.js?v=104-model-components"></script>
+<script src="deep-learning-ui.js?v=104-model-components"></script>
 <script>
 const svg=document.getElementById('stage'), scene=document.getElementById('scene'), selection=document.getElementById('selection'), gridLayer=document.getElementById('grid-layer'),stageWrap=document.querySelector('.stage-wrap'),stageShell=document.querySelector('.stage-shell');
 const workspace=document.querySelector('.workspace');
@@ -563,6 +563,7 @@ function remapDiagramItems(source,groupName='架構圖元件'){
  return created
 }
 const skechuDeepLearningBridge={
+ previewComponent(componentId){const diagram=SkechuDeepLearning.createComponent(componentId,{x:0,y:0});return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 -8 ${diagram.width+16} ${diagram.height+16}" aria-hidden="true">${sceneMarkup(diagram.items,'component-'+componentId+'-')}</svg>`},
  previewTemplate(templateId){const diagram=SkechuDeepLearning.createTemplate(templateId);return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${diagram.width} ${diagram.height}" aria-hidden="true">${sceneMarkup(diagram.items,'preview-'+templateId+'-')}</svg>`},
  previewBlock3D(options){const block=SkechuDiagram3D.createBlock({...options,x:20,y:14});return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${block.width+40} ${block.height+28}" aria-hidden="true">${sceneMarkup(block.items,'preview-3d-')}</svg>`},
  selectedBlock3D(){

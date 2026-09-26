@@ -68,7 +68,7 @@
     const minY=Math.min(...all.map(p=>p.y)),maxY=Math.max(...all.map(p=>p.y));
     const geometryWidth=maxX-minX,geometryHeight=maxY-minY;
     const width=Math.max(geometryWidth,145),left=x+(width-geometryWidth)/2;
-    const group={id:'diagram-3d-group',name:options.title||'立體神經網路方塊',collapsed:true};
+    const group={id:'diagram-3d-group',name:options.title||'立體神經網路方塊',collapsed:true,paintMode:'solid'};
     let serial=0;
     const items=raw.map(face=>{
       const points=face.points.map(p=>({x:+(left+p.x-minX).toFixed(3),y:+(y+34+p.y-minY).toFixed(3)}));

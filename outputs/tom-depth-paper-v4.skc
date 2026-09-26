@@ -1,0 +1,6086 @@
+{
+  "version": 2,
+  "project": {
+    "id": "project-muh4zsdy-6nok23",
+    "name": "ToM depth - model components v4",
+    "pages": [
+      {
+        "id": "page-muigh6u8-m02ijg",
+        "name": "材質感知單目深度",
+        "items": [
+          {
+            "id": "item-353",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Material-adapted monocular depth",
+            "x": 50,
+            "y": 30,
+            "w": 1250,
+            "h": 40,
+            "text": "Material-adapted monocular depth",
+            "size": 30,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-su0zzz",
+              "name": "Figure labels",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-354",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · RGB-only inference  ·  candidate architecture",
+            "x": 50,
+            "y": 78,
+            "w": 1300,
+            "h": 26,
+            "text": "RGB-only inference  ·  candidate architecture",
+            "size": 17,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-su0zzz",
+              "name": "Figure labels",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-355",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 346,
+                "y": 270
+              },
+              {
+                "x": 400,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-391",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-356",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 760,
+                "y": 270
+              },
+              {
+                "x": 850,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-391",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-357",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1210,
+                "y": 270
+              },
+              {
+                "x": 1250,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-464",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-358",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1385,
+                "y": 270
+              },
+              {
+                "x": 1430,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-464",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-359",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1500,
+                "y": 270
+              },
+              {
+                "x": 1550,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-484",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-360",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1590,
+                "y": 270
+              },
+              {
+                "x": 1650,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-484",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-361",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1230,
+                "y": 270
+              },
+              {
+                "x": 1230,
+                "y": 475
+              },
+              {
+                "x": 810,
+                "y": 475
+              },
+              {
+                "x": 810,
+                "y": 632
+              },
+              {
+                "x": 880,
+                "y": 630
+              }
+            ],
+            "color": "#B98560",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-503",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-362",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · F",
+            "x": 1238,
+            "y": 440,
+            "w": 40,
+            "h": 24,
+            "text": "F",
+            "size": 16,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#B98560",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-363",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1300,
+                "y": 630
+              },
+              {
+                "x": 1570,
+                "y": 632
+              },
+              {
+                "x": 1570,
+                "y": 290
+              }
+            ],
+            "color": "#B98560",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-8bqwgq",
+              "name": "Inference connections",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-503",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-484",
+                "slot": "bottom"
+              }
+            }
+          },
+          {
+            "id": "item-364",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Patch embedding",
+            "x": 60,
+            "y": 180,
+            "w": 280,
+            "h": 28,
+            "text": "Patch embedding",
+            "size": 19,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-365",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,1]",
+            "x": 60,
+            "y": 228,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#C1DCE7",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-366",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,2]",
+            "x": 79,
+            "y": 228,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#B5D4D1",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-367",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,3]",
+            "x": 98,
+            "y": 228,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#DAEAF0",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-368",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,4]",
+            "x": 117,
+            "y": 228,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#91B7D2",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-369",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,1]",
+            "x": 60,
+            "y": 247,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#B5D4D1",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-370",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,2]",
+            "x": 79,
+            "y": 247,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#B5D4D1",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-371",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,3]",
+            "x": 98,
+            "y": 247,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#B5D4D1",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-372",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,4]",
+            "x": 117,
+            "y": 247,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#B5D4D1",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-373",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,1]",
+            "x": 60,
+            "y": 266,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#DAEAF0",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-374",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,2]",
+            "x": 79,
+            "y": 266,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#B5D4D1",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-375",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,3]",
+            "x": 98,
+            "y": 266,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#C1DCE7",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-376",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,4]",
+            "x": 117,
+            "y": 266,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#C1DCE7",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-377",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,1]",
+            "x": 60,
+            "y": 285,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#91B7D2",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-378",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,2]",
+            "x": 79,
+            "y": 285,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#B5D4D1",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-379",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,3]",
+            "x": 98,
+            "y": 285,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#C1DCE7",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-380",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,4]",
+            "x": 117,
+            "y": 285,
+            "w": 18,
+            "h": 18,
+            "radius": 0,
+            "fill": "#DAEAF0",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-381",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 141,
+                "y": 270
+              },
+              {
+                "x": 164,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-382",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Linear · 背景",
+            "x": 167,
+            "y": 247,
+            "w": 63,
+            "h": 46,
+            "radius": 4,
+            "fill": "#E3EDF5",
+            "stroke": "#688BA7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-383",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Linear",
+            "x": 174,
+            "y": 249,
+            "w": 49,
+            "h": 42,
+            "text": "Linear",
+            "size": 13,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-384",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 234,
+                "y": 270
+              },
+              {
+                "x": 255,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-385",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Token 1",
+            "x": 259,
+            "y": 253,
+            "w": 16,
+            "h": 34,
+            "radius": 2,
+            "fill": "#E3EDF5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-386",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Token 2",
+            "x": 281,
+            "y": 253,
+            "w": 16,
+            "h": 34,
+            "radius": 2,
+            "fill": "#DEEFEB",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-387",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Token 3",
+            "x": 303,
+            "y": 253,
+            "w": 16,
+            "h": 34,
+            "radius": 2,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-388",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Token 4",
+            "x": 325,
+            "y": 253,
+            "w": 16,
+            "h": 34,
+            "radius": 2,
+            "fill": "#E3EDF5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-389",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · P × P patches",
+            "x": 60,
+            "y": 309,
+            "w": 115,
+            "h": 20,
+            "text": "P × P patches",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-390",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · + position",
+            "x": 241,
+            "y": 309,
+            "w": 105,
+            "h": 20,
+            "text": "+ position",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-lss7yb",
+              "name": "patch-embedding",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-391",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Transformer boundary",
+            "x": 400,
+            "y": 175,
+            "w": 360,
+            "h": 190,
+            "radius": 8,
+            "fill": "#F6F9FC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-392",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Transformer encoder × L",
+            "x": 412,
+            "y": 183,
+            "w": 335,
+            "h": 25,
+            "text": "Transformer encoder × L",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-393",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 400,
+                "y": 270
+              },
+              {
+                "x": 420,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-391",
+                "slot": "left"
+              },
+              "end": {
+                "owner": "item-394",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-394",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "LN · 背景",
+            "x": 420,
+            "y": 248,
+            "w": 33,
+            "h": 44,
+            "radius": 3,
+            "fill": "#FFFFFF",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-395",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · LN",
+            "x": 427,
+            "y": 250,
+            "w": 19,
+            "h": 40,
+            "text": "LN",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-396",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "MHSA · 背景",
+            "x": 462,
+            "y": 248,
+            "w": 58,
+            "h": 44,
+            "radius": 3,
+            "fill": "#E3EDF5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-397",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · MHSA",
+            "x": 469,
+            "y": 250,
+            "w": 44,
+            "h": 40,
+            "text": "MHSA",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-398",
+            "r": 0,
+            "opacity": 1,
+            "type": "ellipse",
+            "name": "Residual add",
+            "x": 533,
+            "y": 257,
+            "w": 26,
+            "h": 26,
+            "fill": "#FFFFFF",
+            "stroke": "#586B80",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-399",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · +",
+            "x": 533,
+            "y": 257,
+            "w": 26,
+            "h": 26,
+            "text": "+",
+            "size": 17,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-400",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "LN · 背景",
+            "x": 569,
+            "y": 248,
+            "w": 33,
+            "h": 44,
+            "radius": 3,
+            "fill": "#FFFFFF",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-401",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · LN",
+            "x": 576,
+            "y": 250,
+            "w": 19,
+            "h": 40,
+            "text": "LN",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-402",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "MLP · 背景",
+            "x": 611,
+            "y": 248,
+            "w": 54,
+            "h": 44,
+            "radius": 3,
+            "fill": "#E3EDF5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-403",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · MLP",
+            "x": 618,
+            "y": 250,
+            "w": 40,
+            "h": 40,
+            "text": "MLP",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-404",
+            "r": 0,
+            "opacity": 1,
+            "type": "ellipse",
+            "name": "Residual add",
+            "x": 694,
+            "y": 257,
+            "w": 26,
+            "h": 26,
+            "fill": "#FFFFFF",
+            "stroke": "#586B80",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-405",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · +",
+            "x": 694,
+            "y": 257,
+            "w": 26,
+            "h": 26,
+            "text": "+",
+            "size": 17,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-406",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 453,
+                "y": 270
+              },
+              {
+                "x": 462,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.4,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-394",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-396",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-407",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 520,
+                "y": 270
+              },
+              {
+                "x": 533,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.4,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-396",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-398",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-408",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 559,
+                "y": 270
+              },
+              {
+                "x": 569,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.4,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-398",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-400",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-409",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 602,
+                "y": 270
+              },
+              {
+                "x": 611,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.4,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-400",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-402",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-410",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 665,
+                "y": 270
+              },
+              {
+                "x": 694,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.4,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-402",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-404",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-411",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 720,
+                "y": 270
+              },
+              {
+                "x": 760,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.4,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-404",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-391",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-412",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 410,
+                "y": 270
+              },
+              {
+                "x": 410,
+                "y": 225
+              },
+              {
+                "x": 546,
+                "y": 225
+              },
+              {
+                "x": 546,
+                "y": 257
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-398",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-413",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 564,
+                "y": 270
+              },
+              {
+                "x": 564,
+                "y": 320
+              },
+              {
+                "x": 707,
+                "y": 320
+              },
+              {
+                "x": 707,
+                "y": 283
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-404",
+                "slot": "bottom"
+              }
+            }
+          },
+          {
+            "id": "item-414",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · pre-norm · residual connections",
+            "x": 420,
+            "y": 333,
+            "w": 322,
+            "h": 22,
+            "text": "pre-norm · residual connections",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-y7g55v",
+              "name": "transformer-encoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-415",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · 4 layer taps",
+            "x": 768,
+            "y": 230,
+            "w": 80,
+            "h": 30,
+            "text": "4 layer taps",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-su0zzz",
+              "name": "Figure labels",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-416",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "DPT decoder boundary",
+            "x": 850,
+            "y": 145,
+            "w": 360,
+            "h": 280,
+            "radius": 8,
+            "fill": "#FAF9FC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-417",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · DPT decoder",
+            "x": 862,
+            "y": 153,
+            "w": 320,
+            "h": 25,
+            "text": "DPT decoder",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-418",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Reassemble → multi-scale fusion",
+            "x": 862,
+            "y": 180,
+            "w": 336,
+            "h": 20,
+            "text": "Reassemble → multi-scale fusion",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-419",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 850,
+                "y": 270
+              },
+              {
+                "x": 858,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": false,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-420",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 858,
+                "y": 270
+              },
+              {
+                "x": 858,
+                "y": 208
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": false,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-421",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 858,
+                "y": 208
+              },
+              {
+                "x": 1155,
+                "y": 208
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": false,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-422",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 898,
+                "y": 208
+              },
+              {
+                "x": 897.5,
+                "y": 223
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-423",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-423",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "R1 · 背景",
+            "x": 870,
+            "y": 223,
+            "w": 55,
+            "h": 29,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-424",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · R1",
+            "x": 877,
+            "y": 225,
+            "w": 41,
+            "h": 25,
+            "text": "R1",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-425",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 897.5,
+                "y": 252
+              },
+              {
+                "x": 898,
+                "y": 265
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-423",
+                "slot": "bottom"
+              }
+            }
+          },
+          {
+            "id": "item-426",
+            "r": 0,
+            "opacity": 1,
+            "type": "polygon",
+            "name": "特徵圖平面 1",
+            "points": [
+              {
+                "x": 881,
+                "y": 271
+              },
+              {
+                "x": 899,
+                "y": 267
+              },
+              {
+                "x": 899,
+                "y": 285
+              },
+              {
+                "x": 881,
+                "y": 289
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#FFFFFF",
+            "stroke": "#8A77AB",
+            "strokeWidth": 1.6,
+            "label": "",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-427",
+            "r": 0,
+            "opacity": 1,
+            "type": "polygon",
+            "name": "特徵圖平面 2",
+            "points": [
+              {
+                "x": 878,
+                "y": 276
+              },
+              {
+                "x": 896,
+                "y": 272
+              },
+              {
+                "x": 896,
+                "y": 290
+              },
+              {
+                "x": 878,
+                "y": 294
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#EEE8F5",
+            "stroke": "#8A77AB",
+            "strokeWidth": 1.6,
+            "label": "",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-428",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 898,
+                "y": 308
+              },
+              {
+                "x": 900,
+                "y": 347
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-429",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-429",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Refine · 背景",
+            "x": 870,
+            "y": 347,
+            "w": 60,
+            "h": 30,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-430",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Refine",
+            "x": 877,
+            "y": 349,
+            "w": 46,
+            "h": 26,
+            "text": "Refine",
+            "size": 10,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-431",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 930,
+                "y": 362
+              },
+              {
+                "x": 951,
+                "y": 362
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-429",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-439",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-432",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 979,
+                "y": 208
+              },
+              {
+                "x": 978.5,
+                "y": 223
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-433",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-433",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "R2 · 背景",
+            "x": 951,
+            "y": 223,
+            "w": 55,
+            "h": 29,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-434",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · R2",
+            "x": 958,
+            "y": 225,
+            "w": 41,
+            "h": 25,
+            "text": "R2",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-435",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 978.5,
+                "y": 252
+              },
+              {
+                "x": 979,
+                "y": 265
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-433",
+                "slot": "bottom"
+              }
+            }
+          },
+          {
+            "id": "item-436",
+            "r": 0,
+            "opacity": 1,
+            "type": "polygon",
+            "name": "特徵圖平面 1",
+            "points": [
+              {
+                "x": 962,
+                "y": 271
+              },
+              {
+                "x": 986,
+                "y": 267
+              },
+              {
+                "x": 986,
+                "y": 291
+              },
+              {
+                "x": 962,
+                "y": 295
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#FFFFFF",
+            "stroke": "#8A77AB",
+            "strokeWidth": 1.6,
+            "label": "",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-437",
+            "r": 0,
+            "opacity": 1,
+            "type": "polygon",
+            "name": "特徵圖平面 2",
+            "points": [
+              {
+                "x": 959,
+                "y": 276
+              },
+              {
+                "x": 983,
+                "y": 272
+              },
+              {
+                "x": 983,
+                "y": 296
+              },
+              {
+                "x": 959,
+                "y": 300
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#EEE8F5",
+            "stroke": "#8A77AB",
+            "strokeWidth": 1.6,
+            "label": "",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-438",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 979,
+                "y": 308
+              },
+              {
+                "x": 981,
+                "y": 347
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-439",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-439",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Fuse ↑2 · 背景",
+            "x": 951,
+            "y": 347,
+            "w": 60,
+            "h": 30,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-440",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Fuse ↑2",
+            "x": 958,
+            "y": 349,
+            "w": 46,
+            "h": 26,
+            "text": "Fuse ↑2",
+            "size": 10,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-441",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1011,
+                "y": 362
+              },
+              {
+                "x": 1032,
+                "y": 362
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-439",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-449",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-442",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1060,
+                "y": 208
+              },
+              {
+                "x": 1059.5,
+                "y": 223
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-443",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-443",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "R3 · 背景",
+            "x": 1032,
+            "y": 223,
+            "w": 55,
+            "h": 29,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-444",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · R3",
+            "x": 1039,
+            "y": 225,
+            "w": 41,
+            "h": 25,
+            "text": "R3",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-445",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1059.5,
+                "y": 252
+              },
+              {
+                "x": 1060,
+                "y": 265
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-443",
+                "slot": "bottom"
+              }
+            }
+          },
+          {
+            "id": "item-446",
+            "r": 0,
+            "opacity": 1,
+            "type": "polygon",
+            "name": "特徵圖平面 1",
+            "points": [
+              {
+                "x": 1043,
+                "y": 271
+              },
+              {
+                "x": 1073,
+                "y": 267
+              },
+              {
+                "x": 1073,
+                "y": 297
+              },
+              {
+                "x": 1043,
+                "y": 301
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#FFFFFF",
+            "stroke": "#8A77AB",
+            "strokeWidth": 1.6,
+            "label": "",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-447",
+            "r": 0,
+            "opacity": 1,
+            "type": "polygon",
+            "name": "特徵圖平面 2",
+            "points": [
+              {
+                "x": 1040,
+                "y": 276
+              },
+              {
+                "x": 1070,
+                "y": 272
+              },
+              {
+                "x": 1070,
+                "y": 302
+              },
+              {
+                "x": 1040,
+                "y": 306
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#EEE8F5",
+            "stroke": "#8A77AB",
+            "strokeWidth": 1.6,
+            "label": "",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-448",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1060,
+                "y": 308
+              },
+              {
+                "x": 1062,
+                "y": 347
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-449",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-449",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Fuse ↑2 · 背景",
+            "x": 1032,
+            "y": 347,
+            "w": 60,
+            "h": 30,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-450",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Fuse ↑2",
+            "x": 1039,
+            "y": 349,
+            "w": 46,
+            "h": 26,
+            "text": "Fuse ↑2",
+            "size": 10,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-451",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1092,
+                "y": 362
+              },
+              {
+                "x": 1113,
+                "y": 362
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-449",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-459",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-452",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1141,
+                "y": 208
+              },
+              {
+                "x": 1140.5,
+                "y": 223
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-453",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-453",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "R4 · 背景",
+            "x": 1113,
+            "y": 223,
+            "w": 55,
+            "h": 29,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-454",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · R4",
+            "x": 1120,
+            "y": 225,
+            "w": 41,
+            "h": 25,
+            "text": "R4",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-455",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1140.5,
+                "y": 252
+              },
+              {
+                "x": 1142,
+                "y": 267
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-453",
+                "slot": "bottom"
+              },
+              "end": {
+                "owner": "item-456",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-456",
+            "r": 0,
+            "opacity": 1,
+            "type": "polygon",
+            "name": "特徵圖平面 1",
+            "points": [
+              {
+                "x": 1124,
+                "y": 271
+              },
+              {
+                "x": 1160,
+                "y": 267
+              },
+              {
+                "x": 1160,
+                "y": 303
+              },
+              {
+                "x": 1124,
+                "y": 307
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#FFFFFF",
+            "stroke": "#8A77AB",
+            "strokeWidth": 1.6,
+            "label": "",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-457",
+            "r": 0,
+            "opacity": 1,
+            "type": "polygon",
+            "name": "特徵圖平面 2",
+            "points": [
+              {
+                "x": 1121,
+                "y": 276
+              },
+              {
+                "x": 1157,
+                "y": 272
+              },
+              {
+                "x": 1157,
+                "y": 308
+              },
+              {
+                "x": 1121,
+                "y": 312
+              }
+            ],
+            "cornerRadius": 0,
+            "fill": "#EEE8F5",
+            "stroke": "#8A77AB",
+            "strokeWidth": 1.6,
+            "label": "",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-458",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1142,
+                "y": 307
+              },
+              {
+                "x": 1143,
+                "y": 347
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-456",
+                "slot": "bottom"
+              },
+              "end": {
+                "owner": "item-459",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-459",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Fuse ↑2 · 背景",
+            "x": 1113,
+            "y": 347,
+            "w": 60,
+            "h": 30,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-460",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Fuse ↑2",
+            "x": 1120,
+            "y": 349,
+            "w": 46,
+            "h": 26,
+            "text": "Fuse ↑2",
+            "size": 10,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-461",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1173,
+                "y": 362
+              },
+              {
+                "x": 1198,
+                "y": 362
+              },
+              {
+                "x": 1198,
+                "y": 270
+              },
+              {
+                "x": 1210,
+                "y": 270
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.4,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-459",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-462",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · coarse",
+            "x": 870,
+            "y": 387,
+            "w": 75,
+            "h": 20,
+            "text": "coarse",
+            "size": 11,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-463",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · fine",
+            "x": 1123,
+            "y": 387,
+            "w": 60,
+            "h": 20,
+            "text": "fine",
+            "size": 11,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-5gpztt",
+              "name": "multiscale-decoder",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-464",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Depth head · 背景",
+            "x": 1250,
+            "y": 240,
+            "w": 135,
+            "h": 60,
+            "radius": 5,
+            "fill": "#F7E6D7",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-ljc6o1",
+              "name": "Depth head",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-465",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Depth head",
+            "x": 1257,
+            "y": 242,
+            "w": 121,
+            "h": 56,
+            "text": "Depth head",
+            "size": 17,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-ljc6o1",
+              "name": "Depth head",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-466",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Conv → Resize",
+            "x": 1245,
+            "y": 312,
+            "w": 150,
+            "h": 24,
+            "text": "Conv → Resize",
+            "size": 13,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-ljc6o1",
+              "name": "Depth head",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-467",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,1]",
+            "x": 1430,
+            "y": 241,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#A9BCC8",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-468",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,2]",
+            "x": 1446,
+            "y": 241,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#879FAC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-469",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,3]",
+            "x": 1462,
+            "y": 241,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#DAE4E9",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-470",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,4]",
+            "x": 1478,
+            "y": 241,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#BBCBD4",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-471",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,1]",
+            "x": 1430,
+            "y": 257,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#879FAC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-472",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,2]",
+            "x": 1446,
+            "y": 257,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#879FAC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-473",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,3]",
+            "x": 1462,
+            "y": 257,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#879FAC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-474",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,4]",
+            "x": 1478,
+            "y": 257,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#879FAC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-475",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,1]",
+            "x": 1430,
+            "y": 273,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#DAE4E9",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-476",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,2]",
+            "x": 1446,
+            "y": 273,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#879FAC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-477",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,3]",
+            "x": 1462,
+            "y": 273,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#A9BCC8",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-478",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,4]",
+            "x": 1478,
+            "y": 273,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#A9BCC8",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-479",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,1]",
+            "x": 1430,
+            "y": 289,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#BBCBD4",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-480",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,2]",
+            "x": 1446,
+            "y": 289,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#879FAC",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-481",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,3]",
+            "x": 1462,
+            "y": 289,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#A9BCC8",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-482",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,4]",
+            "x": 1478,
+            "y": 289,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#DAE4E9",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-483",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · D₀",
+            "x": 1430,
+            "y": 317,
+            "w": 64,
+            "h": 26,
+            "text": "D₀",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-484",
+            "r": 0,
+            "opacity": 1,
+            "type": "ellipse",
+            "name": "Residual sum",
+            "x": 1550,
+            "y": 250,
+            "w": 40,
+            "h": 40,
+            "fill": "#FFFFFF",
+            "stroke": "#17243A",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-485",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · +",
+            "x": 1550,
+            "y": 250,
+            "w": 40,
+            "h": 40,
+            "text": "+",
+            "size": 23,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-486",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,1]",
+            "x": 1650,
+            "y": 241,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#90BCAF",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-487",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,2]",
+            "x": 1666,
+            "y": 241,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#6B9C8D",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-488",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,3]",
+            "x": 1682,
+            "y": 241,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#D8E9D8",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-489",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [1,4]",
+            "x": 1698,
+            "y": 241,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#BCD6C6",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-490",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,1]",
+            "x": 1650,
+            "y": 257,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#6B9C8D",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-491",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,2]",
+            "x": 1666,
+            "y": 257,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#6B9C8D",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-492",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,3]",
+            "x": 1682,
+            "y": 257,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#6B9C8D",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-493",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [2,4]",
+            "x": 1698,
+            "y": 257,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#6B9C8D",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-494",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,1]",
+            "x": 1650,
+            "y": 273,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#D8E9D8",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-495",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,2]",
+            "x": 1666,
+            "y": 273,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#6B9C8D",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-496",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,3]",
+            "x": 1682,
+            "y": 273,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#90BCAF",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-497",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [3,4]",
+            "x": 1698,
+            "y": 273,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#90BCAF",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-498",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,1]",
+            "x": 1650,
+            "y": 289,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#BCD6C6",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-499",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,2]",
+            "x": 1666,
+            "y": 289,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#6B9C8D",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-500",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,3]",
+            "x": 1682,
+            "y": 289,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#90BCAF",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-501",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "張量 [4,4]",
+            "x": 1698,
+            "y": 289,
+            "w": 15,
+            "h": 15,
+            "radius": 0,
+            "fill": "#D8E9D8",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 0.7,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-502",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · D̂",
+            "x": 1650,
+            "y": 317,
+            "w": 64,
+            "h": 26,
+            "text": "D̂",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t7wdt4",
+              "name": "Depth predictions",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-503",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Candidate adapter boundary",
+            "x": 880,
+            "y": 520,
+            "w": 420,
+            "h": 220,
+            "radius": 8,
+            "fill": "#FFF9F3",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-504",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Proposed residual adapter",
+            "x": 894,
+            "y": 529,
+            "w": 390,
+            "h": 25,
+            "text": "Proposed residual adapter",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-505",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 880,
+                "y": 630
+              },
+              {
+                "x": 898,
+                "y": 632
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-503",
+                "slot": "left"
+              },
+              "end": {
+                "owner": "item-506",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-506",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "1×1 Conv\nResize · 背景",
+            "x": 898,
+            "y": 601,
+            "w": 85,
+            "h": 62,
+            "radius": 4,
+            "fill": "#F7E6D7",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-507",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · 1×1 Conv\nResize",
+            "x": 905,
+            "y": 603,
+            "w": 71,
+            "h": 58,
+            "text": "1×1 Conv\nResize",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-508",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · H × W",
+            "x": 900,
+            "y": 700,
+            "w": 80,
+            "h": 22,
+            "text": "H × W",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-509",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 983,
+                "y": 632
+              },
+              {
+                "x": 999,
+                "y": 632
+              },
+              {
+                "x": 999,
+                "y": 590
+              },
+              {
+                "x": 1015,
+                "y": 590
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-506",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-511",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-510",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 999,
+                "y": 632
+              },
+              {
+                "x": 999,
+                "y": 678
+              },
+              {
+                "x": 1015,
+                "y": 678
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-513",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-511",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Conv → σ · 背景",
+            "x": 1015,
+            "y": 570,
+            "w": 100,
+            "h": 40,
+            "radius": 4,
+            "fill": "#DEEFEB",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-512",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Conv → σ",
+            "x": 1022,
+            "y": 572,
+            "w": 86,
+            "h": 36,
+            "text": "Conv → σ",
+            "size": 13,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-513",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Conv · 背景",
+            "x": 1015,
+            "y": 658,
+            "w": 100,
+            "h": 40,
+            "radius": 4,
+            "fill": "#F7E6D7",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-514",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Conv",
+            "x": 1022,
+            "y": 660,
+            "w": 86,
+            "h": 36,
+            "text": "Conv",
+            "size": 13,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-515",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1115,
+                "y": 590
+              },
+              {
+                "x": 1174,
+                "y": 590
+              },
+              {
+                "x": 1174,
+                "y": 616
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-511",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-519",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-516",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1115,
+                "y": 678
+              },
+              {
+                "x": 1174,
+                "y": 678
+              },
+              {
+                "x": 1174,
+                "y": 648
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-513",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-519",
+                "slot": "bottom"
+              }
+            }
+          },
+          {
+            "id": "item-517",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · G",
+            "x": 1130,
+            "y": 564,
+            "w": 35,
+            "h": 22,
+            "text": "G",
+            "size": 13,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#4B8F88",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-518",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · R",
+            "x": 1130,
+            "y": 684,
+            "w": 35,
+            "h": 22,
+            "text": "R",
+            "size": 13,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#B98560",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-519",
+            "r": 0,
+            "opacity": 1,
+            "type": "ellipse",
+            "name": "Gated residual",
+            "x": 1158,
+            "y": 616,
+            "w": 32,
+            "h": 32,
+            "fill": "#FFFFFF",
+            "stroke": "#586B80",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-520",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · ×",
+            "x": 1158,
+            "y": 616,
+            "w": 32,
+            "h": 32,
+            "text": "×",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-521",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1190,
+                "y": 632
+              },
+              {
+                "x": 1300,
+                "y": 630
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-519",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-503",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-522",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · ΔD = G ⊙ R",
+            "x": 1190,
+            "y": 657,
+            "w": 105,
+            "h": 24,
+            "text": "ΔD = G ⊙ R",
+            "size": 13,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-jo2uqi",
+              "name": "residual-adapter",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-523",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · D̂ = D₀ + G ⊙ R",
+            "x": 1340,
+            "y": 655,
+            "w": 375,
+            "h": 35,
+            "text": "D̂ = D₀ + G ⊙ R",
+            "size": 25,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-su0zzz",
+              "name": "Figure labels",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-524",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Multi-head self-attention",
+            "x": 60,
+            "y": 520,
+            "w": 330,
+            "h": 26,
+            "text": "Multi-head self-attention",
+            "size": 18,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-525",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Q · 背景",
+            "x": 72,
+            "y": 562,
+            "w": 40,
+            "h": 28,
+            "radius": 3,
+            "fill": "#E3EDF5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-526",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Q",
+            "x": 79,
+            "y": 564,
+            "w": 26,
+            "h": 24,
+            "text": "Q",
+            "size": 14,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-527",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "K · 背景",
+            "x": 72,
+            "y": 604,
+            "w": 40,
+            "h": 28,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-528",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · K",
+            "x": 79,
+            "y": 606,
+            "w": 26,
+            "h": 24,
+            "text": "K",
+            "size": 14,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-529",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "V · 背景",
+            "x": 72,
+            "y": 646,
+            "w": 40,
+            "h": 28,
+            "radius": 3,
+            "fill": "#DEEFEB",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-530",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · V",
+            "x": 79,
+            "y": 648,
+            "w": 26,
+            "h": 24,
+            "text": "V",
+            "size": 14,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-531",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 112,
+                "y": 576
+              },
+              {
+                "x": 164,
+                "y": 576
+              },
+              {
+                "x": 164,
+                "y": 593
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-525",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-532",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 112,
+                "y": 618
+              },
+              {
+                "x": 139,
+                "y": 618
+              },
+              {
+                "x": 139,
+                "y": 605
+              },
+              {
+                "x": 164,
+                "y": 605
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-527",
+                "slot": "right"
+              }
+            }
+          },
+          {
+            "id": "item-533",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "QKᵀ / √d · 背景",
+            "x": 164,
+            "y": 580,
+            "w": 87,
+            "h": 40,
+            "radius": 4,
+            "fill": "#E3EDF5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-534",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · QKᵀ / √d",
+            "x": 171,
+            "y": 582,
+            "w": 73,
+            "h": 36,
+            "text": "QKᵀ / √d",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-535",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 251,
+                "y": 600
+              },
+              {
+                "x": 265,
+                "y": 600
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-533",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-536",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-536",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Softmax · 背景",
+            "x": 265,
+            "y": 580,
+            "w": 80,
+            "h": 40,
+            "radius": 4,
+            "fill": "#DEEFEB",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-537",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Softmax",
+            "x": 272,
+            "y": 582,
+            "w": 66,
+            "h": 36,
+            "text": "Softmax",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-538",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 305,
+                "y": 620
+              },
+              {
+                "x": 305,
+                "y": 646
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-536",
+                "slot": "bottom"
+              },
+              "end": {
+                "owner": "item-540",
+                "slot": "top"
+              }
+            }
+          },
+          {
+            "id": "item-539",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 112,
+                "y": 660
+              },
+              {
+                "x": 291,
+                "y": 660
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-529",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-540",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-540",
+            "r": 0,
+            "opacity": 1,
+            "type": "ellipse",
+            "name": "Attention value product",
+            "x": 291,
+            "y": 646,
+            "w": 28,
+            "h": 28,
+            "fill": "#FFFFFF",
+            "stroke": "#586B80",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-541",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · ×",
+            "x": 291,
+            "y": 646,
+            "w": 28,
+            "h": 28,
+            "text": "×",
+            "size": 16,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-542",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 319,
+                "y": 660
+              },
+              {
+                "x": 338,
+                "y": 660.5
+              }
+            ],
+            "color": "#17243A",
+            "width": 1.3,
+            "head": 5,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-540",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-543",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-543",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Concat\nProj · 背景",
+            "x": 338,
+            "y": 639,
+            "w": 50,
+            "h": 43,
+            "radius": 3,
+            "fill": "#EEE8F5",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-544",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Concat\nProj",
+            "x": 345,
+            "y": 641,
+            "w": 36,
+            "h": 39,
+            "text": "Concat\nProj",
+            "size": 10,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-545",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · per head",
+            "x": 154,
+            "y": 682,
+            "w": 140,
+            "h": 22,
+            "text": "per head",
+            "size": 12,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": false,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-rtnlnq",
+              "name": "qkv-attention",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-546",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · MHSA detail",
+            "x": 60,
+            "y": 475,
+            "w": 500,
+            "h": 28,
+            "text": "MHSA detail",
+            "size": 19,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-su0zzz",
+              "name": "Figure labels",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-547",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 50,
+                "y": 795
+              },
+              {
+                "x": 1750,
+                "y": 795
+              }
+            ],
+            "color": "#B9C9D7",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": false,
+            "style": "solid",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t8j3d9",
+              "name": "Training-only supervision",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {}
+          },
+          {
+            "id": "item-548",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · TRAINING ONLY",
+            "x": 50,
+            "y": 838,
+            "w": 220,
+            "h": 30,
+            "text": "TRAINING ONLY",
+            "size": 16,
+            "fontFamily": "Arial",
+            "align": "left",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#586B80",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t8j3d9",
+              "name": "Training-only supervision",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-549",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Target depth D* · 背景",
+            "x": 335,
+            "y": 830,
+            "w": 200,
+            "h": 50,
+            "radius": 4,
+            "fill": "#E8EEF4",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t8j3d9",
+              "name": "Training-only supervision",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-550",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Target depth D*",
+            "x": 342,
+            "y": 832,
+            "w": 186,
+            "h": 46,
+            "text": "Target depth D*",
+            "size": 17,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t8j3d9",
+              "name": "Training-only supervision",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-551",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 535,
+                "y": 855
+              },
+              {
+                "x": 650,
+                "y": 855
+              }
+            ],
+            "color": "#17243A",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "dash",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t8j3d9",
+              "name": "Training-only supervision",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "start": {
+                "owner": "item-549",
+                "slot": "right"
+              },
+              "end": {
+                "owner": "item-552",
+                "slot": "left"
+              }
+            }
+          },
+          {
+            "id": "item-552",
+            "r": 0,
+            "opacity": 1,
+            "type": "box",
+            "name": "Depth loss · 背景",
+            "x": 650,
+            "y": 830,
+            "w": 175,
+            "h": 50,
+            "radius": 4,
+            "fill": "#FFFFFF",
+            "stroke": "#B9C9D7",
+            "strokeWidth": 1.5,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t8j3d9",
+              "name": "Training-only supervision",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-553",
+            "r": 0,
+            "opacity": 1,
+            "type": "text",
+            "box": true,
+            "name": "文字 · Depth loss",
+            "x": 657,
+            "y": 832,
+            "w": 161,
+            "h": 46,
+            "text": "Depth loss",
+            "size": 17,
+            "fontFamily": "Arial",
+            "align": "center",
+            "valign": "middle",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "marginTop": 0,
+            "marginBottom": 0,
+            "lineHeight": 1.08,
+            "bold": true,
+            "italic": false,
+            "color": "#17243A",
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t8j3d9",
+              "name": "Training-only supervision",
+              "collapsed": true,
+              "paintMode": "solid"
+            }
+          },
+          {
+            "id": "item-554",
+            "r": 0,
+            "opacity": 1,
+            "type": "arrow",
+            "name": "連線",
+            "points": [
+              {
+                "x": 1714,
+                "y": 274
+              },
+              {
+                "x": 1740,
+                "y": 274
+              },
+              {
+                "x": 1740,
+                "y": 855
+              },
+              {
+                "x": 825,
+                "y": 855
+              }
+            ],
+            "color": "#586B80",
+            "width": 2,
+            "head": 8,
+            "headShape": "triangle",
+            "startHead": false,
+            "endHead": true,
+            "style": "dash",
+            "closed": false,
+            "fill": "#FFFFFF",
+            "fillOpacity": 0,
+            "curved": false,
+            "layerGroup": {
+              "id": "dl-group-muigh6u8-t8j3d9",
+              "name": "Training-only supervision",
+              "collapsed": true,
+              "paintMode": "solid"
+            },
+            "attachments": {
+              "end": {
+                "owner": "item-552",
+                "slot": "right"
+              }
+            }
+          }
+        ],
+        "canvasWidth": 1800,
+        "canvasHeight": 950,
+        "canvasColor": "#ffffff",
+        "canvasOpacity": 1
+      }
+    ],
+    "activePageId": "page-muigh6u8-m02ijg"
+  }
+}

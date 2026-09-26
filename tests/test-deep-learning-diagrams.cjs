@@ -48,9 +48,9 @@ test('five figure templates contain only editable, grouped native geometry', () 
     assert.ok(meta.name && meta.description);
     const figure=diagrams.createTemplate(meta.id);
     assert.equal(figure.name,meta.name);
-    assert.equal(figure.width,1200);
-    assert.equal(figure.height,675);
-    validateItems(figure.items,{x:0,y:0,w:1200,h:675});
+    assert.equal(figure.width,meta.width||1200);
+    assert.equal(figure.height,meta.height||675);
+    validateItems(figure.items,{x:0,y:0,w:figure.width,h:figure.height});
     assert.ok(new Set(figure.items.map(item=>item.layerGroup.id)).size >= 3,
       `${meta.id}: expected logical editable groups`);
   }
@@ -78,13 +78,13 @@ test('templates carry their characteristic scientific diagram elements', () => {
     assert.ok(graph.includes(term));
 
   const depth=labels('material-aware-depth');
-  for (const term of ['Baseline depth','Material mask','Local residual',
-    'all pixels / masked pixels']) assert.ok(depth.includes(term));
+  for (const term of ['Patch embedding','Transformer encoder','DPT decoder',
+    'Proposed residual adapter','Depth loss']) assert.ok(depth.includes(term));
 });
 
-test('all six components are movable units with measured footprints', () => {
-  assert.equal(diagrams.componentMeta.length,6);
-  assert.equal(new Set(diagrams.componentMeta.map(meta=>meta.id)).size,6);
+test('all components are movable units with measured footprints', () => {
+  assert.equal(diagrams.componentMeta.length,14);
+  assert.equal(new Set(diagrams.componentMeta.map(meta=>meta.id)).size,14);
   for (const meta of diagrams.componentMeta) {
     const origin=diagrams.createComponent(meta.id,{x:0,y:0});
     const moved=diagrams.createComponent(meta.id,{x:210,y:180});
